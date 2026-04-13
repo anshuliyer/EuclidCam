@@ -26,6 +26,7 @@ FILTERS = {
     1: {"name": "cinematic_2000s", "desc": "Cinematic 2000s Look"},
     2: {"name": "washed_kodak", "desc": "Washed Kodak Black & White"},
     3: {"name": "golden_hour", "desc": "Golden Hour"},
+    4: {"name": "kodak_35mm", "desc": "Kodak 35mm Film"},
 }
 
 ENHANCEMENTS = {
@@ -201,15 +202,29 @@ def run_demonstrations(filters=None, enhancements=None, arch=None, build=True):
     baseline_with_enhance_path = OUTPUT_DIR / "baseline_f0_e1.jpg"
     
     baseline_created = False
+    print("Creating baseline reference images...")
+    
+    # Create baseline without enhancement
     if not baseline_no_enhance_path.exists():
-        print("Creating baseline reference images...")
         if process_image(INPUT_IMAGE, baseline_no_enhance_path, filter_type=0, enhance=0, binary_path=binary_path):
-            baseline_created = True
-            print("✓ Baseline created (no filter, no enhancement)\n")
+            print("  ✓ Baseline: no filter, no enhancement")
         else:
-            print("⚠ Could not create baseline\n")
+            print("  ⚠ Could not create baseline (no enhancement)")
     else:
+        print("  ✓ Baseline already exists: no filter, no enhancement")
+    
+    # Create baseline with enhancement
+    if not baseline_with_enhance_path.exists():
+        if process_image(INPUT_IMAGE, baseline_with_enhance_path, filter_type=0, enhance=1, binary_path=binary_path):
+            print("  ✓ Baseline: no filter, 2x upscale")
+            baseline_created = True
+        else:
+            print("  ⚠ Could not create baseline (with enhancement)")
+    else:
+        print("  ✓ Baseline already exists: no filter, 2x upscale")
         baseline_created = True
+    
+    print()
 
     # Test each combination
     for enhance in enhancements:
@@ -347,8 +362,8 @@ Examples:
         "--filter",
         type=int,
         nargs="+",
-        choices=[0, 1, 2, 3],
-        help="Filter IDs to test (0=none, 1=cinematic_2000s, 2=washed_kodak, 3=golden_hour)"
+        choices=[0, 1, 2, 3, 4],
+        help="Filter IDs to test (0=none, 1=cinematic_2000s, 2=washed_kodak, 3=golden_hour, 4=kodak_35mm)"
     )
     parser.add_argument(
         "--enhance",

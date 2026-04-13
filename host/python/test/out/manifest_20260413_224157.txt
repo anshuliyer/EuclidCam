@@ -1,0 +1,27 @@
+PiDigiCam Emulator Output Manifest
+Generated: 2026-04-13T22:42:18.371691
+Architecture: native
+Input: /workspaces/PiDigiCam/firmware/processing/test_inputs/hd_jpeg.jpg
+Total Images: 1
+Total Comparisons: 1
+
+======================================================================
+
+PROCESSED IMAGES:
+──────────────────────────────────────────────────────────────────────
+
+Filter: Kodak 35mm Film
+Enhancement: No enhancement (original resolution)
+Output File: f4_e0_result.jpg
+Filter ID: 4, Enhancement ID: 0
+
+
+======================================================================
+
+SIDE-BY-SIDE COMPARISONS:
+──────────────────────────────────────────────────────────────────────
+
+File: comparison_kodak_35mm.jpg
+Filter: Kodak 35mm Film
+Enhancement: No enhancement (original resolution)
+

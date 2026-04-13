@@ -6,6 +6,7 @@
 #include "hdrs/cinematic_2000s.h"
 #include "hdrs/washed_kodak.h"
 #include "hdrs/golden_hour.h"
+#include "hdrs/kodak_35mm.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,11 +18,13 @@
  * This entry point is designed for debian-based ARMv6 microcontrollers.
  * It uses the 'stb' single-header libraries for zero-dependency image I/O.
  *
- * Usage: program <input> <output> [--enhance=1] [--filter=0|1|2]
+ * Usage: program <input> <output> [--enhance=1] [--filter=0|1|2|3|4]
  *   --enhance=1: Apply 2x upscaling enhancement
  *   --filter=0: No filter (default)
  *   --filter=1: Apply cinematic 2000s filter
  *   --filter=2: Apply washed Kodak black-and-white filter
+ *   --filter=3: Apply golden hour filter
+ *   --filter=4: Apply Kodak 35mm film filter
  */
 
 // Simple Bilinear Upscaling (Baseline Enhancement)
@@ -43,12 +46,13 @@ void upscale_x2(unsigned char* src, int sw, int sh, unsigned char* dst) {
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        fprintf(stderr, "Usage: %s <input> <output> [--enhance=1] [--filter=0|1|2|3]\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input> <output> [--enhance=1] [--filter=0|1|2|3|4]\n", argv[0]);
         fprintf(stderr, "  --enhance=1: Apply 2x upscaling enhancement\n");
         fprintf(stderr, "  --filter=0: No filter (default)\n");
         fprintf(stderr, "  --filter=1: Apply cinematic 2000s filter\n");
         fprintf(stderr, "  --filter=2: Apply washed Kodak black-and-white filter\n");
         fprintf(stderr, "  --filter=3: Apply golden hour filter\n");
+        fprintf(stderr, "  --filter=4: Apply Kodak 35mm film filter\n");
         return 1;
     }
 
@@ -68,6 +72,8 @@ int main(int argc, char** argv) {
             filter_type = 2;
         } else if (strcmp(argv[i], "--filter=3") == 0) {
             filter_type = 3;
+        } else if (strcmp(argv[i], "--filter=4") == 0) {
+            filter_type = 4;
         } else if (strcmp(argv[i], "--filter=0") == 0) {
             filter_type = 0;
         } else {
@@ -142,6 +148,9 @@ int main(int argc, char** argv) {
     } else if (filter_type == 3) {
         printf("Applying golden hour filter...\n");
         apply_golden_hour_filter(out_img, out_w, out_h, channels);
+    } else if (filter_type == 4) {
+        printf("Applying Kodak 35mm filter...\n");
+        apply_kodak_35mm_filter(out_img, out_w, out_h, channels);
     }
 
     printf("Writing output: %s\n", output_path);
