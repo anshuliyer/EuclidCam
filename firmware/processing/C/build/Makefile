@@ -15,6 +15,10 @@ else ifeq ($(ARCH), x86)
     CFLAGS += -m32
     PREBUILTS_DIR = ../prebuilts_x86
     TARGET = $(PREBUILTS_DIR)/enhance
+else ifeq ($(ARCH), w)
+    CC = arm-linux-gnueabihf-gcc
+    PREBUILTS_DIR = ../prebuilts_w
+    TARGET = $(PREBUILTS_DIR)/enhance
 endif
 
 all: $(TARGET)
@@ -52,3 +56,6 @@ armv8:
 
 x86:
 	$(MAKE) ARCH=x86
+
+w:
+	$(MAKE) ARCH=w

@@ -158,7 +158,7 @@ install_armv8_deps() {
 install_python_deps() {
     print_header "Installing Python Dependencies"
 
-    if [ ! -f "requirements.txt" ] && [ ! -f "processing/requirements.txt" ]; then
+    if [ ! -f "requirements.txt" ] && [ ! -f "processing/requirements.txt" ] && [ ! -f "UI/boot/requirements.txt" ]; then
         print_step "No Python requirements found, creating minimal Python environment setup"
         echo "Pillow>=10.0.0" > requirements-dev.txt
         echo "matplotlib>=3.7.0" >> requirements-dev.txt
@@ -166,12 +166,21 @@ install_python_deps() {
         print_success "Created requirements-dev.txt"
     fi
 
-    print_step "Installing recommend Python packages..."
+    print_step "Installing Python packages from requirements files..."
     set +e  # Don't exit on pip install failure
     if command -v pip3; then
         pip3 install --upgrade pip
+        
+        # Install from UI/boot requirements
+        if [ -f "UI/boot/requirements.txt" ]; then
+            print_step "Installing UI/boot dependencies..."
+            pip3 install -r UI/boot/requirements.txt
+            print_success "UI/boot dependencies installed"
+        fi
+        
+        # Fallback to manual installation
         pip3 install Pillow matplotlib numpy
-        print_success "Python packages installed (optional: Pillow, matplotlib, numpy)"
+        print_success "Python packages installed (Pillow, matplotlib, numpy)"
     fi
     set -e
 }

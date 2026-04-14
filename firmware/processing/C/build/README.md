@@ -17,7 +17,8 @@ firmware/processing/C/
 ├── models/             # Model files
 ├── prebuilts/          # x86-64 binaries
 ├── prebuilts_v8/       # ARMv8 binaries
-└── prebuilts_x86/      # 32-bit x86 binaries
+├── prebuilts_x86/      # 32-bit x86 binaries
+└── prebuilts_w/        # Raspberry Pi Zero W (ARMv6) binaries
 ```
 
 ## Features
@@ -39,6 +40,7 @@ The filter creates a nostalgic, film-like aesthetic reminiscent of early 2000s d
 - **Default (x86-64)**: Native build for the host system (64-bit x86).
 - **armv8**: Cross-compiled for ARM64 (ARMv8) architecture.
 - **x86**: 32-bit x86 architecture.
+- **w**: Cross-compiled for Raspberry Pi Zero W (ARMv6).
 
 ## Using Make
 
@@ -57,6 +59,11 @@ make clean && make armv8
 make clean && make x86
 ```
 
+### Raspberry Pi Zero W build
+```bash
+make clean && make w
+```
+
 ## Using Build Script
 
 The `build.sh` script accepts an architecture argument:
@@ -65,6 +72,7 @@ The `build.sh` script accepts an architecture argument:
 ./build.sh          # Default (x86-64)
 ./build.sh armv8    # ARM64
 ./build.sh x86      # 32-bit x86
+./build.sh w        # Raspberry Pi Zero W
 ```
 
 ## Output
@@ -73,11 +81,13 @@ Executables are placed in architecture-specific directories:
 - `../prebuilts/enhance` (default, x86-64)
 - `../prebuilts_v8/enhance` (ARMv8)
 - `../prebuilts_x86/enhance` (32-bit x86)
+- `../prebuilts_w/enhance` (Raspberry Pi Zero W)
 
 ## Requirements
 
 - For ARMv8: clang with ARM64 target support
 - For x86: gcc with multilib support (-m32)
+- For Raspberry Pi Zero W: gcc with ARMv6 support
 - For default: standard gcc
 
 ## Usage
