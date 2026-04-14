@@ -16,12 +16,16 @@ else ifeq ($(ARCH), x86)
     PREBUILTS_DIR = ../prebuilts_x86
     TARGET = $(PREBUILTS_DIR)/enhance
 else ifeq ($(ARCH), w)
-    # Native build for Raspberry Pi Zero W (ARMv6)
-    CC = gcc
-    CFLAGS += -march=armv6kz -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard
+    # The Cross-Compiler installed in Step 1
+    CC = arm-linux-gnueabi-gcc
+    
+    # Precise flags for Pi Zero W (ARMv6 + VFP)
+    CFLAGS += -march=armv6kz -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=softfp
+    
     PREBUILTS_DIR = ../prebuilts_w
     TARGET = $(PREBUILTS_DIR)/enhance
 endif
+
 
 all: $(TARGET)
 
