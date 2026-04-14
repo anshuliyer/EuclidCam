@@ -16,8 +16,9 @@ else ifeq ($(ARCH), x86)
     PREBUILTS_DIR = ../prebuilts_x86
     TARGET = $(PREBUILTS_DIR)/enhance
 else ifeq ($(ARCH), w)
-    CC = arm-linux-gnueabi-gcc
-    CFLAGS += -mcpu=arm1176jzf-s
+    # Native build for Raspberry Pi Zero W (ARMv6)
+    CC = gcc
+    CFLAGS += -march=armv6kz -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard
     PREBUILTS_DIR = ../prebuilts_w
     TARGET = $(PREBUILTS_DIR)/enhance
 endif
@@ -30,6 +31,7 @@ $(TARGET): enhance.o cnn_inference.o cinematic_2000s.o washed_kodak.o golden_hou
 $(PREBUILTS_DIR):
 	mkdir -p $(PREBUILTS_DIR)
 
+# Compilation rules
 enhance.o: $(SRC_DIR)/main.c $(SRC_DIR)/hdrs/cnn_inference.h $(SRC_DIR)/hdrs/stb_image.h $(SRC_DIR)/hdrs/stb_image_write.h $(SRC_DIR)/hdrs/cinematic_2000s.h $(SRC_DIR)/hdrs/washed_kodak.h $(SRC_DIR)/hdrs/golden_hour.h $(SRC_DIR)/hdrs/kodak_35mm.h
 	$(CC) $(CFLAGS) -c $(SRC_DIR)/main.c -o enhance.o
 
