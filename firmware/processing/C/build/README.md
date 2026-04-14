@@ -87,7 +87,8 @@ Executables are placed in architecture-specific directories:
 
 - For ARMv8: clang with ARM64 target support
 - For x86: gcc with multilib support (-m32)
-- For Raspberry Pi Zero W: gcc with ARMv6 support
+- For Raspberry Pi Zero W: arm-linux-gnueabi-gcc (soft-float compiler)
+  - Install: `sudo apt-get install gcc-arm-linux-gnueabi`
 - For default: standard gcc
 
 ## Usage

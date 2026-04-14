@@ -16,7 +16,8 @@ else ifeq ($(ARCH), x86)
     PREBUILTS_DIR = ../prebuilts_x86
     TARGET = $(PREBUILTS_DIR)/enhance
 else ifeq ($(ARCH), w)
-    CC = arm-linux-gnueabihf-gcc
+    CC = arm-linux-gnueabi-gcc
+    CFLAGS += -mcpu=arm1176jzf-s
     PREBUILTS_DIR = ../prebuilts_w
     TARGET = $(PREBUILTS_DIR)/enhance
 endif

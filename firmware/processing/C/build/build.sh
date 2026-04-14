@@ -10,7 +10,7 @@ elif [ "$ARCH" = "x86" ]; then
     CC="gcc -m32"
     PREBUILTS_DIR="../prebuilts_x86"
 elif [ "$ARCH" = "w" ]; then
-    CC="arm-linux-gnueabihf-gcc"
+    CC="arm-linux-gnueabi-gcc -mcpu=arm1176jzf-s"
     PREBUILTS_DIR="../prebuilts_w"
 else
     CC="gcc"
