@@ -7,6 +7,7 @@
 #include "hdrs/washed_kodak.h"
 #include "hdrs/golden_hour.h"
 #include "hdrs/kodak_35mm.h"
+#include "hdrs/default.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,13 +19,14 @@
  * This entry point is designed for debian-based ARMv6 microcontrollers.
  * It uses the 'stb' single-header libraries for zero-dependency image I/O.
  *
- * Usage: program <input> <output> [--enhance=1] [--filter=0|1|2|3|4]
+ * Usage: program <input> <output> [--enhance=1] [--filter=0|1|2|3|4|5]
  *   --enhance=1: Apply 2x upscaling enhancement
  *   --filter=0: No filter (default)
  *   --filter=1: Apply cinematic 2000s filter
  *   --filter=2: Apply washed Kodak black-and-white filter
  *   --filter=3: Apply golden hour filter
  *   --filter=4: Apply Kodak 35mm film filter
+ *   --filter=5: Apply Coming-of-Age indie film filter
  */
 
 // Simple Bilinear Upscaling (Baseline Enhancement)
@@ -46,13 +48,14 @@ void upscale_x2(unsigned char* src, int sw, int sh, unsigned char* dst) {
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        fprintf(stderr, "Usage: %s <input> <output> [--enhance=1] [--filter=0|1|2|3|4]\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input> <output> [--enhance=1] [--filter=0|1|2|3|4|5]\n", argv[0]);
         fprintf(stderr, "  --enhance=1: Apply 2x upscaling enhancement\n");
         fprintf(stderr, "  --filter=0: No filter (default)\n");
         fprintf(stderr, "  --filter=1: Apply cinematic 2000s filter\n");
         fprintf(stderr, "  --filter=2: Apply washed Kodak black-and-white filter\n");
         fprintf(stderr, "  --filter=3: Apply golden hour filter\n");
         fprintf(stderr, "  --filter=4: Apply Kodak 35mm film filter\n");
+        fprintf(stderr, "  --filter=5: Apply Coming-of-Age indie film filter\n");
         return 1;
     }
 
@@ -74,6 +77,8 @@ int main(int argc, char** argv) {
             filter_type = 3;
         } else if (strcmp(argv[i], "--filter=4") == 0) {
             filter_type = 4;
+        } else if (strcmp(argv[i], "--filter=5") == 0) {
+            filter_type = 5;
         } else if (strcmp(argv[i], "--filter=0") == 0) {
             filter_type = 0;
         } else {
@@ -151,6 +156,23 @@ int main(int argc, char** argv) {
     } else if (filter_type == 4) {
         printf("Applying Kodak 35mm filter...\n");
         apply_kodak_35mm_filter(out_img, out_w, out_h, channels);
+    } else if (filter_type == 5) {
+        printf("Applying Coming-of-Age indie film filter...\n");
+        // Note: coming_of_age_filter works on files, so save temp and reload
+        const char* temp_file = "/tmp/temp_coming_of_age.png";
+        if (!stbi_write_png(temp_file, out_w, out_h, channels, out_img, out_w * channels)) {
+            fprintf(stderr, "Error: Could not create temporary file\n");
+        } else {
+            apply_coming_of_age_filter(temp_file, temp_file, 1.0f);
+            // Reload filtered image
+            int temp_w, temp_h, temp_c;
+            unsigned char* temp_img = stbi_load(temp_file, &temp_w, &temp_h, &temp_c, 0);
+            if (temp_img) {
+                memcpy(out_img, temp_img, out_w * out_h * channels);
+                stbi_image_free(temp_img);
+            }
+            remove(temp_file);
+        }
     }
 
     printf("Writing output: %s\n", output_path);
