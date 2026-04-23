@@ -226,7 +226,7 @@ def run(config=None):
                             # Empty gallery
                             frame = np.zeros((SCREEN_RES[1], SCREEN_RES[0], 3), dtype=np.uint8)
                             draw = ImageDraw.Draw(Image.fromarray(frame))
-                            draw.text(( SCREEN_RES[0]//2 - 40, SCREEN_RES[1]//2), "Captured is Empty", fill=(255, 255, 255))
+                            draw.text(( SCREEN_RES[0]//2 - 100, SCREEN_RES[1]//2), "Damn Dawg! Thought I was doiing a good job", fill=(255, 255, 255))
                         
                         frame = panel.render(frame)
                         display_to_map(frame, fb_map)
