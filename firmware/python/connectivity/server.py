@@ -43,6 +43,10 @@ def index():
     
     return render_template('index.html', images=files, server_url=server_url)
 
+# Generate QR on startup
+server_ip = get_ip_address()
+generate_qr_code(f"http://{server_ip}:5000")
+
 @app.route('/images/<filename>')
 def get_image(filename):
     return send_from_directory(PHOTO_DIR, filename)

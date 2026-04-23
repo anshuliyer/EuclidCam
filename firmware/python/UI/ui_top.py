@@ -186,7 +186,7 @@ class TopPanel:
         
         # Load the QR code image if it exists
         import os
-        qr_path = os.path.join(os.path.dirname(__file__), "connectivity/static/qr_code.png")
+        qr_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../connectivity/static/qr_code.png"))
         if os.path.exists(qr_path):
             try:
                 qr_img = Image.open(qr_path).convert("RGB")
