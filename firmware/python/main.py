@@ -59,6 +59,7 @@ def take_photo(fb_map, config=None):
 
 def run(config=None):
     # Main Loop
+    panel = ui_top.TopPanel(config, SCREEN_RES)
     start_preview()
     try:
         with open(FB_DEVICE, "r+b") as f:
@@ -68,7 +69,7 @@ def run(config=None):
                     loop_start = time.time()
                     frame = picam2.capture_array()
                     if frame is not None:
-                        frame = ui_top.overlay_ui(frame, config, SCREEN_RES)
+                        frame = panel.render(frame)
                         display_to_map(frame, fb_map)
                     
                     if select.select([sys.stdin], [], [], 0)[0]:
