@@ -98,6 +98,9 @@ def run(config=None):
                             items = ["Mode", "LightMeter", "Flash", "Grid"]
                             selected = items[config["menu_index"]]
                             print(f"[SYSTEM] Selected: {selected}")
+                            if selected == "Flash":
+                                config["flash"] = not config.get("flash", False)
+                                print(f"[SYSTEM] Flash: {'ON' if config['flash'] else 'OFF'}")
                     
                     time.sleep(max(0, (1.0 / FPS_CAP) - (time.time() - loop_start)))
     except KeyboardInterrupt:
