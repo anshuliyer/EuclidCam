@@ -72,28 +72,28 @@ class TopPanel:
         Draws the settings menu list with a Mauve background and highlights the selection.
         """
         w, h = self.screen_res
-        menu_w, menu_h = 160, 130
+        menu_w, menu_h = 240, 180
         x, y = (w - menu_w) // 2, (h - menu_h) // 2
         
         # Mauve background box
-        draw.rectangle([x, y, x + menu_w, y + menu_h], fill=self.MAUVE, outline=(255, 255, 255), width=1)
+        draw.rectangle([x, y, x + menu_w, y + menu_h], fill=self.MAUVE, outline=(255, 255, 255), width=2)
         
         # Menu items
         items = ["Mode", "LightMeter", "Flash", "Grid"]
         selected_idx = self.config.get("menu_index", 0)
         
         for i, item in enumerate(items):
-            text_x = x + 20
-            text_y = y + 15 + i*25
+            text_x = x + 30
+            text_y = y + 25 + i*35
             
             # Highlight selected item
             if i == selected_idx:
                 # Draw a selector dot/asterisk
-                draw.text((x + 5, text_y), "*", fill=(0, 0, 0))
+                draw.text((x + 10, text_y), "*", fill=(0, 0, 0))
                 # Optional: draw item in bold or inverted (simulated)
                 draw.text((text_x, text_y), item, fill=(0, 0, 0))
             else:
-                draw.text((text_x, text_y), item, fill=(50, 50, 50))
+                draw.text((text_x, text_y), item, fill=(60, 60, 60))
 
     def render(self, frame):
         """
