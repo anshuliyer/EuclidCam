@@ -69,28 +69,38 @@ class TopPanel:
 
     def _draw_menu(self, draw):
         """
-        Draws the settings menu list with a Mauve background and highlights the selection.
+        Draws the settings menu list or a submenu with a Mauve background.
         """
         w, h = self.screen_res
-        menu_w, menu_h = 240, 180
+        menu_w, menu_h = 240, 220 # Increased height for more modes
         x, y = (w - menu_w) // 2, (h - menu_h) // 2
         
         # Mauve background box
         draw.rectangle([x, y, x + menu_w, y + menu_h], fill=self.MAUVE, outline=(255, 255, 255), width=2)
         
-        # Menu items
-        items = ["Mode", "LightMeter", "Flash", "Grid"]
-        selected_idx = self.config.get("menu_index", 0)
+        show_submenu = self.config.get("show_submenu", False)
         
+        if not show_submenu:
+            # Main Menu
+            items = ["Modes", "LightMeter", "Flash", "Grid"]
+            selected_idx = self.config.get("menu_index", 0)
+        else:
+            # Modes Submenu
+            items = ["Standard", "Wide-angle", "Summer", "Bokeh", "Kodak", "Cyberpunk", "Champagne"]
+            selected_idx = self.config.get("submenu_index", 0)
+        
+        # Title
+        title = "SETTINGS" if not show_submenu else "SELECT MODE"
+        draw.text((x + 10, y + 5), title, fill=(0, 0, 0))
+        draw.line([(x, y + 20), (x + menu_w, y + 20)], fill=(255, 255, 255), width=1)
+
         for i, item in enumerate(items):
             text_x = x + 30
-            text_y = y + 25 + i*35
+            text_y = y + 28 + i*25 # Tighter spacing
             
             # Highlight selected item
             if i == selected_idx:
-                # Draw a selector dot/asterisk
                 draw.text((x + 10, text_y), "*", fill=(0, 0, 0))
-                # Optional: draw item in bold or inverted (simulated)
                 draw.text((text_x, text_y), item, fill=(0, 0, 0))
             else:
                 draw.text((text_x, text_y), item, fill=(60, 60, 60))

@@ -101,23 +101,24 @@ def apply_ui(data_array):
     return np.array(img)
 
 # Main Loop
-start_preview()
-try:
-    with open(FB_DEVICE, "r+b") as f:
-        map_size = SCREEN_RES[0] * SCREEN_RES[1] * 2
-        with mmap.mmap(f.fileno(), map_size) as fb_map:
-            while True:
-                loop_start = time.time()
-                frame = picam2.capture_array()
-                if frame is not None:
-                    # Show filtered preview with grid
-                    ui_frame = apply_ui(frame)
-                    display_to_map(ui_frame, fb_map)
-                
-                if select.select([sys.stdin], [], [], 0)[0]:
-                    sys.stdin.readline()
-                    take_photo(fb_map)
-                
-                time.sleep(max(0, (1.0 / FPS_CAP) - (time.time() - loop_start)))
-except KeyboardInterrupt:
-    picam2.stop()
+if __name__ == "__main__":
+    start_preview()
+    try:
+        with open(FB_DEVICE, "r+b") as f:
+            map_size = SCREEN_RES[0] * SCREEN_RES[1] * 2
+            with mmap.mmap(f.fileno(), map_size) as fb_map:
+                while True:
+                    loop_start = time.time()
+                    frame = picam2.capture_array()
+                    if frame is not None:
+                        # Show filtered preview with grid
+                        ui_frame = apply_ui(frame)
+                        display_to_map(ui_frame, fb_map)
+                    
+                    if select.select([sys.stdin], [], [], 0)[0]:
+                        sys.stdin.readline()
+                        take_photo(fb_map)
+                    
+                    time.sleep(max(0, (1.0 / FPS_CAP) - (time.time() - loop_start)))
+    except KeyboardInterrupt:
+        picam2.stop()

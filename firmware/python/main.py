@@ -9,14 +9,121 @@ from PIL import Image, ImageDraw
 from UI import ui_top
 from IO import keyboard_gpio_stubs as io_stubs
 
+# Filters
+from filters import italian_summer, bokeh, kodak, cyberpunk, champagne
+
 # Config
 FB_DEVICE = "/dev/fb1" 
 SCREEN_RES = (480, 320)
 FPS_CAP = 3  # Keeps SPI bus stable
 
 picam2 = Picamera2()
- 
 
+class CameraMode:
+    def __init__(self, name):
+        self.name = name
+
+    def process_frame(self, frame):
+        return frame
+
+    def capture(self, fb_map, config):
+        photo_dir = config.get("photo_dir", ".")
+        if not os.path.exists(photo_dir):
+            os.makedirs(photo_dir, exist_ok=True)
+            
+        print(f"\n[SHUTTER] Capturing in {self.name} mode...")
+        picam2.stop()
+        config_still = picam2.create_still_configuration()
+        picam2.configure(config_still)
+        picam2.start()
+        
+        time.sleep(1)
+        filename = os.path.join(photo_dir, f"{self.name.lower()}_{int(time.time())}.jpg")
+        picam2.capture_file("temp.jpg")
+        
+        img = Image.open("temp.jpg").convert("RGB")
+        processed_img = self.apply_filter(img)
+        processed_img.save(filename, quality=95)
+        
+        # Review
+        review_img = processed_img.resize(SCREEN_RES)
+        display_to_map(np.array(review_img), fb_map)
+        time.sleep(2.0)
+        
+        picam2.stop()
+        start_preview()
+
+    def apply_filter(self, pil_img):
+        return pil_img
+
+class StandardMode(CameraMode):
+    def __init__(self):
+        super().__init__("Standard")
+
+    def apply_filter(self, pil_img):
+        # 3:2 Cropping logic from normal.py
+        w, h = pil_img.size
+        target_ratio = 1.5
+        if w / h > target_ratio:
+            new_width = h * target_ratio
+            left = (w - new_width) / 2
+            right = (w + new_width) / 2
+            return pil_img.crop((left, 0, right, h))
+        else:
+            new_height = w / target_ratio
+            top = (h - new_height) / 2
+            bottom = (h + new_height) / 2
+            return pil_img.crop((0, top, w, bottom))
+
+    def process_frame(self, frame):
+        # Show grid for standard mode
+        img = Image.fromarray(frame)
+        draw = ImageDraw.Draw(img)
+        w, h = SCREEN_RES
+        color = (60, 60, 60)
+        draw.line([(w//3, 0), (w//3, h)], fill=color, width=1)
+        draw.line([(2*w//3, 0), (2*w//3, h)], fill=color, width=1)
+        draw.line([(0, h//3), (w, h//3)], fill=color, width=1)
+        draw.line([(0, 2*h//3), (w, 2*h//3)], fill=color, width=1)
+        return np.array(img)
+
+class WideAngleMode(CameraMode):
+    def __init__(self):
+        super().__init__("Wide-angle")
+    # Wide-angle: do nothing as requested.
+
+class FilterMode(CameraMode):
+    def __init__(self, name, filter_module):
+        super().__init__(name)
+        self.filter_module = filter_module
+        # Find the filter function (e.g., apply_bokeh_filter)
+        self.filter_func = None
+        for attr in dir(filter_module):
+            if attr.startswith("apply_") and attr.endswith("_filter"):
+                self.filter_func = getattr(filter_module, attr)
+                break
+
+    def apply_filter(self, pil_img):
+        # Apply 3:2 crop first, then filter
+        w, h = pil_img.size
+        target_ratio = 1.5
+        if w / h > target_ratio:
+            new_width = h * target_ratio
+            img = pil_img.crop(((w - new_width) / 2, 0, (w + new_width) / 2, h))
+        else:
+            new_height = w / target_ratio
+            img = pil_img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
+        
+        if self.filter_func:
+            return self.filter_func(img)
+        return img
+
+    def process_frame(self, frame):
+        # Preview with filter
+        img = Image.fromarray(frame)
+        if self.filter_func:
+            img = self.filter_func(img)
+        return np.array(img)
 
 def start_preview():
     config = picam2.create_video_configuration(main={"size": SCREEN_RES, "format": "RGB888"})
@@ -35,72 +142,77 @@ def display_to_map(data_array, fb_map):
     fb_map.seek(0)
     fb_map.write(rgb565.tobytes())
 
-def take_photo(fb_map, config=None):
-    photo_dir = config.get("photo_dir", ".") if config else "."
-    if not os.path.exists(photo_dir):
-        os.makedirs(photo_dir, exist_ok=True)
-        
-    print(f"\n[SHUTTER] Capturing to {photo_dir}...")
-    picam2.stop()
-    config_still = picam2.create_still_configuration()
-    picam2.configure(config_still)
-    picam2.start()
-    
-    time.sleep(1)
-    filename = os.path.join(photo_dir, f"capture_{int(time.time())}.jpg")
-    picam2.capture_file(filename)
-    
-    # Review
-    img = Image.open(filename).convert("RGB").resize(SCREEN_RES)
-    display_to_map(np.array(img), fb_map)
-    time.sleep(2.0)
-    
-    picam2.stop()
-    start_preview()
-
 def run(config=None):
-    # Main Loop
     if config is None:
         config = {}
         
-    # Initialize menu index
-    if "menu_index" not in config:
-        config["menu_index"] = 0
-        
+    config.setdefault("menu_index", 0)
+    config.setdefault("submenu_index", 0)
+    config.setdefault("show_menu", False)
+    config.setdefault("show_submenu", False)
+    
+    modes = [
+        StandardMode(),
+        WideAngleMode(),
+        FilterMode("Summer", italian_summer),
+        FilterMode("Bokeh", bokeh),
+        FilterMode("Kodak", kodak),
+        FilterMode("Cyberpunk", cyberpunk),
+        FilterMode("Champagne", champagne)
+    ]
+    config.setdefault("mode_idx", 0)
+    
     panel = ui_top.TopPanel(config, SCREEN_RES)
     kbd = io_stubs.KeyboardInterface()
     start_preview()
+    
     try:
         with open(FB_DEVICE, "r+b") as f:
             map_size = SCREEN_RES[0] * SCREEN_RES[1] * 2
             with mmap.mmap(f.fileno(), map_size) as fb_map:
                 while True:
                     loop_start = time.time()
+                    current_mode = modes[config["mode_idx"]]
+                    
                     frame = picam2.capture_array()
                     if frame is not None:
+                        frame = current_mode.process_frame(frame)
                         frame = panel.render(frame)
                         display_to_map(frame, fb_map)
                     
                     key = kbd.get_input()
                     if key == "ENTER":
-                        take_photo(fb_map, config)
+                        current_mode.capture(fb_map, config)
                     elif key == "SPACE":
                         config["show_menu"] = not config.get("show_menu", False)
-                        print(f"[SYSTEM] Settings menu: {'OPEN' if config['show_menu'] else 'CLOSED'}")
+                        config["show_submenu"] = False # Reset submenu on toggle
                     elif key == "UP":
                         if config.get("show_menu"):
-                            config["menu_index"] = (config["menu_index"] - 1) % 4
+                            if not config.get("show_submenu"):
+                                config["menu_index"] = (config["menu_index"] - 1) % 4
+                            else:
+                                config["submenu_index"] = (config["submenu_index"] - 1) % len(modes)
                     elif key == "DOWN":
                         if config.get("show_menu"):
-                            config["menu_index"] = (config["menu_index"] + 1) % 4
+                            if not config.get("show_submenu"):
+                                config["menu_index"] = (config["menu_index"] + 1) % 4
+                            else:
+                                config["submenu_index"] = (config["submenu_index"] + 1) % len(modes)
                     elif key == "SELECT":
                         if config.get("show_menu"):
-                            items = ["Mode", "LightMeter", "Flash", "Grid"]
-                            selected = items[config["menu_index"]]
-                            print(f"[SYSTEM] Selected: {selected}")
-                            if selected == "Flash":
-                                config["flash"] = not config.get("flash", False)
-                                print(f"[SYSTEM] Flash: {'ON' if config['flash'] else 'OFF'}")
+                            if not config.get("show_submenu"):
+                                items = ["Modes", "LightMeter", "Flash", "Grid"]
+                                selected = items[config["menu_index"]]
+                                if selected == "Modes":
+                                    config["show_submenu"] = True
+                                elif selected == "Flash":
+                                    config["flash"] = not config.get("flash", False)
+                            else:
+                                # In Modes Submenu
+                                config["mode_idx"] = config["submenu_index"]
+                                print(f"[SYSTEM] Mode changed to {modes[config['mode_idx']].name}")
+                                config["show_submenu"] = False
+                                config["show_menu"] = False # Close menu on select
                     
                     time.sleep(max(0, (1.0 / FPS_CAP) - (time.time() - loop_start)))
     except KeyboardInterrupt:
