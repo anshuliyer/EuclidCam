@@ -5,7 +5,9 @@ CONFIG = {
     "flash": True,      # Flash switchable (ON right now)
     "battery": None,    # Placeholder
     "wifi": None,       # Placeholder
-    "photo_dir": "../../Captured"
+    "photo_dir": "../../Captured",
+    "ui_rotation": 0,    # Rotation in degrees (0, 90, 180, 270)
+    "ui_padding": 20     # Padding from edges
 }
 
 def start_camera():

@@ -17,7 +17,7 @@ picam2 = Picamera2()
  
 def overlay_ui(frame, config):
     """
-    Overlays UI indicators on the camera frame.
+    Overlays UI indicators on the camera frame with rotation and padding support.
     """
     if config is None:
         return frame
@@ -25,30 +25,47 @@ def overlay_ui(frame, config):
     img = Image.fromarray(frame)
     draw = ImageDraw.Draw(img)
     
-    # Top Panel Indicators
-    x_offset = SCREEN_RES[0] - 30
-    y_offset = 20
+    rotation = config.get("ui_rotation", 0)
+    padding = config.get("ui_padding", 20)
     
+    # Calculate base positions based on rotation
+    # Assuming the user wants icons in the "top-right" of the current orientation
+    w, h = SCREEN_RES
+    
+    if rotation == 0:
+        x_base, y_base = w - padding, padding
+    elif rotation == 90:
+        x_base, y_base = w - padding, h - padding
+    elif rotation == 180:
+        x_base, y_base = padding, h - padding
+    else: # 270
+        x_base, y_base = padding, padding
+
     # Flash Icon (Thunderbolt)
     if config.get("flash"):
-        # Draw a simple bolt shape
+        x, y = x_base - 20, y_base
         points = [
-            (x_offset, y_offset), (x_offset - 10, y_offset + 10),
-            (x_offset - 5, y_offset + 10), (x_offset - 15, y_offset + 25),
-            (x_offset - 5, y_offset + 15), (x_offset - 10, y_offset + 15),
-            (x_offset, y_offset)
+            (x, y), (x - 8, y + 8),
+            (x - 4, y + 8), (x - 12, y + 20),
+            (x - 4, y + 12), (x - 8, y + 12),
+            (x, y)
         ]
         draw.polygon(points, fill=MAUVE)
     
     # Battery Placeholder
-    x_offset -= 30
-    draw.rectangle([x_offset, y_offset, x_offset + 20, y_offset + 10], outline=MAUVE, width=2)
-    draw.rectangle([x_offset + 20, y_offset + 3, x_offset + 22, y_offset + 7], fill=MAUVE)
+    x_batt = x_base - 60
+    y_batt = y_base
+    draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=MAUVE, width=2)
+    draw.rectangle([x_batt + 20, y_batt + 3, x_batt + 22, y_batt + 7], fill=MAUVE)
     
     # WiFi Placeholder
-    x_offset -= 30
+    x_wifi = x_base - 100
+    y_wifi = y_base
     for i in range(1, 4):
-        draw.arc([x_offset - i*5, y_offset - i*5, x_offset + 20 + i*5, y_offset + 20 + i*5], 225, 315, fill=MAUVE, width=2)
+        # Draw small arcs for wifi
+        r = i * 4
+        bbox = [x_wifi + 10 - r, y_wifi + 10 - r, x_wifi + 10 + r, y_wifi + 10 + r]
+        draw.arc(bbox, 225, 315, fill=MAUVE, width=2)
 
     return np.array(img)
 
