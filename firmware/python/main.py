@@ -1,6 +1,7 @@
 import time
 import sys
 import select
+import os
 import numpy as np
 import mmap
 from picamera2 import Picamera2
@@ -69,15 +70,19 @@ def display_to_map(data_array, fb_map):
     fb_map.seek(0)
     fb_map.write(rgb565.tobytes())
 
-def take_photo(fb_map):
-    print("\n[SHUTTER] Capturing...")
+def take_photo(fb_map, config=None):
+    photo_dir = config.get("photo_dir", ".") if config else "."
+    if not os.path.exists(photo_dir):
+        os.makedirs(photo_dir, exist_ok=True)
+        
+    print(f"\n[SHUTTER] Capturing to {photo_dir}...")
     picam2.stop()
-    config = picam2.create_still_configuration()
-    picam2.configure(config)
+    config_still = picam2.create_still_configuration()
+    picam2.configure(config_still)
     picam2.start()
     
     time.sleep(1)
-    filename = f"capture_{int(time.time())}.jpg"
+    filename = os.path.join(photo_dir, f"capture_{int(time.time())}.jpg")
     picam2.capture_file(filename)
     
     # Review
@@ -104,7 +109,7 @@ def run(config=None):
                     
                     if select.select([sys.stdin], [], [], 0)[0]:
                         sys.stdin.readline()
-                        take_photo(fb_map)
+                        take_photo(fb_map, config)
                     
                     time.sleep(max(0, (1.0 / FPS_CAP) - (time.time() - loop_start)))
     except KeyboardInterrupt:

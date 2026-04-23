@@ -4,7 +4,8 @@ import main
 CONFIG = {
     "flash": True,      # Flash switchable (ON right now)
     "battery": None,    # Placeholder
-    "wifi": None        # Placeholder
+    "wifi": None,       # Placeholder
+    "photo_dir": "../../Captured"
 }
 
 def start_camera():
