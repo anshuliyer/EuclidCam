@@ -1,6 +1,7 @@
 import os
 import socket
 import qrcode
+import shutil
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
 app = Flask(__name__)
@@ -29,6 +30,20 @@ def generate_qr_code(url):
     img.save(qr_path)
     return qr_path
 
+def get_storage_info():
+    try:
+        usage = shutil.disk_usage(PHOTO_DIR)
+        free_gb = usage.free / (1024**30)
+        total_gb = usage.total / (1024**30)
+        percent = (usage.used / usage.total) * 100
+        return {
+            "free": f"{free_gb:.1f} GB",
+            "total": f"{total_gb:.1f} GB",
+            "percent": round(percent, 1)
+        }
+    except Exception:
+        return {"free": "Unknown", "total": "Unknown", "percent": 0}
+
 @app.route('/')
 def index():
     if not os.path.exists(PHOTO_DIR):
@@ -41,7 +56,9 @@ def index():
     server_url = f"http://{server_ip}:5000"
     generate_qr_code(server_url)
     
-    return render_template('index.html', images=files, server_url=server_url)
+    storage = get_storage_info()
+    
+    return render_template('index.html', images=files, server_url=server_url, storage=storage)
 
 # Generate QR on startup
 server_ip = get_ip_address()
