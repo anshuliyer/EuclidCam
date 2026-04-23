@@ -24,15 +24,10 @@ class KeyboardInterface:
         Returns "SPACE", "ENTER", or None.
         """
         if select.select([sys.stdin], [], [], 0)[0]:
-            line = sys.stdin.readline().strip()
-            # In a terminal, space often comes as an empty line if just entered
-            # or we can check for specific characters. For now, we'll map
-            # any input to ENTER and maybe check for ' ' for SPACE.
-            if line == "":
-                return "ENTER"
-            elif line == " ":
+            line = sys.stdin.readline().rstrip("\r\n")
+            # If line is exactly a space, or contains 's', it's a SPACE command
+            if " " in line or "s" in line.lower():
                 return "SPACE"
-            elif line.lower() == "s":
-                return "SPACE"
+            # Otherwise, any other input (like just hitting Enter) is ENTER
             return "ENTER"
         return None
