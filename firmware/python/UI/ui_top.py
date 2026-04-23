@@ -127,6 +127,10 @@ class TopPanel:
             items = ["OFF", "3x3", "Euclid"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT GRID"
+        elif current_submenu == "Connect":
+            items = ["Show QR", "Stop Conn", "Back"]
+            selected_idx = self.config.get("submenu_index", 0)
+            title = "CONNECT"
         else:
             items = []
             selected_idx = 0
@@ -201,7 +205,7 @@ class TopPanel:
 
         # Instructions
         draw.text((x + 20, y + overlay_h - 40), "Scan to browse images", fill=self.MAUVE)
-        draw.text((x + 20, y + overlay_h - 20), "Press Connect to toggle", fill=self.MAUVE)
+        draw.text((x + 20, y + overlay_h - 20), "[X] BACK to preview", fill=self.MAUVE)
 
     def render(self, frame):
         """
@@ -216,8 +220,9 @@ class TopPanel:
         if show_gallery:
             self._draw_bin_icon(draw)
             self._draw_gallery_view(draw, None)
-        elif is_connected:
-            # Add a reference to the image in the draw object so _draw_connection_overlay can use paste
+        elif self.config.get("show_connection_view", False):
+            # Show overlay if explicitly enabled, regardless of is_connected (server might be off)
+            # though usually it's used when is_connected is True.
             draw._image = img 
             self._draw_connection_overlay(draw)
         else:

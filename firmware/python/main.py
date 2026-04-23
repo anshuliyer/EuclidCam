@@ -227,13 +227,15 @@ def run(config=None):
                             if not config.get("show_submenu"):
                                 config["menu_index"] = (config["menu_index"] - 1) % 4
                             else:
-                                config["submenu_index"] = (config["submenu_index"] - 1) % len(modes)
+                                submenu_len = len(modes) if config["current_submenu"] == "Modes" else 3
+                                config["submenu_index"] = (config["submenu_index"] - 1) % submenu_len
                     elif key == "DOWN":
                         if config.get("show_menu"):
                             if not config.get("show_submenu"):
                                 config["menu_index"] = (config["menu_index"] + 1) % 4
                             else:
-                                config["submenu_index"] = (config["submenu_index"] + 1) % len(modes)
+                                submenu_len = len(modes) if config["current_submenu"] == "Modes" else 3
+                                config["submenu_index"] = (config["submenu_index"] + 1) % submenu_len
                         elif config.get("show_gallery"):
                             # Delete logic for gallery (X key)
                             photo_dir = config.get("photo_dir", "../../Captured")
@@ -252,11 +254,14 @@ def run(config=None):
                                         config["gallery_idx"] = idx % len(files)
                                 except Exception as e:
                                     print(f"[ERROR] Deleting file: {e}")
-                    elif key == "GALLERY":
-                        config["show_gallery"] = not config.get("show_gallery", False)
-                        config["show_menu"] = False
-                        if config["show_gallery"]:
-                            config["gallery_idx"] = 0 # Reset to latest or first
+                    elif key == "BACK" or key == "q":
+                        if config.get("show_connection_view"):
+                            config["show_connection_view"] = False
+                        elif config.get("show_menu"):
+                            config["show_menu"] = False
+                            config["show_submenu"] = False
+                        elif config.get("show_gallery"):
+                            config["show_gallery"] = False
                     elif key == "LEFT":
                         if config.get("show_gallery"):
                             config["gallery_idx"] -= 1
@@ -282,7 +287,6 @@ def run(config=None):
                                     except ValueError:
                                         config["submenu_index"] = 0
                                 elif selected == "Connect":
-                                    # Toggle Flask Server
                                     if not config.get("is_connected"):
                                         print("[SYSTEM] Starting Flask server...")
                                         try:
@@ -291,15 +295,15 @@ def run(config=None):
                                             proc = subprocess.Popen(cmd, cwd=os.path.dirname(__file__))
                                             config["server_proc"] = proc
                                             config["is_connected"] = True
+                                            config["show_connection_view"] = True
                                         except Exception as e:
                                             print(f"[ERROR] Failed to start server: {e}")
                                     else:
-                                        print("[SYSTEM] Stopping Flask server...")
-                                        proc = config.get("server_proc")
-                                        if proc:
-                                            proc.terminate()
-                                            config["server_proc"] = None
-                                        config["is_connected"] = False
+                                        # Enter submenu to either show QR or Stop
+                                        config["show_submenu"] = True
+                                        config["current_submenu"] = "Connect"
+                                        config["submenu_index"] = 0
+
                                 elif selected == "Flash":
                                     config["flash"] = not config.get("flash", False)
                             else:
@@ -311,6 +315,18 @@ def run(config=None):
                                     grid_options = ["OFF", "3x3", "Euclid"]
                                     config["grid_mode"] = grid_options[config["submenu_index"]]
                                     print(f"[SYSTEM] Grid changed to {config['grid_mode']}")
+                                elif current_submenu == "Connect":
+                                    if config["submenu_index"] == 0:  # Show QR
+                                        config["show_connection_view"] = True
+                                    elif config["submenu_index"] == 1:  # Stop Connection
+                                        print("[SYSTEM] Stopping Flask server...")
+                                        proc = config.get("server_proc")
+                                        if proc:
+                                            proc.terminate()
+                                            config["server_proc"] = None
+                                        config["is_connected"] = False
+                                        config["show_connection_view"] = False
+                                    # Option 2 is "Back", just closes submenu
                                 
                                 config["show_submenu"] = False
                                 config["show_menu"] = False # Close menu on select

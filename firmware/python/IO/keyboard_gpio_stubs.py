@@ -46,6 +46,9 @@ class KeyboardInterface:
                 return "LEFT"
             elif line == "d":
                 return "RIGHT"
+            # Back / Dismiss mappings
+            elif line in ["b", "q"]:
+                return "BACK"
             # Any other key acts as ENTER (Snap photo)
             else:
                 return "ENTER"
