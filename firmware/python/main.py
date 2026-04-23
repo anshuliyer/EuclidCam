@@ -16,7 +16,7 @@ from filters import italian_summer, bokeh, kodak, cyberpunk, champagne
 from settings import grid as grid_settings
 
 # Connectivity Utils
-from connectivity import qr_scanner, wifi_utils
+from connectivity import wifi_utils
 import threading
 
 # Config
