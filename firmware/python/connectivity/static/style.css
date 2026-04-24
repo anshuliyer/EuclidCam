@@ -20,11 +20,11 @@ body {
 
 header {
     width: 100%;
-        max-width: 1200px;
+    margin-bottom: 60px;
         display: flex;
-        justify-content: space-between;
+    flex-direction: column;
         align-items: center;
-        margin-bottom: 40px;
+    text-align: center;
     }
     
     .header-left {
@@ -261,7 +261,51 @@ header {
 }
 footer {
     width: 100%;
+    padding: 60px 20px;
+        margin-top: 80px;
     display: flex;
-    justify-content: center;
-    margin-top: 40px;
+    flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        border-top: 1px solid #222;
+    }
+    
+    .storage-container {
+        width: 100%;
+        max-width: 400px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #333;
+    }
+    
+    .storage-info {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .storage-text {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        margin-bottom: 12px;
+    }
+    
+    .storage-bar {
+        width: 100%;
+        height: 8px;
+        background: #1a1a1a;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .storage-progress {
+        height: 100%;
+        background: linear-gradient(90, var(--mauve), #C080FF);
+        border-radius: 4px;
+    }
+    
+    footer p {
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        opacity: 0.5;
 }

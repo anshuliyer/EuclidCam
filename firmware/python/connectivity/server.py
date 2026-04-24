@@ -33,8 +33,8 @@ def generate_qr_code(url):
 def get_storage_info():
     try:
         usage = shutil.disk_usage(PHOTO_DIR)
-        free_gb = usage.free / (1024**30)
-        total_gb = usage.total / (1024**30)
+        free_gb = usage.free / (1024**3)
+        total_gb = usage.total / (1024**3)
         percent = (usage.used / usage.total) * 100
         return {
             "free": f"{free_gb:.1f} GB",
