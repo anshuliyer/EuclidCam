@@ -1,6 +1,5 @@
 import time
 import sys
-import select
 import os
 import numpy as np
 import mmap
@@ -8,7 +7,6 @@ from picamera2 import Picamera2
 from PIL import Image, ImageDraw
 import subprocess
 from UI import ui_top, touch_interface
-from IO import keyboard_gpio_stubs as io_stubs
 
 # Filters
 from filters import italian_summer, bokeh, kodak, cyberpunk, champagne
@@ -214,7 +212,6 @@ def run(config=None):
     comp_grid = grid_settings.CompositionGrid()
     
     panel = ui_top.TopPanel(config, SCREEN_RES)
-    kbd = io_stubs.KeyboardInterface()
     touch = touch_interface.TouchInterface(os.path.join(os.path.dirname(__file__), "UI/touch_settings.json"), SCREEN_RES)
     start_preview()
     
@@ -265,8 +262,8 @@ def run(config=None):
                             frame = panel.render(frame)
                             display_to_map(frame, fb_map)
                     
-                    # Process Input (Keyboard + Touch)
-                    key = kbd.get_input()
+                    # Process Input (Touch only)
+                    key = None
                     touch_cmd = touch.get_touch_command(config)
                     if touch_cmd:
                         if touch_cmd == "TOUCH_SELECT":

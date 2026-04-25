@@ -68,11 +68,11 @@ class TouchInterface:
         w, h = self.screen_res
 
         # 1. Menu Toggle (Bottom Right)
-        if x > w - 60 and y > h - 60:
+        if x > w - 80 and y > h - 80:
             return "SPACE"
         
         # 2. Gallery Toggle (Bottom Left)
-        if x < 60 and y > h - 60:
+        if x < 80 and y > h - 80:
             return "GALLERY"
 
         # 3. Mode Selection / Menu Interaction
@@ -85,14 +85,14 @@ class TouchInterface:
             
             # Click items
             rel_y = y - (menu_y + 28)
-            if 0 <= rel_y <= 175: # Approx 7 items * 25px
+            if 0 <= rel_y <= 180: 
                 idx = int(rel_y // 25)
                 ui_state["touch_menu_idx"] = idx
                 return "TOUCH_SELECT"
 
         # 4. Gallery Mode
         if ui_state.get("show_gallery"):
-            if x < 60 and y < 60: # Delete icon (Top Left)
+            if x < 80 and y < 80: # Delete icon (Top Left)
                 return "DOWN" 
             if y < 60: # Top bar back
                 return "BACK"
@@ -101,8 +101,12 @@ class TouchInterface:
             else:
                 return "RIGHT"
 
-        # 5. Capture (Center of screen when no menu/gallery)
+        # 5. Capture (Restrict to central area when no menu/gallery)
         if not ui_state.get("show_menu") and not ui_state.get("show_gallery"):
-            return "ENTER"
+            # Central 70% of screen
+            if 60 < x < w - 60 and 60 < y < h - 60:
+                return "ENTER"
+
+        return None
 
         return None
