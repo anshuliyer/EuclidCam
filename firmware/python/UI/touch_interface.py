@@ -98,9 +98,9 @@ class TouchInterface:
                 return "BACK", x, y
             
             # Click items
-            rel_y = y - (menu_y + 35) # Items start at y + 35
-            if 0 <= rel_y <= 220: 
-                idx = int(rel_y // 32) # Spacing is 32
+            rel_y = y - (menu_y + 40) # Items start at y + 40
+            if 0 <= rel_y <= 260: 
+                idx = int(rel_y // 38) # Spacing is 38
                 
                 # Determine max items based on menu state
                 max_items = 4 # Main menu

@@ -136,29 +136,30 @@ class TopPanel:
             selected_idx = 0
             title = "UNKNOWN"
         
-        # Title
-        draw.text((x + 15, y + 8), title, fill=(0, 0, 0))
+        # Title - Center aligned
+        title_w = draw.textlength(title) if hasattr(draw, "textlength") else len(title) * 6
+        draw.text((x + (menu_w - title_w) // 2, y + 8), title, fill=(0, 0, 0))
         draw.line([(x, y + 25), (x + menu_w, y + 25)], fill=(255, 255, 255), width=1)
 
-        item_spacing = 32
+        item_spacing = 38
         for i, item in enumerate(items):
-            text_x = x + 40
-            text_y = y + 35 + i * item_spacing
+            # Calculate item dimensions for centering
+            item_text = item
+            if item == "Connect":
+                status = "(ON)" if self.config.get("is_connected") else "(OFF)"
+                item_text = f"{item} {status}"
             
-            # Highlight selected item
+            # Use a rough estimate if textlength isn't available
+            t_w = draw.textlength(item_text) if hasattr(draw, "textlength") else len(item_text) * 6
+            text_x = x + (menu_w - t_w) // 2
+            text_y = y + 40 + i * item_spacing
+            
+            # Highlight selected item with a subtle box
             if i == selected_idx:
-                draw.text((x + 15, text_y), ">", fill=(0, 0, 0))
-                draw.text((text_x, text_y), item, fill=(0, 0, 0))
-                
-                # Special indicator for Connect state
-                if item == "Connect":
-                    status = "(ON)" if self.config.get("is_connected") else "(OFF)"
-                    draw.text((text_x + 100, text_y), status, fill=(0, 0, 0))
+                draw.rectangle([x + 10, text_y - 5, x + menu_w - 10, text_y + 20], fill=(255, 255, 255))
+                draw.text((text_x, text_y), item_text, fill=(0, 0, 0))
             else:
-                draw.text((text_x, text_y), item, fill=(60, 60, 60))
-                if item == "Connect":
-                    status = "(ON)" if self.config.get("is_connected") else "(OFF)"
-                    draw.text((text_x + 100, text_y), status, fill=(60, 60, 60))
+                draw.text((text_x, text_y), item_text, fill=(40, 40, 40))
 
     def _draw_bin_icon(self, draw):
         """
