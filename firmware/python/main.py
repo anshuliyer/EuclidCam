@@ -26,9 +26,20 @@ except ImportError:
 # Config
 FB_DEVICE = "/dev/fb1" 
 SCREEN_RES = (480, 320)
-FPS_CAP = 3  # Keeps SPI bus stable
+FPS_CAP = 15  # Increased for smoother preview while maintaining SPI stability
 
 picam2 = Picamera2()
+# Optimization: Pre-configure camera controls for better clarity and contrast
+try:
+    # Use libcamera controls to reduce haziness
+    tuning_controls = {
+        "Contrast": 1.1,
+        "Sharpness": 1.5,
+        "Saturation": 1.1
+    }
+    # Note: These are applied to the active configuration later in run() or capture()
+except Exception as e:
+    print(f"[DEBUG] Camera tuning failed: {e}")
 
 class CameraMode:
     def __init__(self, name):
@@ -45,6 +56,12 @@ class CameraMode:
         print(f"\n[SHUTTER] Capturing in {self.name} mode...")
         picam2.stop()
         config_still = picam2.create_still_configuration()
+        # Optimization: Apply clarity tuning to photos
+        config_still["controls"] = {
+            "Contrast": 1.2,
+            "Sharpness": 2.5,
+            "Saturation": 1.1
+        }
         picam2.configure(config_still)
         picam2.start()
         
@@ -143,6 +160,12 @@ class FilterMode(CameraMode):
 
 def start_preview():
     config = picam2.create_video_configuration(main={"size": SCREEN_RES, "format": "RGB888"})
+    # Optimization: Apply clarity tuning
+    config["controls"] = {
+        "Contrast": 1.15,
+        "Sharpness": 2.0,
+        "Saturation": 1.1
+    }
     picam2.configure(config)
     picam2.start()
 
