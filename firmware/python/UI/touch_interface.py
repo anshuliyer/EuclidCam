@@ -56,13 +56,23 @@ class TouchInterface:
         return None
 
     def _map_to_command(self, raw_x, raw_y, ui_state):
-        # Map raw to screen
         c = self.config
-        x = (raw_x - c["x_min"]) / (c["x_max"] - c["x_min"]) * c["screen_width"]
-        y = (raw_y - c["y_min"]) / (c["y_max"] - c["y_min"]) * c["screen_height"]
         
-        if c.get("invert_x"): x = c["screen_width"] - x
-        if c.get("invert_y"): y = c["screen_height"] - y
+        # 1. Swap axes if necessary
+        if c.get("swap_xy"):
+            raw_x, raw_y = raw_y, raw_x
+            
+        # 2. Map raw to screen coordinates (0 to 1 range)
+        x_norm = (raw_x - c["x_min"]) / (c["x_max"] - c["x_min"])
+        y_norm = (raw_y - c["y_min"]) / (c["y_max"] - c["y_min"])
+        
+        # 3. Invert if necessary
+        if c.get("invert_x"): x_norm = 1.0 - x_norm
+        if c.get("invert_y"): y_norm = 1.0 - y_norm
+        
+        # 4. Scale to screen resolution
+        x = x_norm * self.screen_res[0]
+        y = y_norm * self.screen_res[1]
         
         # Hitboxes
         w, h = self.screen_res
