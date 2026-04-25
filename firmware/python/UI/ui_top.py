@@ -102,28 +102,18 @@ class TopPanel:
         """
         Draws the settings menu list or a submenu with a Mauve background.
         """
-        w, h = self.screen_res
-        menu_w, menu_h = 440, 300
-        x, y = (w - menu_w) // 2, (h - menu_h) // 2
-        
-        # Mauve background box
-        draw.rectangle([x, y, x + menu_w, y + menu_h], fill=self.MAUVE, outline=(255, 255, 255), width=2)
-        
         show_submenu = self.config.get("show_submenu", False)
         current_submenu = self.config.get("current_submenu", "Modes")
         
         if not show_submenu:
-            # Main Menu - Replaced LightMeter with Connect
             items = ["Modes", "Connect", "Flash", "Grid"]
             selected_idx = self.config.get("menu_index", 0)
             title = "SETTINGS"
         elif current_submenu == "Modes":
-            # Modes Submenu
             items = ["Standard", "Wide-angle", "Summer", "Bokeh", "Kodak", "Cyberpunk", "Champagne"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT MODE"
         elif current_submenu == "Grid":
-            # Grid Submenu
             items = ["OFF", "3x3", "Euclid"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT GRID"
@@ -135,39 +125,67 @@ class TopPanel:
             items = []
             selected_idx = 0
             title = "UNKNOWN"
+
+        # Draw a nearly full-screen semi-transparent overlay
+        overlay_margin = 10
+        draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], fill=(0, 0, 0, 200), outline=self.MAUVE, width=3)
         
         # Load a larger font for better visibility
         from PIL import ImageFont
         try:
-            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
-            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
+            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
         except:
             font_title = None
             font_item = None
 
-        # Title - Center aligned
-        title_w = draw.textlength(title, font=font_title) if hasattr(draw, "textlength") else len(title) * 12
-        draw.text((x + (menu_w - title_w) // 2, y + 5), title, fill=(0, 0, 0), font=font_title)
-        draw.line([(x, y + 32), (x + menu_w, y + 32)], fill=(255, 255, 255), width=2)
+        # Title at the top
+        title_w = draw.textlength(title, font=font_title) if hasattr(draw, "textlength") else len(title) * 14
+        draw.text(((w - title_w) // 2, 25), title, fill=self.MAUVE, font=font_title)
+        
+        # Calculate Grid Layout
+        num_items = len(items)
+        if num_items <= 4:
+            # Single row of large buttons
+            cols = num_items
+            rows = 1
+        else:
+            # Two rows (for Modes)
+            cols = 4
+            rows = 2
 
-        item_spacing = 38
+        btn_w = (w - 40) // cols
+        btn_h = (h - 100) // rows
+        
         for i, item in enumerate(items):
-            # Calculate item dimensions for centering
+            row = i // cols
+            col = i % cols
+            
+            bx = 20 + col * btn_w
+            by = 70 + row * btn_h
+            
+            # Button Box
+            is_selected = (i == selected_idx)
+            bg_color = self.MAUVE if is_selected else (40, 40, 40)
+            text_color = (0, 0, 0) if is_selected else (255, 255, 255)
+            
+            draw.rectangle([bx + 5, by + 5, bx + btn_w - 5, by + btn_h - 5], fill=bg_color, outline=(255, 255, 255), width=2)
+            
+            # Item Text
             item_text = item
             if item == "Connect":
-                status = "(ON)" if self.config.get("is_connected") else "(OFF)"
-                item_text = f"{item} {status}"
+                status = "ON" if self.config.get("is_connected") else "OFF"
+                item_text = f"{item}\n({status})"
             
-            t_w = draw.textlength(item_text, font=font_item) if hasattr(draw, "textlength") else len(item_text) * 10
-            text_x = x + (menu_w - t_w) // 2
-            text_y = y + 42 + i * item_spacing
+            # Simple "Icon" markers
+            if item == "Modes": draw.ellipse([bx+btn_w//2-10, by+15, bx+btn_w//2+10, by+35], outline=text_color, width=2)
+            elif item == "Flash": draw.polygon([(bx+btn_w//2, by+15), (bx+btn_w//2-10, by+35), (bx+btn_w//2+10, by+35)], outline=text_color, width=2)
             
-            # Highlight selected item with a large box
-            if i == selected_idx:
-                draw.rectangle([x + 5, text_y - 2, x + menu_w - 5, text_y + 28], fill=(255, 255, 255))
-                draw.text((text_x, text_y), item_text, fill=(0, 0, 0), font=font_item)
-            else:
-                draw.text((text_x, text_y), item_text, fill=(40, 40, 40), font=font_item)
+            # Draw text (handle multi-line for Connect)
+            lines = item_text.split('\n')
+            for l_idx, line in enumerate(lines):
+                tw = draw.textlength(line, font=font_item) if hasattr(draw, "textlength") else len(line) * 10
+                draw.text((bx + (btn_w - tw) // 2, by + (btn_h // 2) - 10 + l_idx*20), line, fill=text_color, font=font_item)
 
     def _draw_bin_icon(self, draw):
         """

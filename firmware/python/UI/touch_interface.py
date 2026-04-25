@@ -88,28 +88,32 @@ class TouchInterface:
         if x < 85 and y > h - 85:
             return "GALLERY", x, y
 
-        # 3. Mode Selection / Menu Interaction
+        # 3. Grid Menu Interaction
         if ui_state.get("show_menu"):
-            menu_w, menu_h = 440, 300
-            menu_x, menu_y = (w - menu_w) // 2, (h - menu_h) // 2
-            
-            # Close menu if clicking outside or near top
-            if x < menu_x or x > menu_x + menu_w or y < menu_y or y > menu_y + menu_h or y < 40:
+            # Close menu if clicking near edges
+            if x < 15 or x > w - 15 or y < 15 or y > h - 15 or y < 65:
                 return "BACK", x, y
             
-            # Click items
-            rel_y = y - (menu_y + 42) # Items start at y + 42
-            if 0 <= rel_y <= 270: 
-                idx = int(rel_y // 38) # Spacing is 38
+            # Determine grid dims
+            sub = ui_state.get("current_submenu")
+            is_sub = ui_state.get("show_submenu")
+            
+            if is_sub and sub == "Modes":
+                max_items, cols, rows = 7, 4, 2
+            elif is_sub and (sub == "Grid" or sub == "Connect"):
+                max_items, cols, rows = 3, 3, 1
+            else: # Main Menu
+                max_items, cols, rows = 4, 4, 1
                 
-                # Determine max items based on menu state
-                max_items = 4 # Main menu
-                if ui_state.get("show_submenu"):
-                    sub = ui_state.get("current_submenu")
-                    if sub == "Modes": max_items = 7
-                    elif sub == "Grid": max_items = 3
-                    elif sub == "Connect": max_items = 3
-                
+            btn_w = (w - 40) // cols
+            btn_h = (h - 100) // rows
+            
+            # Calculate clicked col/row
+            col = int((x - 20) // btn_w)
+            row = int((y - 70) // btn_h)
+            
+            if 0 <= col < cols and 0 <= row < rows:
+                idx = row * cols + col
                 if idx < max_items:
                     ui_state["touch_menu_idx"] = idx
                     return "TOUCH_SELECT", x, y
