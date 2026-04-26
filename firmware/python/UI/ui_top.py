@@ -157,14 +157,7 @@ class TopPanel:
 
         # Mauve Accent Border
         overlay_draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], outline=self.MAUVE, width=2)
-        
-        # Blend the overlay onto the main image
-        # draw._image is the main RGB image
-        main_img = draw._image.convert("RGBA")
-        main_img = Image.alpha_composite(main_img, overlay)
-        draw._image.paste(main_img)
-        
-        # Continue drawing text and buttons on 'draw' (which affects draw._image)
+        # Delay alpha composite until all UI elements are drawn on overlay_draw
         # Load Fonts
 
         from PIL import ImageFont
@@ -177,15 +170,15 @@ class TopPanel:
 
         # 2. Header Area
         header_h = 65
-        title_w = draw.textlength(title, font=font_title) if hasattr(draw, "textlength") else len(title) * 12
-        draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
+        title_w = overlay_draw.textlength(title, font=font_title) if hasattr(overlay_draw, "textlength") else len(title) * 12
+        overlay_draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
         
         # Stylized Back Button Indicator
-        draw.text((25, 22), "← BACK", fill=self.MAUVE, font=font_small)
+        overlay_draw.text((25, 22), "← BACK", fill=self.MAUVE, font=font_small)
         
         # Separator Line
-        draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
-        draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.MAUVE, width=2)
+        overlay_draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
+        overlay_draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.MAUVE, width=2)
 
         # 3. Grid Calculation
         num_items = len(items)
@@ -211,14 +204,14 @@ class TopPanel:
             
             is_selected = (i == selected_idx)
             
-            # Button Card Logic
-            card_fill = self.MAUVE if is_selected else (30, 30, 40, 255)
+            # Button Card Logic - TRANSLUCENT GLASS EFFECT
+            card_fill = tuple(list(self.MAUVE) + [220]) if is_selected else (30, 30, 40, 150)
             card_outline = (255, 255, 255) if is_selected else (70, 70, 90)
             text_color = (0, 0, 0) if is_selected else (220, 220, 230)
             accent_color = (255, 255, 255, 180) if is_selected else self.MAUVE
 
             # Draw Card (rounded_rectangle fallback)
-            draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
+            draw_func = getattr(overlay_draw, "rounded_rectangle", overlay_draw.rectangle)
             draw_func([bx, by, bx + btn_w, by + btn_h], radius=10, fill=card_fill, outline=card_outline, width=2 if is_selected else 1)
 
             # 4. Professional Iconography
@@ -226,26 +219,31 @@ class TopPanel:
             cx = bx + btn_w // 2
             
             if item == "Modes":
-                draw.ellipse([cx-12, icon_y-12, cx+12, icon_y+12], outline=text_color, width=2)
-                draw.ellipse([cx-4, icon_y-4, cx+4, icon_y+4], fill=text_color)
+                overlay_draw.ellipse([cx-12, icon_y-12, cx+12, icon_y+12], outline=text_color, width=2)
+                overlay_draw.ellipse([cx-4, icon_y-4, cx+4, icon_y+4], fill=text_color)
             elif item == "Flash":
-                draw.polygon([(cx, icon_y-12), (cx-6, icon_y), (cx+4, icon_y), (cx-2, icon_y+12)], fill=text_color)
+                overlay_draw.polygon([(cx, icon_y-12), (cx-6, icon_y), (cx+4, icon_y), (cx-2, icon_y+12)], fill=text_color)
             elif item == "Connect":
                 for r in [6, 12, 18]:
-                    draw.arc([cx-r, icon_y-r, cx+r, icon_y+r], start=210, end=330, fill=text_color, width=2)
+                    overlay_draw.arc([cx-r, icon_y-r, cx+r, icon_y+r], start=210, end=330, fill=text_color, width=2)
             elif item == "Grid":
                 for off in [-6, 6]:
-                    draw.line([cx+off, icon_y-10, cx+off, icon_y+10], fill=text_color, width=1)
-                    draw.line([cx-10, icon_y+off, cx+10, icon_y+off], fill=text_color, width=1)
+                    overlay_draw.line([cx+off, icon_y-10, cx+off, icon_y+10], fill=text_color, width=1)
+                    overlay_draw.line([cx-10, icon_y+off, cx+10, icon_y+off], fill=text_color, width=1)
 
             # Content Text
             display_name = item
             if item == "Connect":
                 status = "ON" if self.config.get("is_connected") else "OFF"
-                draw.text((bx + btn_w - 30, by + 8), status, fill=accent_color, font=font_small)
+                overlay_draw.text((bx + btn_w - 30, by + 8), status, fill=accent_color, font=font_small)
             
-            tw = draw.textlength(display_name, font=font_item) if hasattr(draw, "textlength") else len(display_name) * 9
-            draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
+            tw = overlay_draw.textlength(display_name, font=font_item) if hasattr(overlay_draw, "textlength") else len(display_name) * 9
+            overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
+
+        # Finally, blend the fully populated RGBA overlay onto the main RGB image
+        main_img = draw._image.convert("RGBA")
+        main_img = Image.alpha_composite(main_img, overlay)
+        draw._image.paste(main_img)
 
     def _draw_bin_icon(self, draw):
         """

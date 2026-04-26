@@ -75,7 +75,8 @@ class TouchInterface:
         if ui_state.get("show_connection_view"):
             overlay_w, overlay_h = 300, 240
             ox, oy = (w - overlay_w) // 2, (h - overlay_h) // 2
-            if (x > ox + overlay_w - 50 and y < oy + 50) or (x < ox or x > ox + overlay_w or y < oy or y > oy + overlay_h):
+            # Expand the close button (cross) hitbox for easier tapping
+            if (x > ox + overlay_w - 80 and y < oy + 80) or (x < ox or x > ox + overlay_w or y < oy or y > oy + overlay_h):
                 return "BACK", x, y
 
         if ui_state.get("show_gallery"):
