@@ -37,6 +37,46 @@ class CameraMode:
     def process_frame(self, frame):
         return frame
 
+    def _draw_capture_overlay(self, fb_map, text, progress=0):
+        """
+        Draws a premium branded capture overlay with a logo and optional progress bar.
+        """
+        w, h = SCREEN_RES
+        img = Image.new("RGB", SCREEN_RES, (0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        mauve = (224, 176, 255)
+        
+        # 1. EuclidCam Logo (Center-Top)
+        cx, cy = w // 2, h // 2 - 40
+        draw.ellipse([cx-35, cy-35, cx+35, cy+35], outline=mauve, width=3)
+        # Geometric Euclid Pattern
+        draw.line([cx-25, cy-25, cx+25, cy+25], fill=mauve, width=2)
+        draw.line([cx+25, cy-25, cx-25, cy+25], fill=mauve, width=2)
+        # Stylized 'E'
+        try:
+            from PIL import ImageFont
+            font_logo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 40)
+            draw.text((cx-15, cy-25), "E", fill=(255, 255, 255), font=font_logo)
+        except:
+            pass
+
+        # 2. Main Text
+        try:
+            font_text = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+            tw = draw.textlength(text, font=font_text) if hasattr(draw, "textlength") else len(text) * 12
+            draw.text(((w - tw) // 2, h // 2 + 30), text, fill=(255, 255, 255), font=font_text)
+        except:
+            draw.text((w//2 - 40, h//2 + 30), text, fill=(255, 255, 255))
+
+        # 3. Loading Scroll (Progress Bar)
+        if progress > 0:
+            bw, bh = 200, 8
+            bx, by = (w - bw) // 2, h // 2 + 70
+            draw.rectangle([bx, by, bx + bw, by + bh], outline=(60, 60, 80), width=1)
+            draw.rectangle([bx, by, bx + int(bw * progress), by + bh], fill=mauve)
+
+        display_to_map(np.array(img), fb_map)
+
     def capture(self, fb_map, config):
         photo_dir = config.get("photo_dir", ".")
         if not os.path.exists(photo_dir):
@@ -44,37 +84,42 @@ class CameraMode:
             
         print(f"\n[SHUTTER] Capturing in {self.name} mode...")
         
-        # 1. Visual Feedback: "STAY STILL"
-        w, h = SCREEN_RES
-        overlay = Image.new("RGB", SCREEN_RES, (0, 0, 0))
-        draw = ImageDraw.Draw(overlay)
-        draw.text((w//2 - 60, h//2 - 10), "HOLD STILL...", fill=(255, 255, 255))
-        display_to_map(np.array(overlay), fb_map)
+        # 1. Visual Feedback: Branded "STAY STILL"
+        self._draw_capture_overlay(fb_map, "HOLD STILL")
         
         picam2.stop()
         config_still = picam2.create_still_configuration()
-        # Optimization: Maximum speed shutter
         config_still["controls"] = {
             "Contrast": 1.05,
             "Sharpness": 2.0,
             "AeExposureMode": 1, 
-            "AnalogueGain": 4.0   # High gain for instant shutter
+            "AnalogueGain": 4.0 
         }
         picam2.configure(config_still)
         picam2.start()
         
-        time.sleep(0.4) # Faster settling
+        time.sleep(0.4)
         
         # 2. Shutter Flash
-        flash = np.full((h, w, 3), 255, dtype=np.uint8)
+        flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
         display_to_map(flash, fb_map)
+        
+        # 3. Processing Feedback: Loading Scroll
+        self._draw_capture_overlay(fb_map, "PROCESSING...", progress=0.2)
         
         filename = os.path.join(photo_dir, f"{self.name.lower()}_{int(time.time())}.jpg")
         picam2.capture_file("temp.jpg")
         
+        self._draw_capture_overlay(fb_map, "APPLYING VISION...", progress=0.5)
         img = Image.open("temp.jpg").convert("RGB")
         processed_img = self.apply_filter(img)
+        
+        self._draw_capture_overlay(fb_map, "SAVING...", progress=0.8)
         processed_img.save(filename, quality=95)
+        
+        # 4. Final Flash to signal end
+        self._draw_capture_overlay(fb_map, "DONE!", progress=1.0)
+        time.sleep(0.3)
         
         # Review
         review_img = processed_img.resize(SCREEN_RES, Image.LANCZOS)
@@ -172,12 +217,8 @@ class LowLightMode(CameraMode):
             
         print(f"\n[SHUTTER] Capturing in {self.name} mode...")
         
-        # 1. Visual Feedback
-        w, h = SCREEN_RES
-        overlay = Image.new("RGB", SCREEN_RES, (0, 0, 0))
-        draw = ImageDraw.Draw(overlay)
-        draw.text((w//2 - 60, h//2 - 10), "HOLD STILL...", fill=(255, 255, 255))
-        display_to_map(np.array(overlay), fb_map)
+        # 1. Branded Visual Feedback
+        self._draw_capture_overlay(fb_map, "HOLD STILL")
         
         picam2.stop()
         config_still = picam2.create_still_configuration()
@@ -188,7 +229,7 @@ class LowLightMode(CameraMode):
             "Sharpness": 3.0,
             "NoiseReductionMode": 2,
             "AeExposureMode": 1, 
-            "AnalogueGain": 8.0   # Extreme gain to force fast shutter
+            "AnalogueGain": 8.0 
         }
         
         picam2.configure(config_still)
@@ -197,15 +238,24 @@ class LowLightMode(CameraMode):
         time.sleep(0.5) 
         
         # 2. Shutter Flash
-        flash = np.full((h, w, 3), 255, dtype=np.uint8)
+        flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
         display_to_map(flash, fb_map)
         
+        # 3. Processing Feedback: Loading Scroll
+        self._draw_capture_overlay(fb_map, "STABILIZING SENSOR...", progress=0.2)
         filename = os.path.join(photo_dir, f"{self.name.lower().replace(' ', '_')}_{int(time.time())}.jpg")
         picam2.capture_file("temp.jpg")
         
+        self._draw_capture_overlay(fb_map, "ENHANCING LIGHT...", progress=0.5)
         img = Image.open("temp.jpg").convert("RGB")
         processed_img = self.apply_filter(img)
+        
+        self._draw_capture_overlay(fb_map, "SAVING RAW...", progress=0.8)
         processed_img.save(filename, quality=95)
+        
+        # 4. Final signal
+        self._draw_capture_overlay(fb_map, "DONE!", progress=1.0)
+        time.sleep(0.3)
         
         # Review
         review_img = processed_img.resize(SCREEN_RES, Image.LANCZOS)
