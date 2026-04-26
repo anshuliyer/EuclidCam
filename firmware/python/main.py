@@ -26,7 +26,7 @@ except ImportError:
 # Config
 FB_DEVICE = "/dev/fb1" 
 SCREEN_RES = (480, 320)
-FPS_CAP = 3  # Keeps SPI bus stable
+FPS_CAP = 8  # Balanced for smoother preview and SPI stability
 
 picam2 = Picamera2()
 
@@ -45,6 +45,12 @@ class CameraMode:
         print(f"\n[SHUTTER] Capturing in {self.name} mode...")
         picam2.stop()
         config_still = picam2.create_still_configuration()
+        # Subtle Rustic Tuning
+        config_still["controls"] = {
+            "Contrast": 1.03,
+            "Brightness": 0.02,
+            "Sharpness": 1.1
+        }
         picam2.configure(config_still)
         picam2.start()
         
@@ -143,20 +149,24 @@ class FilterMode(CameraMode):
 
 def start_preview():
     config = picam2.create_video_configuration(main={"size": SCREEN_RES, "format": "RGB888"})
+    # Subtle Rustic Tuning
+    config["controls"] = {
+        "Contrast": 1.03,
+        "Brightness": 0.02,
+        "Sharpness": 1.1
+    }
     picam2.configure(config)
     picam2.start()
 
 def display_to_map(data_array, fb_map):
-    # Convert RGB888 to RGB565 (Little Endian for tft35a)
-    r = data_array[:, :, 0].astype(np.uint16)
-    g = data_array[:, :, 1].astype(np.uint16)
-    b = data_array[:, :, 2].astype(np.uint16)
+    # Balanced RGB888 to RGB565 (Preserving original B-G-R order for this display)
+    data = data_array.astype(np.uint16)
+    r = data[:, :, 0] >> 3
+    g = (data[:, :, 1] >> 2) << 5
+    b = (data[:, :, 2] >> 3) << 11
     
-    # Swap R and B if colors look blue/red inverted
-    rgb565 = ((b >> 3) << 11) | ((g >> 2) << 5) | (r >> 3)
-    
-    fb_map.seek(0)
-    fb_map.write(rgb565.tobytes())
+    rgb565 = (r | g | b)
+    fb_map[:] = rgb565.tobytes()
 
 def start_server_worker(config):
     # Start server directly
