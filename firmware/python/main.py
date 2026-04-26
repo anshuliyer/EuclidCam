@@ -498,12 +498,19 @@ class InputHandler:
             "BACK":   self._on_back,
             "q":      self._on_back,
             "SELECT": self._on_select,
+            "GALLERY": self._on_gallery_toggle,
         }
         handler = dispatch.get(key)
         if handler:
             handler(config, fb_map)
 
     # ── Per-command handlers ──────────────────────────────────────────────────
+
+    def _on_gallery_toggle(self, config: dict, _fb_map) -> None:
+        config["show_gallery"] = True
+        config["show_menu"] = False
+        config["show_submenu"] = False
+
 
     def _on_capture(self, config: dict, fb_map) -> None:
         self._modes[config["mode_idx"]].capture(fb_map, config)
