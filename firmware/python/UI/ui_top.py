@@ -173,8 +173,12 @@ class TopPanel:
         title_w = overlay_draw.textlength(title, font=font_title) if hasattr(overlay_draw, "textlength") else len(title) * 12
         overlay_draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
         
-        # Stylized Back Button Indicator
-        overlay_draw.text((25, 22), "← BACK", fill=self.MAUVE, font=font_small)
+        # Massive Cross Button (Top Right)
+        bx, by = w - 70, 10
+        overlay_draw.rectangle([bx, by, bx + 60, by + 60], outline=self.MAUVE, width=2)
+        # Draw a bold X
+        overlay_draw.line([bx + 15, by + 15, bx + 45, by + 45], fill=self.MAUVE, width=3)
+        overlay_draw.line([bx + 45, by + 15, bx + 15, by + 45], fill=self.MAUVE, width=3)
         
         # Separator Line
         overlay_draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)

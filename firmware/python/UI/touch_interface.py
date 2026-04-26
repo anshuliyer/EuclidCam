@@ -78,6 +78,8 @@ class TouchInterface:
             # Expand the close button (cross) hitbox for easier tapping
             if (x > ox + overlay_w - 80 and y < oy + 80) or (x < ox or x > ox + overlay_w or y < oy or y > oy + overlay_h):
                 return "BACK", x, y
+            # Block fallthrough: if they tapped inside the QR box but missed the cross, ignore the touch
+            return None, x, y
 
         if ui_state.get("show_gallery"):
             if x < 85 and y < 85: return "DOWN", x, y # Delete
@@ -86,8 +88,8 @@ class TouchInterface:
 
         # --- Layer 2: Menu System (Grid + Header) ---
         if ui_state.get("show_menu"):
-            # Header BACK Area (Explicit)
-            if y < 65: return "BACK", x, y
+            # Massive Cross Button Area (Top Right)
+            if x > w - 80 and y < 80: return "BACK", x, y
             
             # Grid Detection (Prioritize this over edge-back)
             sub = ui_state.get("current_submenu")
