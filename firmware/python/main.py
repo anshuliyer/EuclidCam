@@ -34,7 +34,7 @@ class CameraMode:
     def __init__(self, name):
         self.name = name
 
-    def _crop_and_zoom(self, pil_img, target_ratio=1.5, zoom=1.15):
+    def _crop_and_zoom(self, pil_img, target_ratio=1.5, zoom=1.05):
         """Crops to 3:2 and adds a digital zoom to remove wide-angle feel."""
         w, h = pil_img.size
         if w / h > target_ratio:
@@ -123,7 +123,7 @@ class CameraMode:
         self._draw_capture_overlay(fb_map, "HOLD STILL")
         
         picam2.stop()
-        config_still = picam2.create_video_configuration(main={"size": (1920, 1080), "format": "RGB888"})
+        config_still = picam2.create_still_configuration()
         config_still["controls"] = {
             "Contrast": 1.05,
             "Sharpness": 2.0,
@@ -222,7 +222,7 @@ class LowLightMode(CameraMode):
         self._draw_capture_overlay(fb_map, "HOLD STILL")
         
         picam2.stop()
-        config_still = picam2.create_video_configuration(main={"size": (1920, 1080), "format": "RGB888"})
+        config_still = picam2.create_still_configuration()
         
         # Low Light Optimizations - Maximum Sensitivity for speed
         config_still["controls"] = {
