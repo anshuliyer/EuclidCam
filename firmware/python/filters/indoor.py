@@ -11,18 +11,33 @@ FB_DEVICE = "/dev/fb1"
 SCREEN_RES = (480, 320)
 FPS_CAP = 3 
 
-def apply_bokeh_filter(pil_img):
+def apply_indoor_filter(pil_img):
     """
-    Simulates a Bokeh effect by blurring the background and keeping the center sharp.
-    Uses a radial gradient blur approach.
+    Simulates a low-light indoor flash aesthetic.
+    Very lifted, brown/magenta tinted shadows, low contrast, warm highlights.
     """
-    w, h = pil_img.size
-    mask = Image.new('L', (w, h), 0)
-    draw = ImageDraw.Draw(mask)
-    draw.ellipse((w//4, h//4, 3*w//4, 3*h//4), fill=255)
-    mask = mask.filter(ImageFilter.GaussianBlur(radius=min(w, h)//10))
-    blurred = pil_img.filter(ImageFilter.GaussianBlur(radius=8))
-    return Image.composite(pil_img, blurred, mask)
+    from PIL import ImageEnhance
+    
+    # Reduce contrast significantly to muddy the image
+    enhancer_contrast = ImageEnhance.Contrast(pil_img)
+    pil_img = enhancer_contrast.enhance(0.8)
+    
+    # Boost color slightly
+    enhancer_color = ImageEnhance.Color(pil_img)
+    pil_img = enhancer_color.enhance(1.1)
+    
+    r, g, b = pil_img.split()
+    
+    # Indoor flash look:
+    # Lift shadows significantly, tint them brownish/warm (red/green > blue)
+    # R: strong lift in shadows, warm highlights
+    r = r.point(lambda i: min(255, int(i * 1.05 + 40)))
+    # G: lift shadows slightly less than red to keep it warm/magenta
+    g = g.point(lambda i: min(255, int(i * 1.05 + 30)))
+    # B: barely lift shadows, but keep overall blue lower to preserve warmth
+    b = b.point(lambda i: min(255, int(i * 0.95 + 20)))
+    
+    return Image.merge('RGB', (r, g, b))
 
 def display_to_map(data_array, fb_map):
     r = data_array[:, :, 0].astype(np.uint16)
@@ -42,14 +57,14 @@ if __name__ == "__main__":
         picam2.start()
 
     def take_photo(fb_map):
-        print("\n[SHUTTER] Firing with Bokeh Filter...")
+        print("\n[SHUTTER] Firing with Indoor Filter...")
         picam2.stop()
         config = picam2.create_still_configuration()
         picam2.configure(config)
         picam2.start()
         
         time.sleep(1)
-        filename = f"bokeh_{int(time.time())}.jpg"
+        filename = f"indoor_{int(time.time())}.jpg"
         picam2.capture_file("temp.jpg")
         
         img = Image.open("temp.jpg").convert("RGB")
@@ -63,7 +78,7 @@ if __name__ == "__main__":
             new_height = w / target_ratio
             img = img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
         
-        img = apply_bokeh_filter(img)
+        img = apply_indoor_filter(img)
         img.save(filename, quality=95)
         
         review_img = img.resize(SCREEN_RES)
@@ -74,7 +89,7 @@ if __name__ == "__main__":
 
     def apply_ui(data_array):
         img = Image.fromarray(data_array)
-        img = apply_bokeh_filter(img)
+        img = apply_indoor_filter(img)
         draw = ImageDraw.Draw(img)
         w, h = SCREEN_RES
         color = (0, 0, 0)
