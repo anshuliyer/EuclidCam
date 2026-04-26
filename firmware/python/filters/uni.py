@@ -11,14 +11,22 @@ FB_DEVICE = "/dev/fb1"
 SCREEN_RES = (480, 320)
 FPS_CAP = 3 
 
-def apply_cyberpunk_filter(pil_img):
-    """Cyberpunk aesthetic: Magenta and Cyan color shift."""
-    enhancer = ImageEnhance.Contrast(pil_img)
-    pil_img = enhancer.enhance(1.4)
+def apply_uni_filter(pil_img):
+    """UnI aesthetic: Warm, vintage film look with lifted shadows and yellow/orange tint."""
+    enhancer_color = ImageEnhance.Color(pil_img)
+    pil_img = enhancer_color.enhance(1.1)
+    
+    enhancer_contrast = ImageEnhance.Contrast(pil_img)
+    pil_img = enhancer_contrast.enhance(0.9)
+    
     r, g, b = pil_img.split()
-    r = r.point(lambda i: i * 1.1 if i < 128 else i * 0.9)
-    g = g.point(lambda i: i * 1.2 if i > 128 else i * 0.8)
-    b = b.point(lambda i: i * 1.3)
+    
+    # Warm up: boost red, slightly boost green, reduce blue.
+    # Lift shadows by adding a constant offset.
+    r = r.point(lambda i: min(255, int(i * 1.15 + 15)))
+    g = g.point(lambda i: min(255, int(i * 1.05 + 10)))
+    b = b.point(lambda i: min(255, int(i * 0.85 + 5)))
+    
     return Image.merge('RGB', (r, g, b))
 
 def display_to_map(data_array, fb_map):
@@ -38,14 +46,14 @@ if __name__ == "__main__":
         picam2.start()
 
     def take_photo(fb_map):
-        print("\n[SHUTTER] Firing with Cyberpunk Filter...")
+        print("\n[SHUTTER] Firing with UnI Filter...")
         picam2.stop()
         config = picam2.create_still_configuration()
         picam2.configure(config)
         picam2.start()
         
         time.sleep(1)
-        filename = f"cyberpunk_{int(time.time())}.jpg"
+        filename = f"uni_{int(time.time())}.jpg"
         picam2.capture_file("temp.jpg")
         
         img = Image.open("temp.jpg").convert("RGB")
@@ -59,7 +67,7 @@ if __name__ == "__main__":
             new_height = w / target_ratio
             img = img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
         
-        img = apply_cyberpunk_filter(img)
+        img = apply_uni_filter(img)
         img.save(filename, quality=95)
         
         review_img = img.resize(SCREEN_RES)
@@ -70,7 +78,7 @@ if __name__ == "__main__":
 
     def apply_ui(data_array):
         img = Image.fromarray(data_array)
-        img = apply_cyberpunk_filter(img)
+        img = apply_uni_filter(img)
         draw = ImageDraw.Draw(img)
         w, h = SCREEN_RES
         color = (0, 0, 0)
