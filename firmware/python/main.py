@@ -9,7 +9,7 @@ import subprocess
 from UI import ui_top, touch_interface
 
 # Filters
-from filters import italian_summer, bokeh, kodak, cyberpunk, champagne
+from filters import italian_summer, bokeh, kodak, cyberpunk, champagne, low_light
 # Settings and Grids
 from settings import grid as grid_settings
 
@@ -188,13 +188,34 @@ class LowLightMode(CameraMode):
         picam2.stop()
         start_preview()
 
+    def apply_filter(self, pil_img):
+        # Apply 3:2 crop then Low Light filter
+        w, h = pil_img.size
+        target_ratio = 1.5
+        if w / h > target_ratio:
+            new_width = h * target_ratio
+            img = pil_img.crop(((w - new_width) / 2, 0, (w + new_width) / 2, h))
+        else:
+            new_height = w / target_ratio
+            img = pil_img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
+        return low_light.apply_low_light_filter(img)
+
     def process_frame(self, frame):
-        # Boost preview brightness for low light
+        # Preview with Low Light filter
         img = Image.fromarray(frame)
-        from PIL import ImageEnhance
-        enhancer = ImageEnhance.Brightness(img)
-        img = enhancer.enhance(1.5)
-        return np.array(img.resize(SCREEN_RES, Image.LANCZOS))
+        # Consistent 3:2 crop for preview
+        w, h = img.size
+        target_ratio = 1.5
+        if w / h > target_ratio:
+            new_width = h * target_ratio
+            img = img.crop(((w - new_width) / 2, 0, (w + new_width) / 2, h))
+        else:
+            new_height = w / target_ratio
+            img = img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
+        
+        img = img.resize(SCREEN_RES, Image.LANCZOS)
+        img = low_light.apply_low_light_filter(img)
+        return np.array(img)
 
 def start_preview():
     config = picam2.create_video_configuration(main={"size": SCREEN_RES, "format": "RGB888"})
@@ -254,12 +275,12 @@ def run(config=None):
     modes = [
         StandardMode(),
         WideAngleMode(),
+        LowLightMode(),
         FilterMode("Summer", italian_summer),
         FilterMode("Bokeh", bokeh),
         FilterMode("Kodak", kodak),
         FilterMode("Cyberpunk", cyberpunk),
-        FilterMode("Champagne", champagne),
-        LowLightMode()
+        FilterMode("Champagne", champagne)
     ]
     config.setdefault("mode_idx", 0)
     config.setdefault("grid_mode", grid_settings.CompositionGrid.OFF)
