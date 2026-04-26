@@ -42,7 +42,8 @@ class CameraMode:
         Draws a premium branded capture overlay with a logo and optional progress bar.
         """
         w, h = SCREEN_RES
-        img = Image.new("RGB", SCREEN_RES, (0, 0, 0))
+        # Charcoal background instead of pure black
+        img = Image.new("RGB", SCREEN_RES, (30, 30, 35))
         draw = ImageDraw.Draw(img)
         mauve = (224, 176, 255)
         
@@ -54,8 +55,14 @@ class CameraMode:
             logo = Image.open(logo_path).convert("RGBA")
             # Resize logo to be large and prominent
             logo.thumbnail((250, 250), Image.LANCZOS)
+            
+            # Reduce opacity (make it highly transparent) to push it to the background
+            r, g, b, a = logo.split()
+            a = a.point(lambda i: i * 0.25) # 25% opacity
+            logo = Image.merge('RGBA', (r, g, b, a))
+            
             lw, lh = logo.size
-            # Paste using the image itself as an alpha mask for true transparency
+            # Paste using the faded alpha mask
             img.paste(logo, (cx - lw // 2, cy - lh // 2), logo)
         except Exception as e:
             # Fallback to simple text if logo not found
