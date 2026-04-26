@@ -130,14 +130,22 @@ class TopPanel:
 
         # 1. Premium Glass Overlay
         overlay_margin = 8
+        
+        # Create a transparent overlay image
+        overlay = Image.new('RGBA', self.screen_res, (0, 0, 0, 0))
+        overlay_draw = ImageDraw.Draw(overlay)
+        
         # Deep translucent base matching theme
         overlay_fill = theme.OVERLAY_FILL
-        draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], fill=overlay_fill)
+        overlay_draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], fill=overlay_fill)
         
         # --- PASTE LOGO WATERMARK ---
         try:
             import os
-            logo_path = os.path.join(os.path.dirname(__file__), "../../../splashscreen/transparent_logo.png")
+            # Use absolute path resolution from this file up to the project root
+            # UI -> python -> firmware -> root -> splashscreen
+            proj_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+            logo_path = os.path.join(proj_root, "splashscreen", "transparent_logo.png")
             logo = Image.open(logo_path).convert("RGBA")
             logo.thumbnail((250, 250), Image.LANCZOS)
             r, g, b, a = logo.split()
@@ -145,15 +153,23 @@ class TopPanel:
             logo = Image.merge('RGBA', (r, g, b, a))
             lw, lh = logo.size
             cx, cy = w // 2, h // 2
-            # Paste onto draw._image (underlying Image object)
-            draw._image.paste(logo, (cx - lw // 2, cy - lh // 2), logo)
+            # Paste onto the translucent overlay
+            overlay.paste(logo, (cx - lw // 2, cy - lh // 2), logo)
         except Exception as e:
             print(f"Theme watermark error: {e}")
 
         # Mauve Accent Border
-        draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], outline=self.MAUVE, width=2)
+        overlay_draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], outline=self.MAUVE, width=2)
         
+        # Blend the overlay onto the main image
+        # draw._image is the main RGB image
+        main_img = draw._image.convert("RGBA")
+        main_img = Image.alpha_composite(main_img, overlay)
+        draw._image.paste(main_img)
+        
+        # Continue drawing text and buttons on 'draw' (which affects draw._image)
         # Load Fonts
+
         from PIL import ImageFont
         try:
             font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
