@@ -46,17 +46,23 @@ class CameraMode:
         draw = ImageDraw.Draw(img)
         mauve = (224, 176, 255)
         
-        # 1. EuclidCam Logo (Center-Top)
+        # 1. EuclidCam Logo (Center-Top) - Geometric Triangle/Circle Design
         cx, cy = w // 2, h // 2 - 40
         draw.ellipse([cx-35, cy-35, cx+35, cy+35], outline=mauve, width=3)
-        # Geometric Euclid Pattern
-        draw.line([cx-25, cy-25, cx+25, cy+25], fill=mauve, width=2)
-        draw.line([cx+25, cy-25, cx-25, cy+25], fill=mauve, width=2)
+        
+        # Inscribed Triangle (Euclidian Geometry)
+        import math
+        pts = []
+        for i in range(3):
+            angle = math.radians(i * 120 - 90) # Start from top
+            pts.append((cx + 30 * math.cos(angle), cy + 30 * math.sin(angle)))
+        draw.polygon(pts, outline=mauve, width=2)
+        
         # Stylized 'E'
         try:
             from PIL import ImageFont
-            font_logo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 40)
-            draw.text((cx-15, cy-25), "E", fill=(255, 255, 255), font=font_logo)
+            font_logo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 35)
+            draw.text((cx-12, cy-18), "E", fill=(255, 255, 255), font=font_logo)
         except:
             pass
 
