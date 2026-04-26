@@ -99,7 +99,7 @@ class TouchInterface:
             is_sub = ui_state.get("show_submenu")
             
             if is_sub and sub == "Modes":
-                max_items, cols, rows = 7, 4, 2
+                max_items, cols, rows = 8, 4, 2
             elif is_sub and (sub == "Grid" or sub == "Connect"):
                 max_items, cols, rows = 3, 3, 1
             else: # Main Menu

@@ -147,6 +147,55 @@ class FilterMode(CameraMode):
             img = self.filter_func(img)
         return np.array(img)
 
+class LowLightMode(CameraMode):
+    def __init__(self):
+        super().__init__("Low Light")
+
+    def capture(self, fb_map, config):
+        photo_dir = config.get("photo_dir", ".")
+        if not os.path.exists(photo_dir):
+            os.makedirs(photo_dir, exist_ok=True)
+            
+        print(f"\n[SHUTTER] Capturing in {self.name} mode...")
+        picam2.stop()
+        config_still = picam2.create_still_configuration()
+        
+        # Low Light Optimizations
+        config_still["controls"] = {
+            "Contrast": 1.1,
+            "Sharpness": 3.0,          # High sharpness to recover detail
+            "NoiseReductionMode": 2,  # High quality noise reduction
+            "AeExposureMode": 1,      # Long exposure priority
+            "AnalogueGain": 4.0        # Force higher analog gain
+        }
+        
+        picam2.configure(config_still)
+        picam2.start()
+        
+        time.sleep(1.5) # Allow sensors to settle for longer in low light
+        filename = os.path.join(photo_dir, f"{self.name.lower().replace(' ', '_')}_{int(time.time())}.jpg")
+        picam2.capture_file("temp.jpg")
+        
+        img = Image.open("temp.jpg").convert("RGB")
+        processed_img = self.apply_filter(img)
+        processed_img.save(filename, quality=95)
+        
+        # Review
+        review_img = processed_img.resize(SCREEN_RES, Image.LANCZOS)
+        display_to_map(np.array(review_img), fb_map)
+        time.sleep(2.0)
+        
+        picam2.stop()
+        start_preview()
+
+    def process_frame(self, frame):
+        # Boost preview brightness for low light
+        img = Image.fromarray(frame)
+        from PIL import ImageEnhance
+        enhancer = ImageEnhance.Brightness(img)
+        img = enhancer.enhance(1.5)
+        return np.array(img.resize(SCREEN_RES, Image.LANCZOS))
+
 def start_preview():
     config = picam2.create_video_configuration(main={"size": SCREEN_RES, "format": "RGB888"})
     # Subtle Rustic Tuning
@@ -209,7 +258,8 @@ def run(config=None):
         FilterMode("Bokeh", bokeh),
         FilterMode("Kodak", kodak),
         FilterMode("Cyberpunk", cyberpunk),
-        FilterMode("Champagne", champagne)
+        FilterMode("Champagne", champagne),
+        LowLightMode()
     ]
     config.setdefault("mode_idx", 0)
     config.setdefault("grid_mode", grid_settings.CompositionGrid.OFF)
