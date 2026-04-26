@@ -34,7 +34,7 @@ class CameraMode:
     def __init__(self, name):
         self.name = name
 
-    def _crop_and_zoom(self, pil_img, target_ratio=1.5, zoom=1.05):
+    def _crop_and_zoom(self, pil_img, target_ratio=1.5, zoom=1.6):
         """Crops to 3:2 and adds a digital zoom to remove wide-angle feel."""
         w, h = pil_img.size
         if w / h > target_ratio:
@@ -175,8 +175,9 @@ class StandardMode(CameraMode):
         return self._crop_and_zoom(pil_img)
 
     def process_frame(self, frame):
-        # Standard mode now relies on the global toggleable grid
-        return frame
+        pil_img = Image.fromarray(frame)
+        img = self._crop_and_zoom(pil_img)
+        return np.array(img.resize(SCREEN_RES, Image.LANCZOS))
 
 
 
