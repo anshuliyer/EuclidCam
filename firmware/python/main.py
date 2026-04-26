@@ -104,7 +104,7 @@ class CameraMode:
         self._draw_capture_overlay(fb_map, "HOLD STILL")
         
         picam2.stop()
-        config_still = picam2.create_still_configuration()
+        config_still = picam2.create_video_configuration(main={"size": (1920, 1080), "format": "RGB888"})
         config_still["controls"] = {
             "Contrast": 1.05,
             "Sharpness": 2.0,
@@ -234,7 +234,7 @@ class LowLightMode(CameraMode):
         self._draw_capture_overlay(fb_map, "HOLD STILL")
         
         picam2.stop()
-        config_still = picam2.create_still_configuration()
+        config_still = picam2.create_video_configuration(main={"size": (1920, 1080), "format": "RGB888"})
         
         # Low Light Optimizations - Maximum Sensitivity for speed
         config_still["controls"] = {
