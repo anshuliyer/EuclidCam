@@ -170,18 +170,16 @@ def start_preview():
     picam2.start()
 
 def display_to_map(data_array, fb_map):
-    # Optimized RGB888 to RGB565 conversion
-    # R(5), G(6), B(5)
-    data = data_array.astype(np.uint16)
-    r = (data[:, :, 0] >> 3) << 11
-    g = (data[:, :, 1] >> 2) << 5
-    b = (data[:, :, 2] >> 3)
+    # Convert RGB888 to RGB565 (Little Endian for tft35a)
+    r = data_array[:, :, 0].astype(np.uint16)
+    g = data_array[:, :, 1].astype(np.uint16)
+    b = data_array[:, :, 2].astype(np.uint16)
     
-    # Combined into a single 16-bit array and written as a single block
-    rgb565 = (r | g | b)
+    # Swap R and B if colors look blue/red inverted
+    rgb565 = ((b >> 3) << 11) | ((g >> 2) << 5) | (r >> 3)
     
-    # Direct memory copy to mmap buffer is faster than seek + write
-    fb_map[:] = rgb565.tobytes()
+    fb_map.seek(0)
+    fb_map.write(rgb565.tobytes())
 
 def start_server_worker(config):
     # Start server directly
