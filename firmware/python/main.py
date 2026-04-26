@@ -34,6 +34,25 @@ class CameraMode:
     def __init__(self, name):
         self.name = name
 
+    def _crop_and_zoom(self, pil_img, target_ratio=1.5, zoom=1.15):
+        """Crops to 3:2 and adds a digital zoom to remove wide-angle feel."""
+        w, h = pil_img.size
+        if w / h > target_ratio:
+            crop_w, crop_h = h * target_ratio, h
+        else:
+            crop_w, crop_h = w, w / target_ratio
+            
+        # Apply the zoom factor
+        final_w = crop_w / zoom
+        final_h = crop_h / zoom
+        
+        left = (w - final_w) / 2
+        top = (h - final_h) / 2
+        right = (w + final_w) / 2
+        bottom = (h + final_h) / 2
+        
+        return pil_img.crop((left, top, right, bottom))
+
     def process_frame(self, frame):
         return frame
 
@@ -153,19 +172,7 @@ class StandardMode(CameraMode):
         super().__init__("Standard")
 
     def apply_filter(self, pil_img):
-        # 3:2 Cropping logic from normal.py
-        w, h = pil_img.size
-        target_ratio = 1.5
-        if w / h > target_ratio:
-            new_width = h * target_ratio
-            left = (w - new_width) / 2
-            right = (w + new_width) / 2
-            return pil_img.crop((left, 0, right, h))
-        else:
-            new_height = w / target_ratio
-            top = (h - new_height) / 2
-            bottom = (h + new_height) / 2
-            return pil_img.crop((0, top, w, bottom))
+        return self._crop_and_zoom(pil_img)
 
     def process_frame(self, frame):
         # Standard mode now relies on the global toggleable grid
@@ -185,34 +192,15 @@ class FilterMode(CameraMode):
                 break
 
     def apply_filter(self, pil_img):
-        # Apply 3:2 crop first, then filter
-        w, h = pil_img.size
-        target_ratio = 1.5
-        if w / h > target_ratio:
-            new_width = h * target_ratio
-            img = pil_img.crop(((w - new_width) / 2, 0, (w + new_width) / 2, h))
-        else:
-            new_height = w / target_ratio
-            img = pil_img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
-        
+        img = self._crop_and_zoom(pil_img)
         if self.filter_func:
             return self.filter_func(img)
         return img
 
     def process_frame(self, frame):
         # Preview with filter and 3:2 crop
-        img = Image.fromarray(frame)
-        
-        # Consistent 3:2 crop for preview
-        w, h = img.size
-        target_ratio = 1.5
-        if w / h > target_ratio:
-            new_width = h * target_ratio
-            img = img.crop(((w - new_width) / 2, 0, (w + new_width) / 2, h))
-        else:
-            new_height = w / target_ratio
-            img = img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
-        
+        pil_img = Image.fromarray(frame)
+        img = self._crop_and_zoom(pil_img)
         img = img.resize(SCREEN_RES, Image.LANCZOS)
             
         if self.filter_func:
@@ -279,30 +267,13 @@ class LowLightMode(CameraMode):
         start_preview()
 
     def apply_filter(self, pil_img):
-        # Apply 3:2 crop then Low Light filter
-        w, h = pil_img.size
-        target_ratio = 1.5
-        if w / h > target_ratio:
-            new_width = h * target_ratio
-            img = pil_img.crop(((w - new_width) / 2, 0, (w + new_width) / 2, h))
-        else:
-            new_height = w / target_ratio
-            img = pil_img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
+        img = self._crop_and_zoom(pil_img)
         return low_light.apply_low_light_filter(img)
 
     def process_frame(self, frame):
         # Preview with Low Light filter
-        img = Image.fromarray(frame)
-        # Consistent 3:2 crop for preview
-        w, h = img.size
-        target_ratio = 1.5
-        if w / h > target_ratio:
-            new_width = h * target_ratio
-            img = img.crop(((w - new_width) / 2, 0, (w + new_width) / 2, h))
-        else:
-            new_height = w / target_ratio
-            img = img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
-        
+        pil_img = Image.fromarray(frame)
+        img = self._crop_and_zoom(pil_img)
         img = img.resize(SCREEN_RES, Image.LANCZOS)
         img = low_light.apply_low_light_filter(img)
         return np.array(img)
