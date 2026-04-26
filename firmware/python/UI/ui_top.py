@@ -111,7 +111,7 @@ class TopPanel:
             selected_idx = self.config.get("menu_index", 0)
             title = "SETTINGS"
         elif current_submenu == "Modes":
-            items = ["Standard", "Wide-angle", "Summer", "Bokeh", "Kodak", "Cyberpunk", "Champagne", "Low Light"]
+            items = ["Standard", "Wide-angle", "Low Light", "Summer", "Bokeh", "Kodak", "Cyberpunk", "Champagne"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT MODE"
         elif current_submenu == "Grid":
@@ -171,10 +171,13 @@ class TopPanel:
             
             # Button Box
             is_selected = (i == selected_idx)
+            # Button Box
+            is_selected = (i == selected_idx)
             bg_color = self.MAUVE if is_selected else (40, 40, 40)
             text_color = (0, 0, 0) if is_selected else (255, 255, 255)
             
-            draw.rectangle([bx + 5, by + 5, bx + btn_w - 5, by + btn_h - 5], fill=bg_color, outline=(255, 255, 255), width=2)
+            # Draw the button with a 15px margin to prevent adjacent taps
+            draw.rectangle([bx + 15, by + 15, bx + btn_w - 15, by + btn_h - 15], fill=bg_color, outline=(255, 255, 255) if is_selected else (100, 100, 100), width=2 if is_selected else 1)
             
             # Item Text
             item_text = item
@@ -182,9 +185,9 @@ class TopPanel:
                 status = "ON" if self.config.get("is_connected") else "OFF"
                 item_text = f"{item}\n({status})"
             
-            # Simple "Icon" markers
-            if item == "Modes": draw.ellipse([bx+btn_w//2-10, by+15, bx+btn_w//2+10, by+35], outline=text_color, width=2)
-            elif item == "Flash": draw.polygon([(bx+btn_w//2, by+15), (bx+btn_w//2-10, by+35), (bx+btn_w//2+10, by+35)], outline=text_color, width=2)
+            # Simple "Icon" markers (positioned relative to button center)
+            if item == "Modes": draw.ellipse([bx+btn_w//2-10, by+20, bx+btn_w//2+10, by+40], outline=text_color, width=2)
+            elif item == "Flash": draw.polygon([(bx+btn_w//2, by+20), (bx+btn_w//2-10, by+40), (bx+btn_w//2+10, by+40)], outline=text_color, width=2)
             
             # Draw text (handle multi-line for Connect)
             lines = item_text.split('\n')

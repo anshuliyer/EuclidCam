@@ -120,8 +120,8 @@ class TouchInterface:
                 btn_local_x = rel_x % btn_w
                 btn_local_y = rel_y % btn_h
                 
-                # Smaller 5px dead-zone for better sensitivity
-                if 5 < btn_local_x < btn_w - 5 and 5 < btn_local_y < btn_h - 5:
+                # Increased dead-zone to 15px to prevent adjacent merging
+                if 15 < btn_local_x < btn_w - 15 and 15 < btn_local_y < btn_h - 15:
                     idx = row * cols + col
                     if idx < max_items:
                         ui_state["touch_menu_idx"] = idx
