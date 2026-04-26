@@ -60,104 +60,73 @@ class TouchInterface:
 
     def _map_to_command(self, raw_x, raw_y, ui_state):
         c = self.config
+        if c.get("swap_xy"): raw_x, raw_y = raw_y, raw_x
         
-        # 1. Swap axes if necessary
-        if c.get("swap_xy"):
-            raw_x, raw_y = raw_y, raw_x
-            
-        # 2. Map raw to screen coordinates (0 to 1 range)
         x_norm = (raw_x - c["x_min"]) / (c["x_max"] - c["x_min"])
         y_norm = (raw_y - c["y_min"]) / (c["y_max"] - c["y_min"])
-        
-        # 3. Invert if necessary
         if c.get("invert_x"): x_norm = 1.0 - x_norm
         if c.get("invert_y"): y_norm = 1.0 - y_norm
         
-        # 4. Scale to screen resolution
         x = x_norm * self.screen_res[0]
         y = y_norm * self.screen_res[1]
-        
-        # Hitboxes
         w, h = self.screen_res
 
-        # 1. Menu Toggle (Bottom Right - Gear Icon)
-        if x > w - 85 and y > h - 85:
-            return "SPACE", x, y
-        
-        # 2. Gallery Toggle (Bottom Left - Picture Icon)
-        if x < 85 and y > h - 85:
-            return "GALLERY", x, y
-
-        # 3. Grid Menu Interaction
-        if ui_state.get("show_menu"):
-            # 1. Back/Close Button Area (Top 65px or very edges)
-            if y < 65 or x < 10 or x > w - 10 or y > h - 10:
+        # --- Layer 1: High Priority Overlays (Gallery/Connection) ---
+        if ui_state.get("show_connection_view"):
+            overlay_w, overlay_h = 300, 240
+            ox, oy = (w - overlay_w) // 2, (h - overlay_h) // 2
+            if (x > ox + overlay_w - 50 and y < oy + 50) or (x < ox or x > ox + overlay_w or y < oy or y > oy + overlay_h):
                 return "BACK", x, y
+
+        if ui_state.get("show_gallery"):
+            if x < 85 and y < 85: return "DOWN", x, y # Delete
+            if y < 70: return "BACK", x, y
+            return ("LEFT" if x < w // 2 else "RIGHT"), x, y
+
+        # --- Layer 2: Menu System (Grid + Header) ---
+        if ui_state.get("show_menu"):
+            # Header BACK Area (Explicit)
+            if y < 65: return "BACK", x, y
             
-            # Determine grid dims
+            # Grid Detection (Prioritize this over edge-back)
             sub = ui_state.get("current_submenu")
             is_sub = ui_state.get("show_submenu")
             
-            if is_sub and sub == "Modes":
-                max_items, cols, rows = 8, 4, 2
-            elif is_sub and (sub == "Grid" or sub == "Connect"):
-                max_items, cols, rows = 3, 3, 1
-            else: # Main Menu
-                max_items, cols, rows = 4, 4, 1
+            if is_sub and sub == "Modes": max_items, cols, rows = 8, 4, 2
+            elif is_sub and (sub == "Grid" or sub == "Connect"): max_items, cols, rows = 3, 3, 1
+            else: max_items, cols, rows = 4, 4, 1
             
-            grid_margin_x = 25
-            grid_margin_y = 15
-            header_h = 65
-            gap = 12
+            grid_m_x, grid_m_y, header_h, gap = 25, 15, 65, 12
+            avail_w = w - (grid_m_x * 2)
+            avail_h = h - header_h - (grid_m_y * 2)
+            btn_w = (avail_w - (gap * (cols - 1))) // cols
+            btn_h = (avail_h - (gap * (rows - 1))) // rows
             
-            available_w = w - (grid_margin_x * 2)
-            available_h = h - header_h - (grid_margin_y * 2)
+            rel_x = x - grid_m_x
+            rel_y = y - (header_h + grid_m_y)
             
-            btn_w = (available_w - (gap * (cols - 1))) // cols
-            btn_h = (available_h - (gap * (rows - 1))) // rows
-            
-            # Calculate clicked col/row using math that accounts for gaps
-            rel_x = x - grid_margin_x
-            rel_y = y - (header_h + grid_margin_y)
-            
-            # Use floor division for the full cell (button + gap)
             col = int(rel_x // (btn_w + gap))
             row = int(rel_y // (btn_h + gap))
             
             if 0 <= col < cols and 0 <= row < rows:
-                # Check if tap is actually on the button (not in the gap)
-                local_x = rel_x % (btn_w + gap)
-                local_y = rel_y % (btn_h + gap)
-                
-                if local_x < btn_w and local_y < btn_h:
+                lx, ly = rel_x % (btn_w + gap), rel_y % (btn_h + gap)
+                if lx < btn_w and ly < btn_h:
                     idx = row * cols + col
                     if idx < max_items:
                         ui_state["touch_menu_idx"] = idx
                         return "TOUCH_SELECT", x, y
-
-        # 4. Connection Overlay Close
-        if ui_state.get("show_connection_view"):
-            overlay_w, overlay_h = 300, 240
-            ox, oy = (w - overlay_w) // 2, (h - overlay_h) // 2
-            # Close button area (Top Right of overlay) or tapping outside
-            if (x > ox + overlay_w - 50 and y < oy + 50) or (x < ox or x > ox + overlay_w or y < oy or y > oy + overlay_h):
+            
+            # If in menu area but not on a button, check for edge close (Strict)
+            if x < 10 or x > w - 10 or y > h - 10:
                 return "BACK", x, y
 
-        # 5. Gallery Mode
-        if ui_state.get("show_gallery"):
-            if x < 85 and y < 85: # Delete icon (Top Left)
-                return "DOWN", x, y 
-            if y < 70: # Top bar back
-                return "BACK", x, y
-            if x < w // 2:
-                return "LEFT", x, y
-            else:
-                return "RIGHT", x, y
-
-        # 6. Capture (Center of screen when no menu/gallery/connection)
-        if not ui_state.get("show_menu") and not ui_state.get("show_gallery") and not ui_state.get("show_connection_view"):
-            # Central area (Avoid edges where icons are)
-            if 80 < x < w - 80 and 80 < y < h - 80:
-                return "ENTER", x, y
+        # --- Layer 3: Main UI State ---
+        # Gear (Bottom Right)
+        if x > w - 85 and y > h - 85: return "SPACE", x, y
+        # Gallery (Bottom Left)
+        if x < 85 and y > h - 85: return "GALLERY", x, y
+        # Capture (Center)
+        if not ui_state.get("show_menu") and not ui_state.get("show_gallery"):
+            if 80 < x < w - 80 and 80 < y < h - 80: return "ENTER", x, y
 
         return None, x, y
