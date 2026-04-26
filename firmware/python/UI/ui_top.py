@@ -271,12 +271,15 @@ class TopPanel:
         # Transparent-ish background box
         draw.rectangle([x, y, x + overlay_w, y + overlay_h], fill=(0, 0, 0), outline=self.MAUVE, width=3)
         
-        # Close Button (Top Right of overlay)
-        draw.rectangle([x + overlay_w - 40, y + 5, x + overlay_w - 5, y + 30], outline=self.MAUVE, width=2)
-        draw.text((x + overlay_w - 32, y + 10), "X", fill=self.MAUVE)
+        # Close Button (Top Right of overlay) - Massive and easily tappable
+        bx, by = x + overlay_w - 70, y + 10
+        draw.rectangle([bx, by, bx + 60, by + 60], outline=self.MAUVE, width=2)
+        # Draw a bold X
+        draw.line([bx + 15, by + 15, bx + 45, by + 45], fill=self.MAUVE, width=3)
+        draw.line([bx + 45, by + 15, bx + 15, by + 45], fill=self.MAUVE, width=3)
 
         # Title
-        draw.text((x + 20, y + 15), "CONNECTIVITY ACTIVE", fill=self.MAUVE)
+        draw.text((x + 20, y + 25), "CONNECTIVITY ACTIVE", fill=self.MAUVE)
         
         # Load the QR code image if it exists
         import os
