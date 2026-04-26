@@ -83,39 +83,53 @@ class TopPanel:
 
     def _draw_gallery_view(self, draw):
         """
-        Draws the gallery navigation arrows and exit hint.
+        Draws the gallery navigation arrows and header.
         """
         w, h = self.screen_res
         
-        # 1. Navigation Arrows (Professional, Semi-transparent)
-        arrow_size = 30
-        arrow_alpha = 130
-        arrow_color = list(self.MAUVE) + [arrow_alpha]
+        # 1. Reuse Settings Header Style
+        from PIL import ImageFont
+        try:
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+        except:
+            font_title = font_small = None
+            
+        title = "GALLERY"
+        header_h = 65
+        title_w = draw.textlength(title, font=font_title) if hasattr(draw, "textlength") else len(title) * 12
+        draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
+        
+        # Separator Line (Same as Menu)
+        draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
+        draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.MAUVE, width=2)
+        
+        # Standard Cross Button (Top Right)
+        bx, by = w - 60, 12
+        draw.rectangle([bx, by, bx + 40, by + 40], outline=self.MAUVE, width=2)
+        draw.line([bx + 10, by + 10, bx + 30, by + 30], fill=self.MAUVE, width=2)
+        draw.line([bx + 30, by + 10, bx + 10, by + 30], fill=self.MAUVE, width=2)
+
+        # 2. Navigation Arrows
+        arrow_size = 25
+        arrow_color = list(self.MAUVE) + [180]
         
         # Left Arrow
-        lx, ly = 30, h // 2
+        lx, ly = 25, h // 2 + 20
         draw.polygon([(lx, ly), (lx + arrow_size, ly - arrow_size), (lx + arrow_size, ly + arrow_size)], fill=tuple(arrow_color))
         
         # Right Arrow
-        rx, ry = w - 30, h // 2
+        rx, ry = w - 25, h // 2 + 20
         draw.polygon([(rx, ry), (rx - arrow_size, ry - arrow_size), (rx - arrow_size, ry + arrow_size)], fill=tuple(arrow_color))
         
-        # 2. Exit Indicator (Bottom Center)
-        from PIL import ImageFont
-        try:
-            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-        except:
-            font_small = None
-            
+        # 3. Exit Hint (Bottom)
         exit_text = "EXIT GALLERY"
         tw = draw.textlength(exit_text, font=font_small) if hasattr(draw, "textlength") else len(exit_text) * 8
-        
-        # Semi-translucent pill for exit
-        pill_w, pill_h = tw + 30, 28
-        px, py = (w - pill_w) // 2, h - 40
+        px, py = (w - (tw + 30)) // 2, h - 40
         draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
-        draw_func([px, py, px + pill_w, py + pill_h], radius=14, fill=(0, 0, 0, 100), outline=self.MAUVE, width=1)
+        draw_func([px, py, px + tw + 30, py + 28], radius=14, fill=(30, 30, 40, 150), outline=self.MAUVE, width=1)
         draw.text((px + 15, py + 5), exit_text, fill=self.MAUVE, font=font_small)
+
 
 
     def _draw_menu(self, draw):
@@ -270,21 +284,19 @@ class TopPanel:
 
     def _draw_bin_icon(self, draw):
         """
-        Draws a professional DELETE button in the top-left corner.
+        Draws a fancy DELETE card in the top-left corner (matching Settings).
         """
-        w, h = self.screen_res
-        bx, by = 15, 15
-        bw, bh = 100, 40
+        bx, by = 15, 12
+        btn_w, btn_h = 100, 40
         
-        # Button Card
+        # Fancy Card (Glass effect)
         draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
-        draw_func([bx, by, bx + bw, by + bh], radius=8, fill=(200, 50, 50, 180), outline=(255, 255, 255), width=2)
+        draw_func([bx, by, bx + btn_w, by + btn_h], radius=10, fill=(30, 30, 40, 150), outline=self.MAUVE, width=1)
         
-        # Trash Bin Icon
+        # Red Icon
         ix, iy = bx + 12, by + 10
-        draw.rectangle([ix, iy + 4, ix + 10, iy + 16], outline=(255, 255, 255), width=1)
-        draw.line([(ix - 2, iy + 4), (ix + 12, iy + 4)], fill=(255, 255, 255), width=2)
-        draw.rectangle([ix + 3, iy, ix + 7, iy + 3], outline=(255, 255, 255), width=1)
+        draw.rectangle([ix, iy + 4, ix + 10, iy + 16], outline=(200, 50, 50), width=1)
+        draw.line([(ix - 2, iy + 4), (ix + 12, iy + 4)], fill=(200, 50, 50), width=2)
         
         from PIL import ImageFont
         try:
@@ -292,7 +304,8 @@ class TopPanel:
         except:
             font_btn = None
             
-        draw.text((bx + 35, by + 10), "DELETE", fill=(255, 255, 255), font=font_btn)
+        draw.text((bx + 35, by + 10), "DELETE", fill=(220, 220, 230), font=font_btn)
+
 
 
     def _draw_connection_overlay(self, draw):
