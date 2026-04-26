@@ -65,17 +65,15 @@ def draw_smooth_arc(draw, center_x, center_y, radius, start_deg, end_deg, color,
         else:
             draw.line(points, fill=color, width=width, joint="curve")
 
-def generate_euclid_design(width, height, filename, is_logo=False):
-    img = Image.new('RGB', (width, height), BG_COLOR)
+def generate_euclid_design(width, height, filename, is_logo=False, transparent=False):
+    bg = (0, 0, 0, 0) if transparent else BG_COLOR
+    img = Image.new('RGBA' if transparent else 'RGB', (width, height), bg)
     draw = ImageDraw.Draw(img)
     scale = min(width / 320, height / 240)
     max_w, max_h = 300 * scale, 220 * scale
     container_x, container_y = (width - max_w) // 2, (height - max_h) // 2
     main_dash, main_gap, pen_width = int(3 * scale), int(7 * scale), max(1, int(scale))
     
-    # if not is_logo:
-    #     draw_dotted_rect(draw, container_x, container_y, max_w, max_h, DOTTED_COLOR, main_dash, main_gap, pen_width)
-
     phi = (1 + 5**0.5) / 2
     curr_x, curr_y = container_x, container_y + (max_h - (max_w / phi)) / 2
     curr_w, curr_h = max_w, max_w / phi
@@ -104,6 +102,7 @@ def generate_euclid_design(width, height, filename, is_logo=False):
     draw_chalky_text(draw, text_x, text_y, "EuclidCam", LIGHT_MAUVE, 14, scale)
     
     img.save(filename, "JPEG", quality=95) if filename.endswith(".jpeg") else img.save(filename)
+    print(f"Generated: {filename}")
 
 def generate_svg_design(width, height, filename):
     """
@@ -118,9 +117,11 @@ def generate_svg_design(width, height, filename):
     svg_paths = []
     scale = min(width / 320, height / 240)
     
+    mauve_hex = "#EBD2FF" # LIGHT_MAUVE
+    
     # Add EuclidCam title in bottom-left (aligned with GIF)
     text_x, text_y = 20 * scale, height - 50 * scale
-    svg_paths.append(f'<text x="{text_x}" y="{text_y}" font-family="Chalkboard, cursive" font-size="{int(18*scale)}" fill="black">EuclidCam</text>')
+    svg_paths.append(f'<text x="{text_x}" y="{text_y}" font-family="Chalkboard, cursive" font-size="{int(18*scale)}" fill="{mauve_hex}">EuclidCam</text>')
     
     # Loop for geometry
     for i in range(12):
@@ -128,29 +129,28 @@ def generate_svg_design(width, height, filename):
         mode = i % 4
         
         # Add Square as a simple path (useful for 3D extrusion)
-        svg_paths.append(f'<rect x="{curr_x}" y="{curr_y}" width="{s}" height="{s}" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,2" />')
+        svg_paths.append(f'<rect x="{curr_x}" y="{curr_y}" width="{s}" height="{s}" fill="none" stroke="{mauve_hex}" stroke-width="1" stroke-dasharray="2,2" />')
         
         # Arc mapping to SVG "A" command
-        # Large-arc-flag and sweep-flag logic for quarter circles
         if mode == 0: # BL to TR
             x_start, y_start = curr_x, curr_y + s
             x_end, y_end = curr_x + s, curr_y
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="black" stroke-width="3" />')
+            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
             curr_x += s; curr_w -= s
         elif mode == 1: # TL to BR
             x_start, y_start = curr_x, curr_y
             x_end, y_end = curr_x + s, curr_y + s
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="black" stroke-width="3" />')
+            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
             curr_y += s; curr_h -= s
         elif mode == 2: # TR to BL
             x_start, y_start = curr_x + curr_w, curr_y
             x_end, y_end = curr_x + curr_w - s, curr_y + s
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="black" stroke-width="3" />')
+            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
             curr_w -= s
         elif mode == 3: # BR to TL
             x_start, y_start = curr_x + s, curr_y + curr_h
             x_end, y_end = curr_x, curr_y + curr_h - s
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="black" stroke-width="3" />')
+            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
             curr_h -= s
 
     svg_content = f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
@@ -160,6 +160,7 @@ def generate_svg_design(width, height, filename):
     with open(filename, "w") as f:
         f.write(svg_content)
     print(f"Generated: {filename} (Vector/Transparent)")
+
 
 def draw_chalky_text(draw, x, y, text, color, size, scale):
     try:
@@ -277,6 +278,7 @@ def save_chalk_settings(filename="chalk_settings.json"):
 if __name__ == "__main__":
     generate_euclid_design(320, 240, "euclid_splash.png")
     generate_euclid_design(1024, 1024, "euclid_logo.jpeg", is_logo=True)
+    generate_euclid_design(1024, 1024, "transparent_logo.png", is_logo=True, transparent=True)
     generate_svg_design(1000, 1000, "transparent.svg")
     generate_construction_gif(640, 480, "euclid_construction.gif")
     save_chalk_settings()

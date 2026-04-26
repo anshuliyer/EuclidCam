@@ -46,16 +46,17 @@ class CameraMode:
         draw = ImageDraw.Draw(img)
         mauve = (224, 176, 255)
         
-        # 1. EuclidCam Logo (Center-Top) - Using actual logo image
-        cx, cy = w // 2, h // 2 - 50  # Shifted up slightly for larger logo
+        # 1. EuclidCam Logo (Background Watermark)
+        cx, cy = w // 2, h // 2 - 30  # Centered for a large background logo
         try:
-            # Path relative to where main.py is run from (firmware/python)
-            logo_path = os.path.join(os.path.dirname(__file__), "../../splashscreen/euclid_logo.jpeg")
-            logo = Image.open(logo_path).convert("RGBA") # Ensure it has alpha or can be pasted
-            # Resize logo larger (120x120)
-            logo.thumbnail((120, 120), Image.LANCZOS)
+            # Load the transparent PNG generated from SVG
+            logo_path = os.path.join(os.path.dirname(__file__), "../../splashscreen/transparent_logo.png")
+            logo = Image.open(logo_path).convert("RGBA")
+            # Resize logo to be large and prominent
+            logo.thumbnail((250, 250), Image.LANCZOS)
             lw, lh = logo.size
-            img.paste(logo, (cx - lw // 2, cy - lh // 2))
+            # Paste using the image itself as an alpha mask for true transparency
+            img.paste(logo, (cx - lw // 2, cy - lh // 2), logo)
         except Exception as e:
             # Fallback to simple text if logo not found
             print(f"Could not load logo: {e}")
