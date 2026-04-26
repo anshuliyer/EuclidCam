@@ -11,18 +11,27 @@ FB_DEVICE = "/dev/fb1"
 SCREEN_RES = (480, 320)
 FPS_CAP = 3 
 
-def apply_kodak_filter(pil_img):
-    """Simulates a vintage Kodak film look."""
+def apply_film35mm_filter(pil_img):
+    """Simulates a vintage 35mm point-and-shoot flash aesthetic (warm highlights, blue/faded shadows)."""
+    # Slightly reduce contrast to fade the image
+    enhancer_contrast = ImageEnhance.Contrast(pil_img)
+    pil_img = enhancer_contrast.enhance(0.9)
+    
+    # Boost saturation slightly
+    enhancer_color = ImageEnhance.Color(pil_img)
+    pil_img = enhancer_color.enhance(1.15)
+    
     r, g, b = pil_img.split()
-    r = r.point(lambda i: i * 1.1)
-    g = g.point(lambda i: i * 1.05)
-    b = b.point(lambda i: i * 0.95)
-    pil_img = Image.merge('RGB', (r, g, b))
-    enhancer = ImageEnhance.Contrast(pil_img)
-    pil_img = enhancer.enhance(1.2)
-    enhancer = ImageEnhance.Color(pil_img)
-    pil_img = enhancer.enhance(1.1)
-    return pil_img
+    
+    # 35mm Flash look: 
+    # Red: Boost midtones/highlights for warm skin tones.
+    # Blue: Lift shadows significantly for a vintage film fade, reduce highlights.
+    # Green: Slight overall lift.
+    r = r.point(lambda i: min(255, int(i * 1.1 + 5)))
+    g = g.point(lambda i: min(255, int(i * 1.05 + 10)))
+    b = b.point(lambda i: min(255, int(i * 0.9 + 30)))
+    
+    return Image.merge('RGB', (r, g, b))
 
 def display_to_map(data_array, fb_map):
     r = data_array[:, :, 0].astype(np.uint16)
@@ -41,14 +50,14 @@ if __name__ == "__main__":
         picam2.start()
 
     def take_photo(fb_map):
-        print("\n[SHUTTER] Firing with Kodak Filter...")
+        print("\n[SHUTTER] Firing with 35mm Filter...")
         picam2.stop()
         config = picam2.create_still_configuration()
         picam2.configure(config)
         picam2.start()
         
         time.sleep(1)
-        filename = f"kodak_{int(time.time())}.jpg"
+        filename = f"35mm_{int(time.time())}.jpg"
         picam2.capture_file("temp.jpg")
         
         img = Image.open("temp.jpg").convert("RGB")
@@ -62,7 +71,7 @@ if __name__ == "__main__":
             new_height = w / target_ratio
             img = img.crop((0, (h - new_height) / 2, w, (h + new_height) / 2))
         
-        img = apply_kodak_filter(img)
+        img = apply_film35mm_filter(img)
         img.save(filename, quality=95)
         
         review_img = img.resize(SCREEN_RES)
@@ -73,7 +82,7 @@ if __name__ == "__main__":
 
     def apply_ui(data_array):
         img = Image.fromarray(data_array)
-        img = apply_kodak_filter(img)
+        img = apply_film35mm_filter(img)
         draw = ImageDraw.Draw(img)
         w, h = SCREEN_RES
         color = (0, 0, 0)

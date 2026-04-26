@@ -9,7 +9,7 @@ import subprocess
 from UI import ui_top, touch_interface
 
 # Filters
-from filters import italian_summer, bokeh, kodak, uni, nostalgia, low_light
+from filters import italian_summer, bokeh, film35mm, uni, nostalgia, low_light
 # Settings and Grids
 from settings import grid as grid_settings
 
@@ -371,7 +371,7 @@ def run(config=None):
         LowLightMode(),
         FilterMode("Summer", italian_summer),
         FilterMode("Bokeh", bokeh),
-        FilterMode("Kodak", kodak),
+        FilterMode("35mm", film35mm),
         FilterMode("UnI", uni),
         FilterMode("Nostalgia", nostalgia)
     ]
