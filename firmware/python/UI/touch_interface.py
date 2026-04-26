@@ -90,8 +90,8 @@ class TouchInterface:
 
         # 3. Grid Menu Interaction
         if ui_state.get("show_menu"):
-            # 1. Back/Close Button Area (Top 80px or very edges)
-            if y < 80 or x < 10 or x > w - 10 or y > h - 10:
+            # 1. Back/Close Button Area (Top 65px or very edges)
+            if y < 65 or x < 10 or x > w - 10 or y > h - 10:
                 return "BACK", x, y
             
             # Determine grid dims
@@ -104,24 +104,32 @@ class TouchInterface:
                 max_items, cols, rows = 3, 3, 1
             else: # Main Menu
                 max_items, cols, rows = 4, 4, 1
-                
-            btn_w = (w - 40) // cols
-            btn_h = (h - 100) // rows
             
-            # Calculate clicked col/row
-            rel_x = x - 20
-            rel_y = y - 80 # Adjusted for larger back area
+            grid_margin_x = 25
+            grid_margin_y = 15
+            header_h = 65
+            gap = 12
             
-            col = int(rel_x // btn_w)
-            row = int(rel_y // btn_h)
+            available_w = w - (grid_margin_x * 2)
+            available_h = h - header_h - (grid_margin_y * 2)
+            
+            btn_w = (available_w - (gap * (cols - 1))) // cols
+            btn_h = (available_h - (gap * (rows - 1))) // rows
+            
+            # Calculate clicked col/row using math that accounts for gaps
+            rel_x = x - grid_margin_x
+            rel_y = y - (header_h + grid_margin_y)
+            
+            # Use floor division for the full cell (button + gap)
+            col = int(rel_x // (btn_w + gap))
+            row = int(rel_y // (btn_h + gap))
             
             if 0 <= col < cols and 0 <= row < rows:
-                # Calculate internal button coordinates to check for margins
-                btn_local_x = rel_x % btn_w
-                btn_local_y = rel_y % btn_h
+                # Check if tap is actually on the button (not in the gap)
+                local_x = rel_x % (btn_w + gap)
+                local_y = rel_y % (btn_h + gap)
                 
-                # Increased dead-zone to 15px to prevent adjacent merging
-                if 15 < btn_local_x < btn_w - 15 and 15 < btn_local_y < btn_h - 15:
+                if local_x < btn_w and local_y < btn_h:
                     idx = row * cols + col
                     if idx < max_items:
                         ui_state["touch_menu_idx"] = idx

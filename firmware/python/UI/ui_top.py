@@ -100,7 +100,7 @@ class TopPanel:
 
     def _draw_menu(self, draw):
         """
-        Draws the settings menu list or a submenu with a Mauve background.
+        Draws a professional, aesthetic grid menu with card-based layout.
         """
         w, h = self.screen_res
         show_submenu = self.config.get("show_submenu", False)
@@ -109,91 +109,112 @@ class TopPanel:
         if not show_submenu:
             items = ["Modes", "Connect", "Flash", "Grid"]
             selected_idx = self.config.get("menu_index", 0)
-            title = "SETTINGS"
+            title = "SYSTEM SETTINGS"
         elif current_submenu == "Modes":
             items = ["Standard", "Wide-angle", "Low Light", "Summer", "Bokeh", "Kodak", "Cyberpunk", "Champagne"]
             selected_idx = self.config.get("submenu_index", 0)
-            title = "SELECT MODE"
+            title = "SELECT VISION"
         elif current_submenu == "Grid":
             items = ["OFF", "3x3", "Euclid"]
             selected_idx = self.config.get("submenu_index", 0)
-            title = "SELECT GRID"
+            title = "COMPOSITION"
         elif current_submenu == "Connect":
             items = ["Show QR", "Stop Conn", "Back"]
             selected_idx = self.config.get("submenu_index", 0)
-            title = "CONNECT"
+            title = "NETWORK"
         else:
             items = []
             selected_idx = 0
-            title = "UNKNOWN"
+            title = "MENU"
 
-        # Draw a nearly full-screen semi-transparent overlay
-        overlay_margin = 10
-        draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], fill=(0, 0, 0, 200), outline=self.MAUVE, width=3)
+        # 1. Premium Glass Overlay
+        overlay_margin = 8
+        # Deep translucent base
+        overlay_fill = (15, 15, 20, 235)
+        draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], fill=overlay_fill)
+        # Mauve Accent Border
+        draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], outline=self.MAUVE, width=2)
         
-        # Load a larger font for better visibility
+        # Load Fonts
         from PIL import ImageFont
         try:
-            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
-            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
+            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
         except:
-            font_title = None
-            font_item = None
+            font_title = font_item = font_small = None
 
-        # Title at the top - Now a giant BACK button
-        title_w = draw.textlength(title, font=font_title) if hasattr(draw, "textlength") else len(title) * 14
-        draw.text(((w - title_w) // 2, 15), title, fill=self.MAUVE, font=font_title)
+        # 2. Header Area
+        header_h = 65
+        title_w = draw.textlength(title, font=font_title) if hasattr(draw, "textlength") else len(title) * 12
+        draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
         
-        # Back Hint
-        draw.text((30, 20), "< BACK", fill=self.MAUVE, font=font_item)
-        draw.line([(overlay_margin, 60), (w - overlay_margin, 60)], fill=self.MAUVE, width=1)
+        # Stylized Back Button Indicator
+        draw.text((25, 22), "← BACK", fill=self.MAUVE, font=font_small)
         
-        # Calculate Grid Layout
+        # Separator Line
+        draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
+        draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.MAUVE, width=2)
+
+        # 3. Grid Calculation
         num_items = len(items)
-        if num_items <= 4:
-            # Single row of large buttons
-            cols = num_items
-            rows = 1
-        else:
-            # Two rows (for Modes)
-            cols = 4
-            rows = 2
-
-        btn_w = (w - 40) // cols
-        btn_h = (h - 110) // rows
+        cols = 4
+        rows = 2 if num_items > 4 else 1
+        
+        grid_margin_x = 25
+        grid_margin_y = 15
+        gap = 12
+        
+        available_w = w - (grid_margin_x * 2)
+        available_h = h - header_h - (grid_margin_y * 2)
+        
+        btn_w = (available_w - (gap * (cols - 1))) // cols
+        btn_h = (available_h - (gap * (rows - 1))) // rows
         
         for i, item in enumerate(items):
             row = i // cols
             col = i % cols
             
-            bx = 20 + col * btn_w
-            by = 80 + row * btn_h
+            bx = grid_margin_x + col * (btn_w + gap)
+            by = header_h + grid_margin_y + row * (btn_h + gap)
             
-            # Button Box
             is_selected = (i == selected_idx)
-            # Button Box
-            is_selected = (i == selected_idx)
-            bg_color = self.MAUVE if is_selected else (40, 40, 40)
-            text_color = (0, 0, 0) if is_selected else (255, 255, 255)
             
-            # Draw the button with a 15px margin to prevent adjacent taps
-            draw.rectangle([bx + 15, by + 15, bx + btn_w - 15, by + btn_h - 15], fill=bg_color, outline=(255, 255, 255) if is_selected else (100, 100, 100), width=2 if is_selected else 1)
+            # Button Card Logic
+            card_fill = self.MAUVE if is_selected else (30, 30, 40, 255)
+            card_outline = (255, 255, 255) if is_selected else (70, 70, 90)
+            text_color = (0, 0, 0) if is_selected else (220, 220, 230)
+            accent_color = (255, 255, 255, 180) if is_selected else self.MAUVE
+
+            # Draw Card (rounded_rectangle fallback)
+            draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
+            draw_func([bx, by, bx + btn_w, by + btn_h], radius=10, fill=card_fill, outline=card_outline, width=2 if is_selected else 1)
+
+            # 4. Professional Iconography
+            icon_y = by + 22
+            cx = bx + btn_w // 2
             
-            # Item Text
-            item_text = item
+            if item == "Modes":
+                draw.ellipse([cx-12, icon_y-12, cx+12, icon_y+12], outline=text_color, width=2)
+                draw.ellipse([cx-4, icon_y-4, cx+4, icon_y+4], fill=text_color)
+            elif item == "Flash":
+                draw.polygon([(cx, icon_y-12), (cx-6, icon_y), (cx+4, icon_y), (cx-2, icon_y+12)], fill=text_color)
+            elif item == "Connect":
+                for r in [6, 12, 18]:
+                    draw.arc([cx-r, icon_y-r, cx+r, icon_y+r], start=210, end=330, fill=text_color, width=2)
+            elif item == "Grid":
+                for off in [-6, 6]:
+                    draw.line([cx+off, icon_y-10, cx+off, icon_y+10], fill=text_color, width=1)
+                    draw.line([cx-10, icon_y+off, cx+10, icon_y+off], fill=text_color, width=1)
+
+            # Content Text
+            display_name = item
             if item == "Connect":
                 status = "ON" if self.config.get("is_connected") else "OFF"
-                item_text = f"{item}\n({status})"
+                draw.text((bx + btn_w - 30, by + 8), status, fill=accent_color, font=font_small)
             
-            # Simple "Icon" markers (positioned relative to button center)
-            if item == "Modes": draw.ellipse([bx+btn_w//2-10, by+20, bx+btn_w//2+10, by+40], outline=text_color, width=2)
-            elif item == "Flash": draw.polygon([(bx+btn_w//2, by+20), (bx+btn_w//2-10, by+40), (bx+btn_w//2+10, by+40)], outline=text_color, width=2)
-            
-            # Draw text (handle multi-line for Connect)
-            lines = item_text.split('\n')
-            for l_idx, line in enumerate(lines):
-                tw = draw.textlength(line, font=font_item) if hasattr(draw, "textlength") else len(line) * 10
-                draw.text((bx + (btn_w - tw) // 2, by + (btn_h // 2) - 10 + l_idx*20), line, fill=text_color, font=font_item)
+            tw = draw.textlength(display_name, font=font_item) if hasattr(draw, "textlength") else len(display_name) * 9
+            draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
 
     def _draw_bin_icon(self, draw):
         """
