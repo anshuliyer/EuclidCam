@@ -44,6 +44,10 @@ from settings import grid as grid_settings
 # ─── Project: Connectivity ─────────────────────────────────────────────────────
 from connectivity import wifi_utils
 
+# ─── Project: IO ───────────────────────────────────────────────────────────────
+from IO import gpio_top as io_stubs
+from IO import flash
+
 # ─── Hardware constants ────────────────────────────────────────────────────────
 FB_DEVICE: str   = "/dev/fb1"
 SCREEN_RES: tuple = (480, 320)
@@ -198,7 +202,7 @@ class CameraMode:
         picam2.capture_file("temp.jpg")
         return Image.open("temp.jpg").convert("RGB")
 
-    def capture(self, fb_map, config: dict) -> None:
+    def capture(self, fb_map, config: dict, flash_drive: Any = None) -> None:
         """Standard capture pipeline shared by most modes."""
         photo_dir = config.get("photo_dir", ".")
         os.makedirs(photo_dir, exist_ok=True)
@@ -206,7 +210,12 @@ class CameraMode:
         print(f"\n[SHUTTER] Capturing in {self.name} mode…")
         self._draw_capture_overlay(fb_map, config, "HOLD STILL")
 
-        # Flash
+        # Physical Flash
+        if config.get("flash") and flash_drive:
+            import threading
+            threading.Thread(target=flash_drive.trigger, args=(0.5,), daemon=True).start()
+
+        # Screen Flash
         flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
         display_to_map(flash, fb_map, config=config)
 
@@ -289,12 +298,17 @@ class LowLightMode(CameraMode):
         super().__init__("Low Light")
 
     # Override: different sensor controls
-    def capture(self, fb_map, config: dict) -> None:
+    def capture(self, fb_map, config: dict, flash_drive: Any = None) -> None:
         photo_dir = config.get("photo_dir", ".")
         os.makedirs(photo_dir, exist_ok=True)
 
         print(f"\n[SHUTTER] Capturing in {self.name} mode…")
         self._draw_capture_overlay(fb_map, config, "HOLD STILL")
+
+        # Physical Flash
+        if config.get("flash") and flash_drive:
+            import threading
+            threading.Thread(target=flash_drive.trigger, args=(0.5,), daemon=True).start()
 
         flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
         display_to_map(flash, fb_map, config=config)
@@ -473,10 +487,12 @@ class InputHandler:
         modes: list[CameraMode],
         gallery: GalleryManager,
         server: ServerManager,
+        flash_drive: Any = None,
     ) -> None:
         self._modes   = modes
         self._gallery = gallery
         self._server  = server
+        self._flash_drive = flash_drive
 
     def handle(self, key: str | None, config: dict, fb_map) -> None:
         """Dispatch *key* to the appropriate handler method."""
@@ -516,7 +532,7 @@ class InputHandler:
 
 
     def _on_capture(self, config: dict, fb_map) -> None:
-        self._modes[config["mode_idx"]].capture(fb_map, config)
+        self._modes[config["mode_idx"]].capture(fb_map, config, flash_drive=self._flash_drive)
 
     def _on_menu_toggle(self, config: dict, _fb_map) -> None:
         config["show_menu"]    = not config.get("show_menu", False)
@@ -662,9 +678,10 @@ class CameraEngine:
         # Sub-systems
         base_dir      = os.path.dirname(os.path.abspath(__file__))
         photo_dir     = config.get("photo_dir", "../../Captured")
+        self.flash_drive = flash.FlashDrive()
         self.gallery  = GalleryManager(photo_dir)
         self.server   = ServerManager(base_dir)
-        self.input    = InputHandler(self.modes, self.gallery, self.server)
+        self.input    = InputHandler(self.modes, self.gallery, self.server, flash_drive=self.flash_drive)
         self.grid_mgr = grid_settings.CompositionGrid()
         self.panel    = ui_top.TopPanel(config, SCREEN_RES)
         self.touch    = touch_interface.TouchInterface(

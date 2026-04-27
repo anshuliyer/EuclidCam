@@ -1,5 +1,5 @@
 import main
-from IO import keyboard_gpio_stubs as io_stubs
+from IO import gpio_top as io_stubs
 
 from UI.settings import ORIENTATION
 
