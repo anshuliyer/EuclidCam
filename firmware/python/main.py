@@ -36,7 +36,7 @@ from PIL import Image, ImageDraw, ImageFont
 from UI import ui_top, touch_interface
 
 # ─── Project: Filters ──────────────────────────────────────────────────────────
-from filters import italian_summer, indoor, film35mm, uni, nostalgia, low_light, glam
+from filters import italian_summer, indoor, film35mm, uni, nostalgia, low_light, glam, disco
 
 # ─── Project: Settings ─────────────────────────────────────────────────────────
 from settings import grid as grid_settings
@@ -673,6 +673,7 @@ class CameraEngine:
             FilterMode("35mm",     film35mm),
             FilterMode("UnI",      uni),
             FilterMode("Nostalgia",nostalgia),
+            FilterMode("Disco",    disco),
         ]
 
         # Sub-systems
