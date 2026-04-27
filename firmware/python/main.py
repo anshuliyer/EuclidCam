@@ -57,8 +57,11 @@ picam2 = Picamera2()
 #  Helpers
 # ==============================================================================
 
-def display_to_map(data_array: np.ndarray, fb_map) -> None:
+def display_to_map(data_array: np.ndarray, fb_map, config: dict = None) -> None:
     """Convert an RGB888 numpy array to RGB565 and write it to the framebuffer."""
+    if config and config.get("ui_rotation") == 180:
+        data_array = np.rot90(data_array, 2)
+        
     data = data_array.astype(np.uint16)
     r = data[:, :, 0] >> 3
     g = (data[:, :, 1] >> 2) << 5
@@ -121,7 +124,7 @@ class CameraMode:
     # ── Capture overlay ───────────────────────────────────────────────────────
 
     def _draw_capture_overlay(
-        self, fb_map, text: str, progress: float = 0.0
+        self, fb_map, config: dict, text: str, progress: float = 0.0
     ) -> None:
         """Render the branded capture/processing overlay to the framebuffer."""
         from UI.themes import chalk as theme
@@ -177,7 +180,7 @@ class CameraMode:
                 fill=theme.MAUVE_PRIMARY,
             )
 
-        display_to_map(np.array(img), fb_map)
+        display_to_map(np.array(img), fb_map, config=config)
 
     # ── Hardware capture ──────────────────────────────────────────────────────
 
@@ -201,32 +204,32 @@ class CameraMode:
         os.makedirs(photo_dir, exist_ok=True)
 
         print(f"\n[SHUTTER] Capturing in {self.name} mode…")
-        self._draw_capture_overlay(fb_map, "HOLD STILL")
+        self._draw_capture_overlay(fb_map, config, "HOLD STILL")
 
         # Flash
         flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
-        display_to_map(flash, fb_map)
+        display_to_map(flash, fb_map, config=config)
 
-        self._draw_capture_overlay(fb_map, "PROCESSING…", progress=0.2)
+        self._draw_capture_overlay(fb_map, config, "PROCESSING…", progress=0.2)
         raw = self._do_capture_raw({
             "Contrast": 1.05, "Sharpness": 2.0,
             "AeExposureMode": 1, "AnalogueGain": 4.0,
         })
 
-        self._draw_capture_overlay(fb_map, "APPLYING VISION…", progress=0.5)
+        self._draw_capture_overlay(fb_map, config, "APPLYING VISION…", progress=0.5)
         processed = self.apply_filter(raw)
 
-        self._draw_capture_overlay(fb_map, "SAVING…", progress=0.8)
+        self._draw_capture_overlay(fb_map, config, "SAVING…", progress=0.8)
         filename = os.path.join(
             photo_dir, f"{self.name.lower()}_{int(time.time())}.jpg"
         )
         processed.save(filename, quality=95)
 
-        self._draw_capture_overlay(fb_map, "DONE!", progress=1.0)
+        self._draw_capture_overlay(fb_map, config, "DONE!", progress=1.0)
         time.sleep(0.3)
 
         review = processed.resize(SCREEN_RES, Image.LANCZOS)
-        display_to_map(np.array(review), fb_map)
+        display_to_map(np.array(review), fb_map, config=config)
         time.sleep(1.5)
 
         picam2.stop()
@@ -291,12 +294,12 @@ class LowLightMode(CameraMode):
         os.makedirs(photo_dir, exist_ok=True)
 
         print(f"\n[SHUTTER] Capturing in {self.name} mode…")
-        self._draw_capture_overlay(fb_map, "HOLD STILL")
+        self._draw_capture_overlay(fb_map, config, "HOLD STILL")
 
         flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
-        display_to_map(flash, fb_map)
+        display_to_map(flash, fb_map, config=config)
 
-        self._draw_capture_overlay(fb_map, "STABILIZING SENSOR…", progress=0.2)
+        self._draw_capture_overlay(fb_map, config, "STABILIZING SENSOR…", progress=0.2)
         raw = self._do_capture_raw({
             "Contrast": 1.1, "Sharpness": 3.0,
             "NoiseReductionMode": 2,
@@ -305,21 +308,21 @@ class LowLightMode(CameraMode):
         # Low-light needs a slightly longer sensor settle
         time.sleep(0.1)
 
-        self._draw_capture_overlay(fb_map, "ENHANCING LIGHT…", progress=0.5)
+        self._draw_capture_overlay(fb_map, config, "ENHANCING LIGHT…", progress=0.5)
         processed = self.apply_filter(raw)
 
-        self._draw_capture_overlay(fb_map, "SAVING RAW…", progress=0.8)
+        self._draw_capture_overlay(fb_map, config, "SAVING RAW…", progress=0.8)
         filename = os.path.join(
             photo_dir,
             f"{self.name.lower().replace(' ', '_')}_{int(time.time())}.jpg",
         )
         processed.save(filename, quality=95)
 
-        self._draw_capture_overlay(fb_map, "DONE!", progress=1.0)
+        self._draw_capture_overlay(fb_map, config, "DONE!", progress=1.0)
         time.sleep(0.3)
 
         review = processed.resize(SCREEN_RES, Image.LANCZOS)
-        display_to_map(np.array(review), fb_map)
+        display_to_map(np.array(review), fb_map, config=config)
         time.sleep(1.5)
 
         picam2.stop()
@@ -711,12 +714,7 @@ class CameraEngine:
             frame = np.array(pil)
 
         frame = self.panel.render(frame)
-        
-        # Apply orientation flip if set to 180
-        if self.config.get("ui_rotation") == 180:
-            frame = np.rot90(frame, 2)
-
-        display_to_map(frame, fb_map)
+        display_to_map(frame, fb_map, config=self.config)
 
     def _process_input(self, fb_map) -> None:
         """Read touch input and forward to InputHandler."""
