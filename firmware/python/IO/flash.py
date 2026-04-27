@@ -39,7 +39,7 @@ class FlashDrive:
         else:
             print(f"[STUB] Pin 21 -> {'ON' if state else 'OFF'}")
 
-    def trigger(self, duration=0.5):
+    def trigger(self, duration=1.0):
         """Fires the flash for a specified duration."""
         self.pin_21_drive(True)
         time.sleep(duration)

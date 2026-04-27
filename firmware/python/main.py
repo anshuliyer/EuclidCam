@@ -213,7 +213,7 @@ class CameraMode:
         # Physical Flash
         if config.get("flash") and flash_drive:
             import threading
-            threading.Thread(target=flash_drive.trigger, args=(0.5,), daemon=True).start()
+            threading.Thread(target=flash_drive.trigger, args=(1.0,), daemon=True).start()
 
         # Screen Flash
         flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
@@ -308,7 +308,7 @@ class LowLightMode(CameraMode):
         # Physical Flash
         if config.get("flash") and flash_drive:
             import threading
-            threading.Thread(target=flash_drive.trigger, args=(0.5,), daemon=True).start()
+            threading.Thread(target=flash_drive.trigger, args=(1.0,), daemon=True).start()
 
         flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
         display_to_map(flash, fb_map, config=config)
