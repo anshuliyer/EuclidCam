@@ -679,6 +679,10 @@ class CameraEngine:
         # Sub-systems
         base_dir      = os.path.dirname(os.path.abspath(__file__))
         photo_dir     = config.get("photo_dir", "../../Captured")
+        
+        # Share mode names with UI
+        self.config["mode_names"] = [m.name for m in self.modes]
+
         self.flash_drive = flash.FlashDrive()
         self.gallery  = GalleryManager(photo_dir)
         self.server   = ServerManager(base_dir)

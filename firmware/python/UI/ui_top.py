@@ -148,7 +148,7 @@ class TopPanel:
             selected_idx = self.config.get("menu_index", 0)
             title = "SYSTEM SETTINGS"
         elif current_submenu == "Modes":
-            items = ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia"]
+            items = self.config.get("mode_names", ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia"])
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT VISION"
         elif current_submenu == "Grid":
@@ -223,7 +223,7 @@ class TopPanel:
         # 3. Grid Calculation
         num_items = len(items)
         cols = 4
-        rows = 2 if num_items > 4 else 1
+        rows = (num_items + cols - 1) // cols
         
         grid_margin_x = 25
         grid_margin_y = 15
