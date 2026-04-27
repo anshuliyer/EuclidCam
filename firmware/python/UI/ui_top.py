@@ -16,12 +16,10 @@ class TopPanel:
 
     def _calculate_base_pos(self):
         w, h = self.screen_res
-        if self.rotation == 0:
+        if self.rotation == 0 or self.rotation == 180:
             return w - self.padding, self.padding
         elif self.rotation == 90:
             return w - self.padding, h - self.padding
-        elif self.rotation == 180:
-            return self.padding, h - self.padding
         else: # 270
             return self.padding, self.padding
 

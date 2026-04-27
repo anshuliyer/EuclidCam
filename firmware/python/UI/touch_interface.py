@@ -67,6 +67,11 @@ class TouchInterface:
         if c.get("invert_x"): x_norm = 1.0 - x_norm
         if c.get("invert_y"): y_norm = 1.0 - y_norm
         
+        # Apply orientation flip if set to 180
+        if ui_state.get("ui_rotation") == 180:
+            x_norm = 1.0 - x_norm
+            y_norm = 1.0 - y_norm
+        
         x = x_norm * self.screen_res[0]
         y = y_norm * self.screen_res[1]
         w, h = self.screen_res

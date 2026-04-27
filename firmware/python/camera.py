@@ -1,6 +1,8 @@
 import main
 from IO import keyboard_gpio_stubs as io_stubs
 
+from UI.settings import ORIENTATION
+
 # Initialize Hardware Interfaces
 battery = io_stubs.BatteryManagement()
 gpio = io_stubs.GPIOTop()
@@ -11,7 +13,7 @@ CONFIG = {
     "battery": battery.battery_level, # Battery status
     "wifi": None,       # Placeholder
     "photo_dir": "../../Captured",
-    "ui_rotation": 0,    # Rotation in degrees (0, 90, 180, 270)
+    "ui_rotation": ORIENTATION,    # Rotation in degrees (0, 90, 180, 270)
     "ui_padding": 20     # Padding from edges
 }
 

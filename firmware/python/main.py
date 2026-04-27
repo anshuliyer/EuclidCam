@@ -711,6 +711,11 @@ class CameraEngine:
             frame = np.array(pil)
 
         frame = self.panel.render(frame)
+        
+        # Apply orientation flip if set to 180
+        if self.config.get("ui_rotation") == 180:
+            frame = np.rot90(frame, 2)
+
         display_to_map(frame, fb_map)
 
     def _process_input(self, fb_map) -> None:
