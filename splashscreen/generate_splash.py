@@ -2,11 +2,21 @@ from PIL import Image, ImageDraw
 import math
 import random
 
-# Configuration
-BG_COLOR = (0, 0, 0)
-LIGHT_MAUVE = (235, 210, 255)
-DARK_MAUVE = (90, 45, 110)
-DOTTED_COLOR = (120, 120, 130)
+def get_theme_colors(theme):
+    if theme == "light":
+        return {
+            "bg": (253, 252, 251),           # #FDFCFB Off-white
+            "light_accent": (197, 179, 154), # #C5B39A Beige
+            "dark_accent": (140, 120, 95),   # Darker Beige
+            "dotted": (210, 205, 195)        # Light grey/beige for dots
+        }
+    else: # dark
+        return {
+            "bg": (17, 17, 17),              # #111111 Black
+            "light_accent": (197, 179, 154), # #C5B39A Beige
+            "dark_accent": (255, 255, 255),  # #FFFFFF White
+            "dotted": (60, 60, 60)           # #333333 Dark grey for dots
+        }
 
 def draw_dotted_line(draw, x1, y1, x2, y2, color, dash, gap, width, chalk=False):
     dx, dy = x2 - x1, y2 - y1
@@ -65,8 +75,9 @@ def draw_smooth_arc(draw, center_x, center_y, radius, start_deg, end_deg, color,
         else:
             draw.line(points, fill=color, width=width, joint="curve")
 
-def generate_euclid_design(width, height, filename, is_logo=False, transparent=False):
-    bg = (0, 0, 0, 0) if transparent else BG_COLOR
+def generate_euclid_design(width, height, filename, theme="light", is_logo=False, transparent=False):
+    colors = get_theme_colors(theme)
+    bg = (0, 0, 0, 0) if transparent else colors["bg"]
     img = Image.new('RGBA' if transparent else 'RGB', (width, height), bg)
     draw = ImageDraw.Draw(img)
     scale = min(width / 320, height / 240)
@@ -81,9 +92,10 @@ def generate_euclid_design(width, height, filename, is_logo=False, transparent=F
     for i in range(12):
         s = min(curr_w, curr_h)
         mode, factor = i % 4, i / 11.0
-        color = interpolate_color(DARK_MAUVE, LIGHT_MAUVE, factor)
+        color = interpolate_color(colors["dark_accent"], colors["light_accent"], factor)
         arc_width = int(max(int(scale), int((4 - i//3) * scale)) * (1.5 if is_logo else 1))
-        draw_dotted_rect(draw, curr_x, curr_y, s, s, DOTTED_COLOR, main_dash, main_gap, pen_width, chalk=is_logo)
+        draw_dotted_rect(draw, curr_x, curr_y, s, s, colors["dotted"], main_dash, main_gap, pen_width, chalk=is_logo)
+        
         if mode == 0: 
             draw_smooth_arc(draw, curr_x + s, curr_y + s, s, 180, 270, color, arc_width, chalk=is_logo)
             curr_x += s; curr_w -= s
@@ -97,95 +109,69 @@ def generate_euclid_design(width, height, filename, is_logo=False, transparent=F
             draw_smooth_arc(draw, curr_x + s, curr_y + curr_h - s, s, 90, 180, color, arc_width, chalk=is_logo)
             curr_h -= s
     
-    # Draw EuclidCam title in bottom-left (aligned with GIF)
-    text_x, text_y = 20 * scale, height - 50 * scale
-    draw_chalky_text(draw, text_x, text_y, "EuclidCam", LIGHT_MAUVE, 14, scale)
+    text_x, text_y = container_x + 10 * scale, container_y + max_h - 40 * scale
+    draw_chalky_text(draw, text_x, text_y - 18 * scale, "EC", colors["light_accent"], 32, scale)
     
     img.save(filename, "JPEG", quality=95) if filename.endswith(".jpeg") else img.save(filename)
     print(f"Generated: {filename}")
 
-def generate_svg_design(width, height, filename):
-    """
-    Generates a high-quality SVG version for 3D printing.
-    """
-    phi = (1 + 5**0.5) / 2
-    max_w, max_h = width * 0.9, height * 0.9
-    container_x, container_y = (width - max_w) / 2, (height - max_h) / 2
-    curr_x, curr_y = container_x, container_y + (max_h - (max_w / phi)) / 2
-    curr_w, curr_h = max_w, max_w / phi
-    
-    svg_paths = []
-    scale = min(width / 320, height / 240)
-    
-    mauve_hex = "#EBD2FF" # LIGHT_MAUVE
-    
-    # Add EuclidCam title in bottom-left (aligned with GIF)
-    text_x, text_y = 20 * scale, height - 50 * scale
-    svg_paths.append(f'<text x="{text_x}" y="{text_y}" font-family="Chalkboard, cursive" font-size="{int(18*scale)}" fill="{mauve_hex}">EuclidCam</text>')
-    
-    # Loop for geometry
-    for i in range(12):
-        s = min(curr_w, curr_h)
-        mode = i % 4
-        
-        # Add Square as a simple path (useful for 3D extrusion)
-        svg_paths.append(f'<rect x="{curr_x}" y="{curr_y}" width="{s}" height="{s}" fill="none" stroke="{mauve_hex}" stroke-width="1" stroke-dasharray="2,2" />')
-        
-        # Arc mapping to SVG "A" command
-        if mode == 0: # BL to TR
-            x_start, y_start = curr_x, curr_y + s
-            x_end, y_end = curr_x + s, curr_y
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
-            curr_x += s; curr_w -= s
-        elif mode == 1: # TL to BR
-            x_start, y_start = curr_x, curr_y
-            x_end, y_end = curr_x + s, curr_y + s
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
-            curr_y += s; curr_h -= s
-        elif mode == 2: # TR to BL
-            x_start, y_start = curr_x + curr_w, curr_y
-            x_end, y_end = curr_x + curr_w - s, curr_y + s
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
-            curr_w -= s
-        elif mode == 3: # BR to TL
-            x_start, y_start = curr_x + s, curr_y + curr_h
-            x_end, y_end = curr_x, curr_y + curr_h - s
-            svg_paths.append(f'<path d="M {x_start} {y_start} A {s} {s} 0 0 1 {x_end} {y_end}" fill="none" stroke="{mauve_hex}" stroke-width="3" />')
-            curr_h -= s
-
-    svg_content = f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
-    svg_content += "\n".join(svg_paths)
-    svg_content += "\n</svg>"
-    
-    with open(filename, "w") as f:
-        f.write(svg_content)
-    print(f"Generated: {filename} (Vector/Transparent)")
-
-
-def draw_chalky_text(draw, x, y, text, color, size, scale):
+def draw_chalky_text(draw, x, y, text, color, size, scale, center=False, font_name="JetBrainsMono-Bold.ttf", anchor=None):
     try:
         from PIL import ImageFont
-        font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Chalkboard.ttc", int(size * scale))
+        import os
+        font_path = os.path.join(os.path.dirname(__file__), f"../Webapp/assets/fonts/{font_name}")
+        font = ImageFont.truetype(font_path, int(size * scale))
     except Exception:
         font = ImageFont.load_default()
     
-    # Draw text multiple times with jitter to simulate "bad" handwriting
-    # But remove the background "noise" loop
-    for _ in range(3):
-        off_x = random.uniform(-1, 1)
-        off_y = random.uniform(-1, 1)
-        draw.text((x + off_x, y + off_y), text, fill=color, font=font)
+    if center:
+        try:
+            bbox = draw.textbbox((0, 0), text, font=font)
+            w = bbox[2] - bbox[0]
+            h = bbox[3] - bbox[1]
+            x = x - w / 2
+            y = y - h / 2
+        except AttributeError:
+            w, h = draw.textsize(text, font=font)
+            x = x - w / 2
+            y = y - h / 2
 
-def generate_construction_gif(width, height, filename, duration=350):
+    import random
+    import json
+    
+    multi_stroke = 3
+    jitter = [-1, 1]
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "chalk_settings.json")) as f:
+            settings = json.load(f)
+            multi_stroke = settings.get("chalk_effect", {}).get("multi_stroke", 3)
+            jitter = settings.get("chalk_effect", {}).get("jitter_range", [-1, 1])
+    except Exception:
+        pass
+
+    for _ in range(multi_stroke):
+        jx = x + random.uniform(jitter[0], jitter[1])
+        jy = y + random.uniform(jitter[0], jitter[1])
+        
+        if anchor:
+            try:
+                draw.text((jx, jy), text, fill=color, font=font, anchor=anchor)
+                continue
+            except TypeError:
+                pass
+        
+        draw.text((jx, jy), text, fill=color, font=font)
+
+def generate_construction_gif(width, height, filename, theme="light", duration=150):
+    colors = get_theme_colors(theme)
     frames = []
-    img = Image.new('RGB', (width, height), BG_COLOR)
+    img = Image.new('RGB', (width, height), colors["bg"])
     draw = ImageDraw.Draw(img)
     scale = min(width / 320, height / 240)
     max_w, max_h = 300 * scale, 220 * scale
     container_x, container_y = (width - max_w) // 2, (height - max_h) // 2
     main_dash, main_gap, pen_width = int(3 * scale), int(7 * scale), max(1, int(scale))
     
-    # Initial empty frame
     frames.append(img.copy())
 
     phi = (1 + 5**0.5) / 2
@@ -193,19 +179,16 @@ def generate_construction_gif(width, height, filename, duration=350):
     curr_w, curr_h = max_w, max_w / phi
     
     radii = []
-    
-    # Text position: bottom-left, elevated
-    text_x, text_y = 20 * scale, height - 50 * scale
+    text_x, text_y = container_x + 10 * scale, container_y + max_h - 40 * scale
     
     for i in range(12):
         s = min(curr_w, curr_h)
-        radii.append(int(s/scale)) # Normalize s for display
+        radii.append(int(s/scale)) 
         
         mode, factor = i % 4, i / 11.0
-        color = interpolate_color(DARK_MAUVE, LIGHT_MAUVE, factor)
+        color = interpolate_color(colors["dark_accent"], colors["light_accent"], factor)
         arc_width = int(max(int(scale), int((4 - i//3) * scale)))
         
-        # Calculate equation text
         if i == 0:
             equation = f"R0 = {radii[0]}"
         elif i == 1:
@@ -213,16 +196,13 @@ def generate_construction_gif(width, height, filename, duration=350):
         else:
             equation = f"R{i} = R{i-1} + R{i-2} = {radii[i]}"
             
-        # Step 1: Draw the square
-        draw_dotted_rect(draw, curr_x, curr_y, s, s, DOTTED_COLOR, main_dash, main_gap, pen_width)
+        draw_dotted_rect(draw, curr_x, curr_y, s, s, colors["dotted"], main_dash, main_gap, pen_width)
         
-        # Save frame with equation
         temp_img = img.copy()
         temp_draw = ImageDraw.Draw(temp_img)
-        draw_chalky_text(temp_draw, text_x, text_y, equation, LIGHT_MAUVE, 14, scale)
+        draw_chalky_text(temp_draw, text_x, text_y, equation, colors["light_accent"], 14, scale)
         frames.append(temp_img)
         
-        # Step 2: Draw the arc
         if mode == 0: 
             draw_smooth_arc(draw, curr_x + s, curr_y + s, s, 180, 270, color, arc_width)
             curr_x += s; curr_w -= s
@@ -236,49 +216,30 @@ def generate_construction_gif(width, height, filename, duration=350):
             draw_smooth_arc(draw, curr_x + s, curr_y + curr_h - s, s, 90, 180, color, arc_width)
             curr_h -= s
             
-        # Save frame with equation
         temp_img = img.copy()
         temp_draw = ImageDraw.Draw(temp_img)
         draw_chalky_text(temp_draw, text_x, text_y, equation, color, 14, scale)
         frames.append(temp_img)
     
-    # Hold the final frame for a bit longer and show the title
-    for _ in range(15):
+    for _ in range(30):
         temp_img = img.copy()
         temp_draw = ImageDraw.Draw(temp_img)
-        draw_chalky_text(temp_draw, text_x, text_y, "EuclidCam", LIGHT_MAUVE, 18, scale)
+        # Shift up by exactly the difference in font size (32 - 14 = 18) to match the baseline!
+        draw_chalky_text(temp_draw, text_x, text_y - 18 * scale, "EC", colors["light_accent"], 32, scale)
         frames.append(temp_img)
         
     frames[0].save(filename, save_all=True, append_images=frames[1:], duration=duration, loop=0)
-    print(f"Generated: {filename} (Animated GIF Polished)")
-
-def save_chalk_settings(filename="chalk_settings.json"):
-    import json
-    settings = {
-        "font": "Chalkboard.ttc",
-        "colors": {
-            "bg": BG_COLOR,
-            "light": LIGHT_MAUVE,
-            "dark": DARK_MAUVE,
-            "dotted": DOTTED_COLOR
-        },
-        "chalk_effect": {
-            "multi_stroke": 3,
-            "jitter_range": [-1, 1]
-        },
-        "layout": {
-            "equation_pos": "bottom-left",
-            "elevation_px": 50
-        }
-    }
-    with open(filename, "w") as f:
-        json.dump(settings, f, indent=4)
-    print(f"Saved: {filename}")
+    print(f"Generated: {filename} (Animated GIF)")
 
 if __name__ == "__main__":
-    generate_euclid_design(320, 240, "euclid_splash.png")
-    generate_euclid_design(1024, 1024, "euclid_logo.jpeg", is_logo=True)
-    generate_euclid_design(1024, 1024, "transparent_logo.png", is_logo=True, transparent=True)
-    generate_svg_design(1000, 1000, "transparent.svg")
-    generate_construction_gif(640, 480, "euclid_construction.gif")
-    save_chalk_settings()
+    # Light Mode Assets
+    generate_euclid_design(320, 240, "euclid_splash_light.png", theme="light")
+    generate_euclid_design(1024, 1024, "euclid_logo_light.jpeg", theme="light", is_logo=True)
+    generate_euclid_design(1024, 1024, "transparent_logo_light.png", theme="light", is_logo=True, transparent=True)
+    generate_construction_gif(640, 480, "euclid_construction_light.gif", theme="light")
+    
+    # Dark Mode Assets
+    generate_euclid_design(320, 240, "euclid_splash_dark.png", theme="dark")
+    generate_euclid_design(1024, 1024, "euclid_logo_dark.jpeg", theme="dark", is_logo=True)
+    generate_euclid_design(1024, 1024, "transparent_logo_dark.png", theme="dark", is_logo=True, transparent=True)
+    generate_construction_gif(640, 480, "euclid_construction_dark.gif", theme="dark")

@@ -10,16 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('--- Boot Complete. Transitioning to Concept. ---');
     bootScreen.style.opacity = '0';
 
+
+
     setTimeout(() => {
       bootScreen.style.display = 'none';
       conceptScreen.classList.remove('hidden');
       conceptScreen.style.display = 'grid';
       conceptScreen.style.opacity = '1';
 
-      // Sequence 2: Concept Screen (Chalk Sunflower Show)
+      // Sequence 2: Concept Screen (Camera Outline Show)
       setTimeout(() => {
-        generateSunflowerSeeds();
-
         console.log('--- Concept Explained. Loading Dashboard. ---');
         setTimeout(() => {
           conceptScreen.style.opacity = '0';
@@ -27,37 +27,26 @@ document.addEventListener('DOMContentLoaded', () => {
             conceptScreen.style.display = 'none';
             mainGrid.classList.remove('hidden');
           }, 1000);
-        }, 8500); // Increased time for chalk animation
+        }, 4500); // Comfortable reading time for the concept overview
       }, 800);
     }, 800);
-  }, 2800);
+  }, 4800); // Wait for the super fast GIF construction + 3s hold for EC text
 
-  function generateSunflowerSeeds() {
-    const sunflowerGroup = document.querySelector('.sunflower');
-    if (!sunflowerGroup) {
-      console.warn('Sunflower group not found. Skipping seed generation.');
-      return;
-    }
-    const centerX = 250;
-    const centerY = 175;
-    const c = 7; // Scaling factor
-
-    for (let i = 0; i < 80; i++) {
-      const theta = i * 137.5 * (Math.PI / 180);
-      const r = c * Math.sqrt(i);
-      const x = centerX + r * Math.cos(theta);
-      const y = centerY + r * Math.sin(theta);
-
-      const seed = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      seed.setAttribute("cx", x);
-      seed.setAttribute("cy", y);
-      seed.setAttribute("r", "1.5");
-      seed.setAttribute("fill", "rgba(235, 210, 255, 0.7)");
-      seed.style.opacity = "0";
-      seed.style.animation = `fadeIn 0.2s ease-out ${i * 0.04}s forwards`;
-
-      sunflowerGroup.appendChild(seed);
-    }
+  // Theme Toggle Logic
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark-mode');
+      const toggleText = themeToggle.querySelector('.toggle-text');
+      if (toggleText) {
+        toggleText.textContent = isDark ? 'MODE: DARK' : 'MODE: LIGHT';
+      }
+      
+      const bootGifImg = document.getElementById('boot-gif-img');
+      if (bootGifImg) {
+        bootGifImg.src = isDark ? 'assets/euclid_construction_dark.gif' : 'assets/euclid_construction_light.gif';
+      }
+    });
   }
 
   // Interactive handling for grid items
@@ -68,10 +57,57 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Navigation triggered: /${label.toLowerCase()}`);
 
       // Add a "flash" effect like before
-      item.style.backgroundColor = 'rgba(235, 210, 255, 0.1)';
+      item.style.backgroundColor = 'rgba(191, 164, 138, 0.15)';
       setTimeout(() => {
         item.style.backgroundColor = '';
+        
+        // Handle Gallery Navigation
+        if (label.toLowerCase() === 'gallery') {
+          const galleryScreen = document.getElementById('gallery-screen');
+          mainGrid.classList.add('hidden');
+          setTimeout(() => {
+            mainGrid.style.display = 'none';
+            galleryScreen.classList.remove('hidden');
+          }, 1000);
+        }
       }, 200);
     });
   });
+
+  // Gallery Back Button Logic
+  const galleryBack = document.getElementById('gallery-back');
+  const galleryScreen = document.getElementById('gallery-screen');
+  if (galleryBack) {
+    galleryBack.addEventListener('click', () => {
+      galleryScreen.classList.add('hidden');
+      setTimeout(() => {
+        mainGrid.style.display = 'grid';
+        mainGrid.classList.remove('hidden');
+      }, 500);
+    });
+  }
+
+  // Gallery Modal Logic
+  const imageModal = document.getElementById('image-modal');
+  const modalImage = document.getElementById('modal-image');
+  const modalClose = document.getElementById('modal-close');
+  const galleryImages = document.querySelectorAll('.gallery-img-container img');
+
+  galleryImages.forEach(img => {
+    img.parentElement.addEventListener('click', () => {
+      modalImage.src = img.src;
+      imageModal.classList.remove('hidden');
+    });
+  });
+
+  if (imageModal) {
+    imageModal.addEventListener('click', (e) => {
+      if (e.target !== modalImage) {
+        imageModal.classList.add('hidden');
+        setTimeout(() => {
+          modalImage.src = '';
+        }, 300);
+      }
+    });
+  }
 });

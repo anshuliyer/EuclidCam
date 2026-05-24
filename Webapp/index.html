@@ -6,117 +6,167 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EuclidCam | Geometric Precision</title>
   <meta name="description" content="EuclidCam: Mathematical image enhancement.">
-  <link rel="stylesheet" href="style.css?v=1.1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400&family=Inter:wght@300;400;600&display=swap"
-    rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=1.2">
+
 </head>
 
 <body class="euclid-theme">
+  <!-- Outer Editorial Border to represent physical paper edges -->
+  <div class="editorial-frame"></div>
+
+  <!-- Theme Toggle Button (visible during initial load) -->
+  <button id="theme-toggle" class="theme-toggle">
+    <span class="toggle-brackets">[</span>
+    <span class="toggle-text">MODE: LIGHT</span>
+    <span class="toggle-brackets">]</span>
+  </button>
+
+  <!-- Boot Screen (Splash) -->
   <div id="boot-screen" class="boot-screen">
     <div class="boot-inner">
-      <img src="assets/euclid_construction.gif" alt="Euclid Construction" class="boot-gif">
-      <p class="boot-text">INITIALIZING GEOMETRIC ENGINE...</p>
+      <div class="boot-logo-wrapper">
+        <img src="assets/euclid_construction_light.gif" alt="Euclid Construction" class="boot-gif" id="boot-gif-img">
+      </div>
+      <p class="boot-text">built to be built upon<span class="blinking-cursor">_</span></p>
     </div>
   </div>
 
+  <!-- Concept Screen (Two-Column Textbook Spread) -->
   <div id="concept-screen" class="concept-screen hidden">
-    <!-- SVG Filter for Chalk Effect -->
-    <svg style="width:0; height:0; position:absolute;">
-      <filter id="chalk-filter">
-        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </svg>
+
   
+
     <div class="concept-inner">
-      <svg class="chalkboard-svg" viewBox="0 0 500 350">
-        <!-- Sunflower Seeds (Phyllotaxis Approximation) -->
-        <g class="sunflower" filter="url(#chalk-filter)"></g>
+      <!-- Left Column: Camera Outline Blueprint Figure -->
+      <div class="concept-figure-col">
+        <div class="concept-product-frame">
+          <img src="assets/IMG_4712-Photoroom.png" alt="EuclidCam Core Outline blueprint" class="concept-product-img">
+        </div>
+      </div>
   
-        <!-- Building / Blueprint Schematic -->
-        <g class="building-schematic" filter="url(#chalk-filter)">
-          <!-- Schematic Grid / Axes -->
-          <line x1="50" y1="175" x2="450" y2="175" class="chalk-line dashed thin" style="opacity: 0.3;" />
-          <line x1="250" y1="50" x2="250" y2="300" class="chalk-line dashed thin" style="opacity: 0.3;" />
-  
-          <!-- Camera Module Construction -->
-          <rect x="200" y="125" width="100" height="70" rx="5" class="chalk-line" />
-          <circle cx="250" cy="160" r="25" class="chalk-line" />
-          <rect x="230" y="110" width="40" height="15" class="chalk-line" />
-  
-          <!-- Quirky Doodles -->
-          <g class="quirky-doodles">
-            <!-- Coffee Mug -->
-            <path
-              d="M 420,280 Q 425,280 430,285 L 430,305 Q 425,310 410,310 L 390,310 Q 375,310 370,305 L 370,285 Q 375,280 380,280 Z"
-              class="chalk-line thin" />
-            <path d="M 430,288 Q 445,288 445,296 Q 445,302 430,302" class="chalk-line thin" />
-            <!-- Steam -->
-            <path d="M 390,275 Q 385,265 390,255" class="chalk-line thin" style="opacity: 0.5;" />
-            <path d="M 410,270 Q 405,260 410,250" class="chalk-line thin" style="opacity: 0.5;" />
-  
-            <!-- Scribbles / Notes -->
-            <text x="380" y="325" class="chalk-text mini">FIXME: PK/Φ ?</text>
-            <text x="60" y="80" class="chalk-text mini" style="transform: rotate(-5deg);">TODO: ADD_AI</text>
-          </g>
-  
-          <!-- Structural Annotations -->
-          <line x1="180" y1="100" x2="200" y2="125" class="chalk-line thin" />
-          <text x="140" y="90" class="chalk-text mini">MODULAR_CORE</text>
-  
-          <line x1="320" y1="210" x2="300" y2="195" class="chalk-line thin" />
-          <text x="330" y="225" class="chalk-text mini">NON_LINEAR_GROWTH</text>
-        </g>
-      </svg>
-  
-      <div class="concept-text">
-        <h1 class="headline shadowed">Concept</h1>
-        <p class="subtext">A caffeinated weekend project for you to build on top of. <br>Totally open source. A bit
-          wobbly, very mathematical, and built for building.</p>
-        <p class="bridge mono">EuclidCam: Digital Legos for vision. Polish it. Break it. Make it yours.</p>
+      <!-- Right Column: Editorial Text -->
+      <div class="concept-text-col">
+        <div class="concept-text">
+          <h1 class="headline shadowed">Concept</h1>
+          <p class="subtext">Connecting modular hardware building blocks to a fully open-source camera platform. Designed for total hackability, EuclidCam gives creators unrestricted access to the core vision pipeline to modify, upgrade, and rebuild custom imaging systems without proprietary limitations.</p>
+          <p class="bridge mono">EuclidCam: An open architecture for exponential creation.</p>
+        </div>
       </div>
     </div>
+
+
+
+
   </div>
 
+  <!-- Main Grid Dashboard (4-Column Editorial Spread) -->
   <div id="main-grid" class="main-grid hidden">
+    <!-- Grid items representing printed book chapters -->
+    
+    <!-- GALLERY CARD -->
     <div class="grid-item gallery" id="grid-gallery">
       <div class="item-inner">
-        <span class="item-id">01</span>
+        <span class="item-id">SECTION 01</span>
         <h2>Gallery</h2>
-        <p>Media Library / Enhanced Captures</p>
-        <div class="item-action">OPEN</div>
+        <p>A comprehensive media library managing RAW and SVG enhanced camera captures, featuring interactive golden-ratio guides and composition grids.</p>
+        
+        <!-- Dan Hollick Inspired Technical Metadata Table -->
+        <div class="card-meta">
+          <div class="meta-row"><span>FILE FORMAT</span><strong>RAW / SVG</strong></div>
+          <div class="meta-row"><span>COLOR SPACE</span><strong>SRGB / HSL</strong></div>
+          <div class="meta-row"><span>STORAGE</span><strong>LOCAL / FLASH</strong></div>
+        </div>
+
+        <div class="item-action">OPEN ARCHIVE</div>
       </div>
     </div>
-    <div class="grid-item github" id="grid-github">
-      <div class="item-inner">
-        <span class="item-id">02</span>
-        <h2>Github</h2>
-        <p>Source / Contribution / PiDigiCam</p>
-        <div class="item-action">VIEW</div>
-      </div>
-    </div>
-    <div class="grid-item sdk" id="grid-sdk">
-      <div class="item-inner">
-        <span class="item-id">03</span>
-        <h2>SDK</h2>
-        <p>Architecture / Optimization / C-Engine</p>
-        <div class="item-action">DOCS</div>
-      </div>
-    </div>
+
+    <!-- DESIGN CARD -->
     <div class="grid-item design" id="grid-design">
       <div class="item-inner">
-        <span class="item-id">04</span>
+        <span class="item-id">SECTION 02</span>
         <h2>Design</h2>
-        <p>Golden Ratio / Phi / Aesthetics</p>
-        <div class="item-action">SPEC</div>
+        <p>Golden Ratio proportions, Phi-based spacing tokens, mathematical aesthetic criteria, and structural layout design guidelines.</p>
+        
+        <!-- Dan Hollick Inspired Technical Metadata Table -->
+        <div class="card-meta">
+          <div class="meta-row"><span>SPACING RATIO</span><strong>Φ ≈ 1.61803</strong></div>
+          <div class="meta-row"><span>GRID BASE</span><strong>8PX SYSTEM</strong></div>
+          <div class="meta-row"><span>FONTS</span><strong>DEPARTURE MONO</strong></div>
+        </div>
+
+        <div class="item-action">SPECIFICATION</div>
+      </div>
+    </div>
+
+    <!-- SDK CARD -->
+    <div class="grid-item sdk" id="grid-sdk">
+      <div class="item-inner">
+        <span class="item-id">SECTION 03</span>
+        <h2>SDK</h2>
+        <p>Low-level architecture documentation, math libraries, performance optimization flags, and interface APIs for the native C-Engine core.</p>
+        
+        <!-- Dan Hollick Inspired Technical Metadata Table -->
+        <div class="card-meta">
+          <div class="meta-row"><span>CORE COMPILER</span><strong>GCC 12.2 / CLANG</strong></div>
+          <div class="meta-row"><span>OPTIMIZATIONS</span><strong>SIMD / NEON</strong></div>
+          <div class="meta-row"><span>LANGUAGE</span><strong>ANSI C99 / C++17</strong></div>
+        </div>
+
+        <div class="item-action">READ MANUAL</div>
+      </div>
+    </div>
+
+    <!-- GITHUB CARD -->
+    <div class="grid-item github" id="grid-github">
+      <div class="item-inner">
+        <span class="item-id">SECTION 04</span>
+        <h2>Github</h2>
+        <p>Source code repositories, architectural contribution guidelines, and direct integrations for external PiDigiCam custom hardware platforms.</p>
+        
+        <!-- Dan Hollick Inspired Technical Metadata Table -->
+        <div class="card-meta">
+          <div class="meta-row"><span>REPOSITORY</span><strong>EUCLIDCAM-CORE</strong></div>
+          <div class="meta-row"><span>PLATFORM</span><strong>RASPBERRY PI</strong></div>
+          <div class="meta-row"><span>LICENSE</span><strong>MIT / OPEN SOURCE</strong></div>
+        </div>
+
+        <div class="item-action">VIEW SOURCES</div>
       </div>
     </div>
   </div>
+  <!-- Gallery Screen -->
+  <div id="gallery-screen" class="gallery-screen hidden">
+    <div class="gallery-header">
+      <div class="gallery-back" id="gallery-back">← BACK TO INDEX</div>
+      <div class="gallery-title-wrapper">
+        <h1 class="headline shadowed">Camera Roll</h1>
+        <span class="doc-id">SYS.REF // IMG</span>
+      </div>
+    </div>
+    
+    <div class="gallery-grid">
+      <div class="gallery-img-container"><img src="assets/sample_1.png" class="gallery-img" alt="Photo 1"></div>
+      <div class="gallery-img-container"><img src="assets/sample_2.png" class="gallery-img" alt="Photo 2"></div>
+      <div class="gallery-img-container"><img src="assets/sample_3.png" class="gallery-img" alt="Photo 3"></div>
+      <div class="gallery-img-container"><img src="assets/IMG_4712-Photoroom.png" class="gallery-img" alt="Photo 4" style="background:#fff; object-fit:contain; padding:20px;"></div>
+    </div>
+  </div>
 
-  <script src="app.js?v=1.1"></script>
+  <!-- Fullscreen Modal for opening pictures -->
+  <div id="image-modal" class="image-modal hidden">
+    <div class="modal-close" id="modal-close">×</div>
+    <img src="" id="modal-image" class="modal-content">
+  </div>
+
+  <svg style="display:none;">
+    <filter id="chalk-filter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <script src="app.js?v=1.2"></script>
 </body>
 
 </html>
