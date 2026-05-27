@@ -906,3 +906,56 @@ body.dark-mode .grid-item:hover .item-action::after {
   object-fit: contain;
   border: 1px solid #333;
 }
+
+/* --- RESPONSIVE MOBILE LAYOUT --- */
+@media (max-width: 768px) {
+  /* Compress layout paddings */
+  .manual-header, .manual-footer {
+    left: 20px;
+    right: 20px;
+  }
+  
+  .concept-screen, .main-grid, .gallery-screen {
+    padding: 60px 20px;
+  }
+  
+  /* Stack the Concept Screen columns */
+  .concept-inner {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .headline {
+    font-size: 2.5rem;
+  }
+  
+  /* Force Dashboard into a single scrollable column */
+  .main-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  /* Retighten sticky navigation corners */
+  .theme-switch-wrapper {
+    top: 25px;
+    right: 20px;
+  }
+  
+  .hero-brand-text.sticky {
+    top: 25px;
+    left: 20px;
+    font-size: 22px;
+  }
+  
+  /* Compact Gallery for smaller touch targets */
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  
+  .modal-close {
+    top: 15px;
+    right: 20px;
+    font-size: 2.5rem;
+  }
+}
