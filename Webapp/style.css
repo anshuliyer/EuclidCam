@@ -42,41 +42,41 @@
 }
 
 :root {
-  --bg-base: #FDFCFB;
-  /* Pure crisp off-white paper */
+  --bg-base: #F4F4F4;
+  /* Clean, warm off-white */
   --bg-card: #FFFFFF;
   /* Pure white cards */
-  --bg-card-hover: #F6F3EE;
-  /* Soft beige hover */
-  --text-primary: #1A1A1A;
-  /* Deep black */
-  --text-secondary: #666666;
-  /* Neutral gray */
-  --accent-beige: #C5B39A;
-  /* Clean, prominent beige accent */
-  --accent-light: #E8E5DF;
-  /* Very subtle beige-grey borders */
+  --bg-card-hover: #FAFAFA;
+  /* Subtle hover */
+  --text-primary: #121212;
+  /* Deep charcoal */
+  --text-secondary: #555555;
+  /* Balanced gray */
+  --accent-beige: #D9C8B0;
+  /* Vibrant accent */
+  --accent-light: #EBEBEB;
+  /* Softer borders */
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Inter', sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
 }
 
-/* Dark Mode Color Palette: Black, White, and Beige */
+/* Dark Mode Color Palette */
 body.dark-mode {
   --bg-base: #111111;
   /* Pure dark black */
-  --bg-card: #1A1A1A;
-  /* Slightly lighter black cards */
-  --bg-card-hover: #222222;
-  /* Dark hover focus state */
+  --bg-card: #1C1C1C;
+  /* Deep charcoal cards */
+  --bg-card-hover: #262626;
+  /* Hover state */
   --text-primary: #FFFFFF;
   /* Pure white */
-  --text-secondary: #A3A3A3;
+  --text-secondary: #A0A0A0;
   /* Light gray */
-  --accent-beige: #C5B39A;
-  /* Prominent beige accent */
-  --accent-light: #333333;
-  /* Dark grid lines */
+  --accent-beige: #E6D5BD;
+  /* Brighter beige */
+  --accent-light: #2A2A2A;
+  /* Dark borders */
 }
 
 * {
@@ -101,52 +101,100 @@ body {
   background-color: var(--bg-base);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
   transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Theme Toggle Button - Minimalist Monospaced Header control */
-.theme-toggle {
+body.scroll-lock {
+  overflow-y: hidden;
+}
+
+/* AfterNow Inspired Frosted Pill Navigation */
+.floating-nav {
   position: fixed;
-  top: 35px;
-  right: 45px;
-  z-index: 150;
-  background: var(--bg-base);
-  /* Fills backing box to overlay layout borders */
-  border: none;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  letter-spacing: 0.08em;
-  padding: 4px 10px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 99px;
+  padding: 10px 24px;
+  width: auto;
+  min-width: 400px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  z-index: 200;
+  transition: all 0.4s ease;
 }
 
-.theme-toggle:hover {
+body.dark-mode .floating-nav {
+  background: rgba(20, 20, 20, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.nav-brand {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
   color: var(--text-primary);
-  transform: translateY(-1px);
 }
 
-.theme-toggle .toggle-brackets {
-  color: var(--accent-beige);
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.theme-switch-wrapper:hover .theme-label {
+  color: var(--text-primary);
+}
+
+.theme-label {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
   transition: color 0.3s;
 }
 
-.theme-toggle:hover .toggle-brackets {
-  color: var(--text-primary);
+.vertical-toggle {
+  width: 20px;
+  height: 36px;
+  border-radius: 20px;
+  border: 1px dotted var(--text-secondary);
+  position: relative;
+  transition: border-color 0.3s;
 }
 
-.theme-toggle.hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-8px);
+body.dark-mode .vertical-toggle {
+  border-color: var(--text-primary);
+}
+
+.toggle-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: top 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55), background 0.3s;
+}
+
+body.dark-mode .toggle-dot {
+  top: 19px; /* 36px height - 3px padding - 12px dot - 2px borders roughly */
 }
 
 /* Outer Editorial Frame representing physical paper mat borders */
@@ -222,16 +270,16 @@ body {
   opacity: 0.7;
 }
 
-/* Boot Screen */
+/* Boot Screen - Hero Section */
 .boot-screen {
-  position: fixed;
-  inset: 0;
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
   background: var(--bg-base);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
-  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
 }
 
 /* ... existing boot inner styles ... */
@@ -249,7 +297,7 @@ body {
 .boot-gif {
   width: 320px;
   height: auto;
-  border: 1px dashed var(--accent-light);
+  border: none;
   display: block;
 }
 
@@ -282,21 +330,18 @@ body {
 
 /* Concept Screen - Two-Column Printed manual Layout */
 .concept-screen {
-  position: fixed;
-  inset: 0;
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
   background: var(--bg-base);
   display: grid;
   place-items: center;
-  z-index: 95;
-  transition: opacity 1s ease-in-out, background-color 0.5s;
-  opacity: 1;
+  z-index: 5;
   padding: 80px 45px;
 }
 
 .concept-screen.hidden {
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
+  display: none;
 }
 
 .concept-inner {
@@ -504,22 +549,20 @@ body.dark-mode .concept-product-img {
   }
 }
 
-/* Main Grid - Editorial Multi-Column Textbook Split */
+/* Main Grid - AfterNow Inspired Asymmetrical Layout */
 .main-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  height: 100vh;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  min-height: 100vh;
   width: 100vw;
-  gap: 1px;
-  background: var(--accent-light);
-  /* Grid dividers */
-  padding: 18px;
-  transition: background-color 0.5s, opacity 1s, transform 1s;
+  gap: 24px;
+  background: var(--bg-base);
+  padding: 80px 45px;
+  position: relative;
 }
 
 .main-grid.hidden {
-  opacity: 0;
-  transform: scale(0.97);
+  display: none;
 }
 
 .grid-item {
@@ -528,15 +571,20 @@ body.dark-mode .concept-product-img {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 5rem 2.5rem 4rem 2.5rem;
+  padding: 3rem 2.5rem;
+  border-radius: 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: background-color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, background-color 0.4s;
+  border: 1px solid var(--accent-light);
 }
 
 .grid-item:hover {
   background: var(--bg-card-hover);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
 }
 
 .item-inner {

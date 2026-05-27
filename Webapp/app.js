@@ -5,41 +5,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('--- EuclidCam Sequence Initiated ---');
 
-  // Sequence 1: Boot Screen (Splash)
+  // The initial sequence locks scrolling until the animation finishes.
+  console.log('--- EuclidCam Hero Loading... ---');
   setTimeout(() => {
-    console.log('--- Boot Complete. Transitioning to Concept. ---');
-    bootScreen.style.opacity = '0';
-
-
-
-    setTimeout(() => {
-      bootScreen.style.display = 'none';
-      conceptScreen.classList.remove('hidden');
-      conceptScreen.style.display = 'grid';
-      conceptScreen.style.opacity = '1';
-
-      // Sequence 2: Concept Screen (Camera Outline Show)
-      setTimeout(() => {
-        console.log('--- Concept Explained. Loading Dashboard. ---');
-        setTimeout(() => {
-          conceptScreen.style.opacity = '0';
-          setTimeout(() => {
-            conceptScreen.style.display = 'none';
-            mainGrid.classList.remove('hidden');
-          }, 1000);
-        }, 4500); // Comfortable reading time for the concept overview
-      }, 800);
-    }, 800);
-  }, 4800); // Wait for the super fast GIF construction + 3s hold for EC text
+    document.body.classList.remove('scroll-lock');
+    console.log('--- Boot Complete. Scroll Unlocked. ---');
+  }, 4800);
 
   // Theme Toggle Logic
   const themeToggle = document.getElementById('theme-toggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
       const isDark = document.body.classList.toggle('dark-mode');
-      const toggleText = themeToggle.querySelector('.toggle-text');
-      if (toggleText) {
-        toggleText.textContent = isDark ? 'MODE: DARK' : 'MODE: LIGHT';
+      const themeLabel = document.getElementById('theme-label');
+      if (themeLabel) {
+        themeLabel.textContent = isDark ? 'DARK' : 'LIGHT';
       }
       
       const bootGifImg = document.getElementById('boot-gif-img');

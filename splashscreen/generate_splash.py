@@ -5,7 +5,7 @@ import random
 def get_theme_colors(theme):
     if theme == "light":
         return {
-            "bg": (253, 252, 251),           # #FDFCFB Off-white
+            "bg": (244, 244, 244),           # #F4F4F4 Off-white
             "light_accent": (197, 179, 154), # #C5B39A Beige
             "dark_accent": (140, 120, 95),   # Darker Beige
             "dotted": (210, 205, 195)        # Light grey/beige for dots
@@ -109,8 +109,9 @@ def generate_euclid_design(width, height, filename, theme="light", is_logo=False
             draw_smooth_arc(draw, curr_x + s, curr_y + curr_h - s, s, 90, 180, color, arc_width, chalk=is_logo)
             curr_h -= s
     
-    text_x, text_y = container_x + 10 * scale, container_y + max_h - 40 * scale
-    draw_chalky_text(draw, text_x, text_y - 18 * scale, "EC", colors["light_accent"], 32, scale)
+    text_x = container_x
+    text_y = container_y + max_h
+    draw_chalky_text(draw, text_x + 6 * scale, text_y - 45 * scale, "EuclidCam", colors["light_accent"], 24, scale)
     
     img.save(filename, "JPEG", quality=95) if filename.endswith(".jpeg") else img.save(filename)
     print(f"Generated: {filename}")
@@ -225,7 +226,9 @@ def generate_construction_gif(width, height, filename, theme="light", duration=1
         temp_img = img.copy()
         temp_draw = ImageDraw.Draw(temp_img)
         # Shift up by exactly the difference in font size (32 - 14 = 18) to match the baseline!
-        draw_chalky_text(temp_draw, text_x, text_y - 18 * scale, "EC", colors["light_accent"], 32, scale)
+        text_x = container_x
+        text_y = container_y + max_h
+        draw_chalky_text(temp_draw, text_x + 6 * scale, text_y - 45 * scale, "EuclidCam", colors["light_accent"], 24, scale)
         frames.append(temp_img)
         
     frames[0].save(filename, save_all=True, append_images=frames[1:], duration=duration, loop=0)
