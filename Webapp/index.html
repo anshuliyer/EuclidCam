@@ -11,16 +11,13 @@
 </head>
 
 <body class="euclid-theme scroll-lock">
-  <!-- AfterNow Inspired Floating Pill Navigation -->
-  <nav class="floating-nav">
-    <div class="nav-brand">EUCLIDCAM</div>
-    <div class="theme-switch-wrapper" id="theme-toggle">
-      <span class="theme-label" id="theme-label">LIGHT</span>
-      <div class="vertical-toggle">
-        <div class="toggle-dot"></div>
-      </div>
+  <!-- Top Right Theme Toggle -->
+  <div class="theme-switch-wrapper" id="theme-toggle">
+    <span class="theme-label" id="theme-label">LIGHT</span>
+    <div class="horizontal-toggle">
+      <div class="toggle-dot"></div>
     </div>
-  </nav>
+  </div>
 
   <!-- Outer Editorial Border to represent physical paper edges -->
   <div class="editorial-frame"></div>
@@ -35,9 +32,10 @@
   <!-- Boot Screen (Splash) -->
   <div id="boot-screen" class="boot-screen">
     <div class="boot-inner">
-      <div class="boot-logo-wrapper">
-        <img src="assets/euclid_construction_light.gif" alt="Euclid Construction" class="boot-gif" id="boot-gif-img">
-      </div>
+        <div class="boot-logo-wrapper">
+          <img src="assets/euclid_construction_light.gif" alt="EuclidCam Boot Logo" class="boot-gif" id="boot-gif-img">
+          <div id="hero-brand-text" class="hero-brand-text">EuclidCam</div>
+        </div>
       <p class="boot-text">built to be built upon<span class="blinking-cursor">_</span></p>
     </div>
   </div>
@@ -59,7 +57,7 @@
       <div class="concept-text-col">
         <div class="concept-text">
           <h1 class="headline shadowed">Concept</h1>
-          <p class="subtext">Connecting modular hardware building blocks to a fully open-source camera platform. Designed for total hackability, EuclidCam gives creators unrestricted access to the core vision pipeline to modify, upgrade, and rebuild custom imaging systems without proprietary limitations.</p>
+          <p class="subtext">An entirely hackable, open-source digital camera designed to be endlessly built upon. It is weird, wacky, and beautifully imperfect. It was mine, and now it is yours.</p>
           <p class="bridge mono">EuclidCam: An open architecture for exponential creation.</p>
         </div>
       </div>
@@ -77,7 +75,6 @@
     <!-- GALLERY CARD -->
     <div class="grid-item gallery" id="grid-gallery">
       <div class="item-inner">
-        <span class="item-id">SECTION 01</span>
         <h2>Gallery</h2>
         <p>A comprehensive media library managing RAW and SVG enhanced camera captures, featuring interactive golden-ratio guides and composition grids.</p>
         
@@ -95,7 +92,6 @@
     <!-- DESIGN CARD -->
     <div class="grid-item design" id="grid-design">
       <div class="item-inner">
-        <span class="item-id">SECTION 02</span>
         <h2>Design</h2>
         <p>Golden Ratio proportions, Phi-based spacing tokens, mathematical aesthetic criteria, and structural layout design guidelines.</p>
         
@@ -110,10 +106,26 @@
       </div>
     </div>
 
+    <!-- HOW-TO CARD -->
+    <div class="grid-item how-to" id="grid-how-to">
+      <div class="item-inner">
+        <h2>How-To</h2>
+        <p>Comprehensive step-by-step instructions, hardware assembly guides, and software deployment tutorials for building your own EuclidCam.</p>
+        
+        <!-- Dan Hollick Inspired Technical Metadata Table -->
+        <div class="card-meta">
+          <div class="meta-row"><span>GUIDE TYPE</span><strong>HARDWARE / SOFTWARE</strong></div>
+          <div class="meta-row"><span>DIFFICULTY</span><strong>INTERMEDIATE</strong></div>
+          <div class="meta-row"><span>EST. TIME</span><strong>2-4 HOURS</strong></div>
+        </div>
+
+        <div class="item-action">READ TUTORIALS</div>
+      </div>
+    </div>
+
     <!-- SDK CARD -->
     <div class="grid-item sdk" id="grid-sdk">
       <div class="item-inner">
-        <span class="item-id">SECTION 03</span>
         <h2>SDK</h2>
         <p>Low-level architecture documentation, math libraries, performance optimization flags, and interface APIs for the native C-Engine core.</p>
         
@@ -131,7 +143,6 @@
     <!-- GITHUB CARD -->
     <div class="grid-item github" id="grid-github">
       <div class="item-inner">
-        <span class="item-id">SECTION 04</span>
         <h2>Github</h2>
         <p>Source code repositories, architectural contribution guidelines, and direct integrations for external PiDigiCam custom hardware platforms.</p>
         
@@ -143,6 +154,23 @@
         </div>
 
         <div class="item-action">VIEW SOURCES</div>
+      </div>
+    </div>
+
+    <!-- LICENSES CARD -->
+    <div class="grid-item licenses" id="grid-licenses">
+      <div class="item-inner">
+        <h2>Licenses</h2>
+        <p>Legal specifications, open-source attribution, modification guidelines, and patent-free hardware usage agreements for the EuclidCam platform.</p>
+        
+        <!-- Dan Hollick Inspired Technical Metadata Table -->
+        <div class="card-meta">
+          <div class="meta-row"><span>SOFTWARE</span><strong>MIT / GPLv3</strong></div>
+          <div class="meta-row"><span>HARDWARE</span><strong>CERN-OHL-S</strong></div>
+          <div class="meta-row"><span>TERMS</span><strong>OPEN / HACKABLE</strong></div>
+        </div>
+
+        <div class="item-action">VIEW LICENSES</div>
       </div>
     </div>
   </div>

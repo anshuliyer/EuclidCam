@@ -57,8 +57,8 @@
   --accent-light: #EBEBEB;
   /* Softer borders */
   --font-mono: 'JetBrains Mono', monospace;
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'JetBrains Mono', monospace;
+  --font-serif: 'JetBrains Mono', monospace;
 }
 
 /* Dark Mode Color Palette */
@@ -112,47 +112,32 @@ body.scroll-lock {
   overflow-y: hidden;
 }
 
-/* AfterNow Inspired Frosted Pill Navigation */
-.floating-nav {
+#bg-canvas {
   position: fixed;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 99px;
-  padding: 10px 24px;
-  width: auto;
-  min-width: 400px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  z-index: 200;
-  transition: all 0.4s ease;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* Keeps it behind all content */
+  pointer-events: none;
 }
 
-body.dark-mode .floating-nav {
-  background: rgba(20, 20, 20, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-}
-
-.nav-brand {
-  font-family: var(--font-sans);
-  font-weight: 800;
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
-  color: var(--text-primary);
-}
+/* Top Right Theme Switch */
 
 .theme-switch-wrapper {
+  position: fixed;
+  top: 30px;
+  right: 45px;
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
+  z-index: 200;
+  transition: transform 0.1s ease-out;
+}
+
+.theme-switch-wrapper:active {
+  transform: scale(0.92);
 }
 
 .theme-switch-wrapper:hover .theme-label {
@@ -168,16 +153,16 @@ body.dark-mode .floating-nav {
   transition: color 0.3s;
 }
 
-.vertical-toggle {
-  width: 20px;
-  height: 36px;
+.horizontal-toggle {
+  width: 36px;
+  height: 20px;
   border-radius: 20px;
   border: 1px dotted var(--text-secondary);
   position: relative;
   transition: border-color 0.3s;
 }
 
-body.dark-mode .vertical-toggle {
+body.dark-mode .horizontal-toggle {
   border-color: var(--text-primary);
 }
 
@@ -187,14 +172,14 @@ body.dark-mode .vertical-toggle {
   background: var(--text-primary);
   border-radius: 50%;
   position: absolute;
-  top: 3px;
-  left: 50%;
-  transform: translateX(-50%);
-  transition: top 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55), background 0.3s;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  transition: left 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55), background 0.3s;
 }
 
 body.dark-mode .toggle-dot {
-  top: 19px; /* 36px height - 3px padding - 12px dot - 2px borders roughly */
+  left: 19px; /* 36px width - 3px padding - 12px dot - 2px borders */
 }
 
 /* Outer Editorial Frame representing physical paper mat borders */
@@ -275,7 +260,7 @@ body.dark-mode .toggle-dot {
   position: relative;
   min-height: 100vh;
   width: 100%;
-  background: var(--bg-base);
+  background: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -292,6 +277,41 @@ body.dark-mode .toggle-dot {
 .boot-logo-wrapper {
   margin-bottom: 2rem;
   display: inline-block;
+  position: relative;
+}
+
+.hero-brand-text {
+  position: absolute;
+  bottom: 25px; /* Moved 10px up from 15px */
+  left: 16px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--accent-beige);
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.5s ease, all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: top left;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+.hero-brand-text.visible {
+  opacity: 1;
+}
+
+body.dark-mode .hero-brand-text {
+  color: var(--text-primary); /* Uses white in dark mode just like the script did */
+}
+
+.hero-brand-text.sticky {
+  position: fixed;
+  top: 38px;
+  left: 45px;
+  font-size: 32px;
+  /* Keeps the original font-family, color, and casing (EuclidCam) */
+  letter-spacing: 0.05em;
+  transform: translateY(0);
 }
 
 .boot-gif {
@@ -333,7 +353,7 @@ body.dark-mode .toggle-dot {
   position: relative;
   min-height: 100vh;
   width: 100%;
-  background: var(--bg-base);
+  background: transparent;
   display: grid;
   place-items: center;
   z-index: 5;
@@ -367,17 +387,12 @@ body.dark-mode .toggle-dot {
 .concept-product-frame {
   width: 100%;
   max-width: 440px;
-  /* Enhanced width since it is the main left figure */
   height: auto;
   aspect-ratio: 1 / 1.45;
-  border: 1px solid var(--accent-light);
-  padding: 2.2rem;
-  background: var(--bg-card);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+  background: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: background-color 0.5s, border-color 0.5s;
 }
 
 .concept-product-img {
@@ -556,7 +571,7 @@ body.dark-mode .concept-product-img {
   min-height: 100vh;
   width: 100vw;
   gap: 24px;
-  background: var(--bg-base);
+  background: transparent;
   padding: 80px 45px;
   position: relative;
 }
