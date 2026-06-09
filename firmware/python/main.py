@@ -62,7 +62,7 @@ rst_pin = digitalio.DigitalInOut(board.D25)
 
 spi = board.SPI()
 disp = ili9341.ILI9341(spi, cs=cs_pin, dc=dc_pin, rst=rst_pin, 
-                       rotation=90, baudrate=24000000, bgr=True)
+                       rotation=90, baudrate=24000000)
 
 # ─── Shared camera object ─────────────────────────────────────────────────────
 picam2 = Picamera2()
