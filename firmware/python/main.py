@@ -234,10 +234,6 @@ class CameraMode:
             import threading
             threading.Thread(target=flash_drive.trigger, args=(1.0,), daemon=True).start()
 
-        # Screen Flash
-        flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
-        display_to_map(flash, fb_map, config=config)
-
         self._draw_capture_overlay(fb_map, config, "PROCESSING…", progress=0.2)
         raw = self._do_capture_raw({
             "Contrast": 1.05, "Sharpness": 2.0,
@@ -328,9 +324,6 @@ class LowLightMode(CameraMode):
         if config.get("flash") and flash_drive:
             import threading
             threading.Thread(target=flash_drive.trigger, args=(1.0,), daemon=True).start()
-
-        flash = np.full((SCREEN_RES[1], SCREEN_RES[0], 3), 255, dtype=np.uint8)
-        display_to_map(flash, fb_map, config=config)
 
         self._draw_capture_overlay(fb_map, config, "STABILIZING SENSOR…", progress=0.2)
         raw = self._do_capture_raw({
@@ -702,8 +695,7 @@ class CameraEngine:
         # Share mode names with UI
         self.config["mode_names"] = [m.name for m in self.modes]
 
-        # Disable physical flash driver since GPIO 21 is now the shutter button
-        self.flash_drive = None 
+        self.flash_drive = flash.FlashDrive()
         self.gallery  = GalleryManager(photo_dir)
         self.server   = ServerManager(base_dir)
         self.input    = InputHandler(self.modes, self.gallery, self.server, flash_drive=self.flash_drive)
