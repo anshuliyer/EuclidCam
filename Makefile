@@ -27,7 +27,7 @@ help:
 # ── Install ────────────────────────────────────────────────────────────────────
 
 .PHONY: install
-install: _apt _pip _splash
+install: _apt _splash
 
 .PHONY: _apt
 _apt:
@@ -36,13 +36,10 @@ _apt:
 		python3 python3-pip python3-venv \
 		python3-picamera2 python3-numpy python3-pil \
 		python3-flask python3-evdev \
+		python3-qrcode python3-requests \
+		python3-adafruit-blinka python3-adafruit-circuitpython-rgb-display \
 		libcap-dev libcamera-apps \
 		fonts-dejavu-core v4l-utils flake8 git
-
-.PHONY: _pip
-_pip:
-	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) -m pip install picamera2 Pillow numpy Flask evdev qrcode requests
 
 .PHONY: _splash
 _splash:
