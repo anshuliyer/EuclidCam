@@ -64,6 +64,11 @@ spi = board.SPI()
 disp = ili9341.ILI9341(spi, cs=cs_pin, dc=dc_pin, rst=rst_pin, 
                        rotation=90, baudrate=24000000)
 
+# === Shutter Button ===
+shutter_button = digitalio.DigitalInOut(board.D21)
+shutter_button.direction = digitalio.Direction.INPUT
+shutter_button.pull = digitalio.Pull.UP
+
 # ─── Shared camera object ─────────────────────────────────────────────────────
 picam2 = Picamera2()
 
@@ -697,7 +702,8 @@ class CameraEngine:
         # Share mode names with UI
         self.config["mode_names"] = [m.name for m in self.modes]
 
-        self.flash_drive = flash.FlashDrive()
+        # Disable physical flash driver since GPIO 21 is now the shutter button
+        self.flash_drive = None 
         self.gallery  = GalleryManager(photo_dir)
         self.server   = ServerManager(base_dir)
         self.input    = InputHandler(self.modes, self.gallery, self.server, flash_drive=self.flash_drive)
@@ -750,8 +756,17 @@ class CameraEngine:
         display_to_map(frame, fb_map, config=self.config)
 
     def _process_input(self, fb_map) -> None:
-        """Read touch input and forward to InputHandler."""
+        """Read touch and physical button input."""
         touch_cmd = self.touch.get_touch_command(self.config)
+        
+        # Physical Shutter Button (Active Low)
+        if not shutter_button.value:
+            if not getattr(self, "_shutter_pressed", False):
+                self._shutter_pressed = True
+                touch_cmd = "ENTER"
+        else:
+            self._shutter_pressed = False
+            
         self.input.handle(touch_cmd, self.config, fb_map)
 
 
@@ -775,7 +790,7 @@ def _build_default_config(argv: list[str]) -> dict:
         "photo_dir":            "../../Captured",
         "is_connected":         False,
         "server_proc":          None,
-        "flash":                False,
+        "flash":                True,
         "show_connection_view": False,
     }
 
