@@ -77,7 +77,13 @@ def display_to_map(data_array: np.ndarray, fb_map, config: dict = None) -> None:
     if config and config.get("ui_rotation") == 180:
         data_array = np.rot90(data_array, 2)
         
-    img = Image.fromarray(data_array)
+    # Ensure it is explicitly an 8-bit RGB image to avoid any grayscale/distorted rendering
+    img = Image.fromarray(np.asarray(data_array, dtype=np.uint8)).convert("RGB")
+    
+    # Safety catch for dimensions
+    if img.width != disp.width or img.height != disp.height:
+        img = img.resize((disp.width, disp.height), Image.LANCZOS)
+        
     disp.image(img)
 
 
