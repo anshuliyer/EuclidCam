@@ -161,7 +161,7 @@ class CameraMode:
         try:
             logo_path = os.path.join(
                 os.path.dirname(__file__),
-                "../../splashscreen/transparent_logo.png",
+                "../../splashscreen/transparent_logo_light.png",
             )
             logo = Image.open(logo_path).convert("RGBA")
             logo.thumbnail((250, 250), Image.LANCZOS)
