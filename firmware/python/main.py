@@ -80,10 +80,7 @@ def display_to_map(data_array: np.ndarray, fb_map, config: dict = None) -> None:
     # Ensure it is explicitly an 8-bit RGB image to avoid any grayscale/distorted rendering
     img = Image.fromarray(np.asarray(data_array, dtype=np.uint8)).convert("RGB")
     
-    # Safety catch for dimensions
-    if img.width != disp.width or img.height != disp.height:
-        img = img.resize((disp.width, disp.height), Image.LANCZOS)
-        
+    # Send directly to the display, allowing the library to handle rotation
     disp.image(img)
 
 
