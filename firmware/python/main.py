@@ -31,6 +31,9 @@ from typing import Any
 import numpy as np
 from picamera2 import Picamera2
 from PIL import Image, ImageDraw, ImageFont
+import board
+import digitalio
+import adafruit_rgb_display.ili9341 as ili9341
 
 # ─── Project: UI ───────────────────────────────────────────────────────────────
 from UI import ui_top, touch_interface
@@ -49,9 +52,17 @@ from IO import gpio_top as io_stubs
 from IO import flash
 
 # ─── Hardware constants ────────────────────────────────────────────────────────
-FB_DEVICE: str   = "/dev/fb1"
-SCREEN_RES: tuple = (480, 320)
+SCREEN_RES: tuple = (320, 240)
 FPS_CAP: int     = 8
+
+# === ILI9341 Display Setup ===
+cs_pin = digitalio.DigitalInOut(board.D8)
+dc_pin = digitalio.DigitalInOut(board.D24)
+rst_pin = digitalio.DigitalInOut(board.D25)
+
+spi = board.SPI()
+disp = ili9341.ILI9341(spi, cs=cs_pin, dc=dc_pin, rst=rst_pin, 
+                       rotation=90, baudrate=24000000)
 
 # ─── Shared camera object ─────────────────────────────────────────────────────
 picam2 = Picamera2()
@@ -62,15 +73,12 @@ picam2 = Picamera2()
 # ==============================================================================
 
 def display_to_map(data_array: np.ndarray, fb_map, config: dict = None) -> None:
-    """Convert an RGB888 numpy array to RGB565 and write it to the framebuffer."""
+    """Convert an RGB888 numpy array and write it to the ILI9341 display."""
     if config and config.get("ui_rotation") == 180:
         data_array = np.rot90(data_array, 2)
         
-    data = data_array.astype(np.uint16)
-    r = data[:, :, 0] >> 3
-    g = (data[:, :, 1] >> 2) << 5
-    b = (data[:, :, 2] >> 3) << 11
-    fb_map[:] = (r | g | b).tobytes()
+    img = Image.fromarray(data_array)
+    disp.image(img)
 
 
 def start_preview() -> None:
@@ -696,17 +704,14 @@ class CameraEngine:
     # ── Entry point ───────────────────────────────────────────────────────────
 
     def run(self) -> None:
-        """Open the framebuffer and enter the main event loop."""
+        """Enter the main event loop."""
         start_preview()
         try:
-            with open(FB_DEVICE, "r+b") as f:
-                map_size = SCREEN_RES[0] * SCREEN_RES[1] * 2
-                with mmap.mmap(f.fileno(), map_size) as fb_map:
-                    while True:
-                        loop_start = time.time()
-                        self._tick(fb_map)
-                        elapsed = time.time() - loop_start
-                        time.sleep(max(0.0, 1.0 / FPS_CAP - elapsed))
+            while True:
+                loop_start = time.time()
+                self._tick(None)
+                elapsed = time.time() - loop_start
+                time.sleep(max(0.0, 1.0 / FPS_CAP - elapsed))
         except KeyboardInterrupt:
             print("\n[SYSTEM] Shutting down…")
         finally:
