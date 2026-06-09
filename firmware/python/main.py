@@ -77,6 +77,9 @@ def display_to_map(data_array: np.ndarray, fb_map, config: dict = None) -> None:
     if config and config.get("ui_rotation") == 180:
         data_array = np.rot90(data_array, 2)
         
+    # The physical display expects BGR, so we swap the Red and Blue channels
+    data_array = data_array[:, :, ::-1]
+        
     # Ensure it is explicitly an 8-bit RGB image to avoid any grayscale/distorted rendering
     img = Image.fromarray(np.asarray(data_array, dtype=np.uint8)).convert("RGB")
     
