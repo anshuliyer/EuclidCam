@@ -1,31 +1,30 @@
 import os
 import json
-
-try:
-    import evdev
-    from evdev import ecodes
-except ImportError:
-    evdev = None
+import board
+import digitalio
 
 class TouchInterface:
     def __init__(self, config_path, screen_res):
-        self.device = self._find_touch_device()
         self.config = self._load_config(config_path)
         self.screen_res = screen_res
         self.last_x = 0
         self.last_y = 0
         self.touch_active = False
-
-    def _find_touch_device(self):
-        if not evdev: return None
+        
+        # Setup pure Python XPT2046 over SPI
         try:
-            devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-            for dev in devices:
-                if "touchscreen" in dev.name.lower() or "ads7846" in dev.name.lower():
-                    return dev
-        except:
-            pass
-        return None
+            self.spi = board.SPI()
+            self.cs = digitalio.DigitalInOut(board.D7) # CS1
+            self.cs.direction = digitalio.Direction.OUTPUT
+            self.cs.value = True
+            
+            self.irq = digitalio.DigitalInOut(board.D17) # penirq
+            self.irq.direction = digitalio.Direction.INPUT
+            self.irq.pull = digitalio.Pull.UP
+            self.hardware_ok = True
+        except Exception as e:
+            print(f"[TOUCH] Hardware init failed: {e}")
+            self.hardware_ok = False
 
     def _load_config(self, path):
         try:
@@ -34,28 +33,56 @@ class TouchInterface:
         except:
             return None
 
-    def get_touch_command(self, ui_state):
-        if not self.device or not self.config: return None
-        
-        try:
-            while True: # Drain the event queue
-                event = self.device.read_one()
-                if event is None: break
-                
-                if event.type == ecodes.EV_ABS:
-                    if event.code == ecodes.ABS_X: self.last_x = event.value
-                    if event.code == ecodes.ABS_Y: self.last_y = event.value
-                elif event.type == ecodes.EV_KEY and event.code == ecodes.BTN_TOUCH:
-                    if event.value == 1: # Touch start
-                        self.touch_active = True
-                    else: # Touch release
-                        self.touch_active = False
-                        cmd, x, y = self._map_to_command(self.last_x, self.last_y, ui_state)
-                        if cmd:
-                            print(f"[TOUCH] {cmd} at ({int(x)}, {int(y)})")
-                        return cmd
-        except Exception as e:
+    def _read_raw(self):
+        if not self.hardware_ok or self.irq.value: # Active low
+            return None, None
+            
+        while not self.spi.try_lock():
             pass
+            
+        try:
+            self.spi.configure(baudrate=2000000)
+            
+            xs, ys = [], []
+            buf = bytearray(3)
+            for _ in range(5):
+                self.cs.value = False
+                
+                # Read X (0xD0)
+                self.spi.write_readinto(bytearray([0xD0, 0x00, 0x00]), buf)
+                x = (buf[1] << 5) | (buf[2] >> 3)
+                
+                # Read Y (0x90)
+                self.spi.write_readinto(bytearray([0x90, 0x00, 0x00]), buf)
+                y = (buf[1] << 5) | (buf[2] >> 3)
+                
+                self.cs.value = True
+                xs.append(x)
+                ys.append(y)
+                
+            xs.sort()
+            ys.sort()
+            return xs[2], ys[2] # Return median
+        finally:
+            self.spi.unlock()
+
+    def get_touch_command(self, ui_state):
+        if not self.config: return None
+        
+        x, y = self._read_raw()
+        
+        if x is not None and y is not None:
+            if not self.touch_active:
+                self.touch_active = True
+            self.last_x, self.last_y = x, y
+        else:
+            if self.touch_active:
+                self.touch_active = False
+                cmd, mapped_x, mapped_y = self._map_to_command(self.last_x, self.last_y, ui_state)
+                if cmd:
+                    print(f"[TOUCH] {cmd} at ({int(mapped_x)}, {int(mapped_y)})")
+                return cmd
+                
         return None
 
     def _map_to_command(self, raw_x, raw_y, ui_state):
