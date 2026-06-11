@@ -682,9 +682,27 @@ class InputHandler:
                     print("[SYSTEM] Started server.")
                 return # Keep menu open to show state toggle
             elif idx == 2:        # Bluetooth
-                config["bluetooth_on"] = not config.get("bluetooth_on", False)
-                state = "ON" if config["bluetooth_on"] else "OFF"
-                print(f"[SYSTEM] Bluetooth toggled {state}")
+                is_on = not config.get("bluetooth_on", False)
+                config["bluetooth_on"] = is_on
+                
+                import subprocess
+                if is_on:
+                    print("[BLUETOOTH] Powering on and making discoverable...")
+                    try:
+                        subprocess.run(["rfkill", "unblock", "bluetooth"], check=False)
+                        subprocess.run(["bluetoothctl", "power", "on"], check=False)
+                        subprocess.run(["bluetoothctl", "discoverable", "on"], check=False)
+                        subprocess.run(["bluetoothctl", "pairable", "on"], check=False)
+                        print("[BLUETOOTH] Camera is now visible! Pair your phone now.")
+                    except Exception as e:
+                        print(f"[BLUETOOTH] Setup error: {e}")
+                else:
+                    print("[BLUETOOTH] Turning off discoverability...")
+                    try:
+                        subprocess.run(["bluetoothctl", "discoverable", "off"], check=False)
+                        subprocess.run(["bluetoothctl", "pairable", "off"], check=False)
+                    except:
+                        pass
                 return # Keep menu open
             # idx == 3 → Back (fall through, closes submenu below)
 
