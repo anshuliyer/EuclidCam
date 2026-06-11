@@ -140,7 +140,9 @@ class TopPanel:
             selected_idx = self.config.get("menu_index", 0)
             title = "SYSTEM SETTINGS"
         elif current_submenu == "Modes":
-            items = self.config.get("mode_names", ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia"])
+            all_items = self.config.get("mode_names", ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia"])
+            page = self.config.get("modes_page", 0)
+            items = all_items[page*4 : (page+1)*4]
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT VISION"
         elif current_submenu == "Grid":
@@ -223,7 +225,9 @@ class TopPanel:
         
         available_w = w - (grid_margin_x * 2)
         available_h = h - header_h - (grid_margin_y * 2)
-        
+        if current_submenu == "Modes":
+            available_h -= 40 # Reserve bottom space for pagination
+            
         btn_w = (available_w - (gap * (cols - 1))) // cols
         btn_h = (available_h - (gap * (rows - 1))) // rows
         
@@ -234,7 +238,10 @@ class TopPanel:
             bx = grid_margin_x + col * (btn_w + gap)
             by = header_h + grid_margin_y + row * (btn_h + gap)
             
-            is_selected = (i == selected_idx)
+            if current_submenu == "Modes":
+                is_selected = (page * 4 + i == selected_idx)
+            else:
+                is_selected = (i == selected_idx)
             
             # Button Card Logic - TRANSLUCENT GLASS EFFECT
             card_fill = tuple(list(self.MAUVE) + [220]) if is_selected else (30, 30, 40, 150)
@@ -271,6 +278,21 @@ class TopPanel:
             
             tw = overlay_draw.textlength(display_name, font=font_item) if hasattr(overlay_draw, "textlength") else len(display_name) * 9
             overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
+
+        # 5. Pagination Arrows
+        if current_submenu == "Modes":
+            arrow_color = list(self.MAUVE) + [180]
+            # Left Arrow
+            if page > 0:
+                lx, ly = 30, h - 25
+                overlay_draw.polygon([(lx, ly), (lx + 15, ly - 15), (lx + 15, ly + 15)], fill=tuple(arrow_color))
+                overlay_draw.text((lx + 25, ly - 7), "PREV", fill=tuple(arrow_color), font=font_small)
+            # Right Arrow
+            total_pages = (len(all_items) + 3) // 4
+            if page < total_pages - 1:
+                rx, ry = w - 30, h - 25
+                overlay_draw.polygon([(rx, ry), (rx - 15, ry - 15), (rx - 15, ry + 15)], fill=tuple(arrow_color))
+                overlay_draw.text((rx - 65, ry - 7), "NEXT", fill=tuple(arrow_color), font=font_small)
 
         # Finally, blend the fully populated RGBA overlay onto the main RGB image
         main_img = draw._image.convert("RGBA")

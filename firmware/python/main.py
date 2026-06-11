@@ -516,7 +516,10 @@ class InputHandler:
             if not config.get("show_submenu"):
                 config["menu_index"] = config.get("touch_menu_idx", 0) % 4
             else:
-                config["submenu_index"] = config.get("touch_menu_idx", 0)
+                idx = config.get("touch_menu_idx", 0)
+                if config.get("current_submenu") == "Modes":
+                    idx += config.get("modes_page", 0) * 4
+                config["submenu_index"] = idx
             key = "SELECT"
 
         dispatch = {
@@ -571,10 +574,17 @@ class InputHandler:
     def _on_left(self, config: dict, _fb_map) -> None:
         if config.get("show_gallery"):
             self._gallery.prev()
+        elif config.get("show_submenu") and config.get("current_submenu") == "Modes":
+            page = config.get("modes_page", 0)
+            config["modes_page"] = max(0, page - 1)
 
     def _on_right(self, config: dict, _fb_map) -> None:
         if config.get("show_gallery"):
             self._gallery.next()
+        elif config.get("show_submenu") and config.get("current_submenu") == "Modes":
+            page = config.get("modes_page", 0)
+            max_page = (len(self._modes) - 1) // 4
+            config["modes_page"] = min(max_page, page + 1)
 
     def _on_back(self, config: dict, _fb_map) -> None:
         if config.get("show_connection_view"):
