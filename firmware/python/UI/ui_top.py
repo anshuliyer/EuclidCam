@@ -50,34 +50,38 @@ class TopPanel:
 
     def _draw_gear(self, draw):
         """
-        Draws a small gear icon in the bottom-right corner.
+        Draws a large gear icon in the bottom-right corner for easy tapping.
         """
         w, h = self.screen_res
-        x, y = w - self.padding - 10, h - self.padding - 10
-        draw.ellipse([x-8, y-8, x+8, y+8], outline=self.MAUVE, width=2)
+        x, y = w - self.padding - 20, h - self.padding - 20
+        draw.ellipse([x-14, y-14, x+14, y+14], outline=self.MAUVE, width=3)
         for i in range(8):
             import math
             angle = i * (360/8)
-            x1 = x + 8 * math.cos(math.radians(angle))
-            y1 = y + 8 * math.sin(math.radians(angle))
-            x2 = x + 12 * math.cos(math.radians(angle))
-            y2 = y + 12 * math.sin(math.radians(angle))
-            draw.line([x1, y1, x2, y2], fill=self.MAUVE, width=2)
+            x1 = x + 14 * math.cos(math.radians(angle))
+            y1 = y + 14 * math.sin(math.radians(angle))
+            x2 = x + 22 * math.cos(math.radians(angle))
+            y2 = y + 22 * math.sin(math.radians(angle))
+            draw.line([x1, y1, x2, y2], fill=self.MAUVE, width=4)
+        draw.ellipse([x-6, y-6, x+6, y+6], fill=self.MAUVE)
 
     def _draw_gallery_icon(self, draw):
         """
-        Draws a small gallery (picture) icon in the bottom-left corner.
+        Draws a large gallery (picture) icon in the bottom-left corner.
         """
         w, h = self.screen_res
-        x, y = self.padding, h - self.padding - 10
-        # Draw a small "photo" frame
-        draw.rectangle([x, y-12, x+16, y+4], outline=self.MAUVE, width=2)
+        x, y = self.padding + 5, h - self.padding - 35
+        # Draw a large "photo" frame
+        draw.rectangle([x, y, x+40, y+30], outline=self.MAUVE, width=3)
         # Draw a "mountain" inside
-        draw.polygon([(x+3, y+2), (x+8, y-6), (x+13, y+2)], fill=self.MAUVE)
+        draw.polygon([(x+5, y+25), (x+15, y+10), (x+25, y+25)], fill=self.MAUVE)
+        draw.polygon([(x+20, y+25), (x+28, y+15), (x+35, y+25)], fill=self.MAUVE)
+        # Sun
+        draw.ellipse([x+8, y+5, x+14, y+11], fill=self.MAUVE)
         
         # Highlight if gallery is active
         if self.config.get("show_gallery"):
-            draw.text((x + 20, y - 8), "GALLERY", fill=self.MAUVE)
+            draw.text((x + 50, y + 5), "GALLERY", fill=self.MAUVE)
 
     def _draw_gallery_view(self, draw):
         """
@@ -198,9 +202,9 @@ class TopPanel:
 
         from PIL import ImageFont
         try:
-            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
-            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
-            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 26)
+            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
         except:
             font_title = font_item = font_small = None
 
@@ -222,11 +226,11 @@ class TopPanel:
 
         # 3. Grid Calculation
         num_items = len(items)
-        cols = 4
+        cols = 2
         rows = (num_items + cols - 1) // cols
         
-        grid_margin_x = 25
-        grid_margin_y = 15
+        grid_margin_x = 15
+        grid_margin_y = 10
         gap = 12
         
         available_w = w - (grid_margin_x * 2)
@@ -255,7 +259,7 @@ class TopPanel:
             draw_func([bx, by, bx + btn_w, by + btn_h], radius=10, fill=card_fill, outline=card_outline, width=2 if is_selected else 1)
 
             # 4. Professional Iconography
-            icon_y = by + 22
+            icon_y = by + (btn_h // 2) - 15
             cx = bx + btn_w // 2
             
             if item == "Modes":
@@ -277,8 +281,8 @@ class TopPanel:
                 status = "ON" if self.config.get("is_connected") else "OFF"
                 overlay_draw.text((bx + btn_w - 30, by + 8), status, fill=accent_color, font=font_small)
             
-            tw = overlay_draw.textlength(display_name, font=font_item) if hasattr(overlay_draw, "textlength") else len(display_name) * 9
-            overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
+            tw = overlay_draw.textlength(display_name, font=font_item) if hasattr(overlay_draw, "textlength") else len(display_name) * 11
+            overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 26), display_name, fill=text_color, font=font_item)
 
         # Finally, blend the fully populated RGBA overlay onto the main RGB image
         main_img = draw._image.convert("RGBA")

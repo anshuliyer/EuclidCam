@@ -132,11 +132,11 @@ class TouchInterface:
             sub = ui_state.get("current_submenu")
             is_sub = ui_state.get("show_submenu")
             
-            if is_sub and sub == "Modes": max_items, cols, rows = 8, 4, 2
-            elif is_sub and (sub == "Grid" or sub == "Connect"): max_items, cols, rows = 3, 3, 1
-            else: max_items, cols, rows = 4, 4, 1
+            if is_sub and sub == "Modes": max_items, cols, rows = 8, 2, 4
+            elif is_sub and (sub == "Grid" or sub == "Connect"): max_items, cols, rows = 3, 2, 2
+            else: max_items, cols, rows = 4, 2, 2
             
-            grid_m_x, grid_m_y, header_h, gap = 25, 15, 65, 12
+            grid_m_x, grid_m_y, header_h, gap = 15, 10, 65, 12
             avail_w = w - (grid_m_x * 2)
             avail_h = h - header_h - (grid_m_y * 2)
             btn_w = (avail_w - (gap * (cols - 1))) // cols
