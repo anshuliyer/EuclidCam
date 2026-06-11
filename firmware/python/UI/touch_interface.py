@@ -35,7 +35,7 @@ class TouchInterface:
 
     def _read_raw(self):
         if not self.hardware_ok or self.irq.value: # Active low
-            return None, None
+            return None, None, False
             
         while not self.spi.try_lock():
             pass
@@ -45,7 +45,8 @@ class TouchInterface:
             
             xs, ys = [], []
             buf = bytearray(3)
-            for _ in range(5):
+            # Take 15 samples for aggressive filtering
+            for _ in range(15):
                 self.cs.value = False
                 
                 # Read X (0xD0)
@@ -62,20 +63,33 @@ class TouchInterface:
                 
             xs.sort()
             ys.sort()
-            return xs[2], ys[2] # Return median
+            
+            # Slice the middle 5 samples (throw away 5 highest and 5 lowest outliers)
+            mid_xs = xs[5:10]
+            mid_ys = ys[5:10]
+            
+            # Fat finger / Smudge rejection
+            # If the spread of the middle samples is too large, the touch is rolling/unstable
+            if (mid_xs[-1] - mid_xs[0]) > 150 or (mid_ys[-1] - mid_ys[0]) > 150:
+                return None, None, True # Touching, but too noisy to use
+                
+            return mid_xs[2], mid_ys[2], True # Return median of stable touch
         finally:
             self.spi.unlock()
 
     def get_touch_command(self, ui_state):
         if not self.config: return None
         
-        x, y = self._read_raw()
+        x, y, is_touching = self._read_raw()
         
-        if x is not None and y is not None:
-            if not self.touch_active:
+        if is_touching:
+            # Finger is on the screen
+            if x is not None and y is not None:
+                # Touch is stable, record the coordinate
                 self.touch_active = True
-            self.last_x, self.last_y = x, y
+                self.last_x, self.last_y = x, y
         else:
+            # Finger has physically left the screen
             if self.touch_active:
                 self.touch_active = False
                 cmd, mapped_x, mapped_y = self._map_to_command(self.last_x, self.last_y, ui_state)
