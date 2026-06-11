@@ -623,17 +623,9 @@ class InputHandler:
                 config["submenu_index"] = 0
 
         elif selected == "Connect":
-            if not self._server.is_running:
-                print("[SYSTEM] Starting server…")
-                self._server.start()
-                config["is_connected"]   = True
-                config["show_connection_view"] = True
-                config["show_menu"]      = False
-                config["show_submenu"]   = False
-            else:
-                config["show_submenu"]    = True
-                config["current_submenu"] = "Connect"
-                config["submenu_index"]   = 0
+            config["show_submenu"]    = True
+            config["current_submenu"] = "Connect"
+            config["submenu_index"]   = 0
 
         elif selected == "Flash":
             config["flash"] = not config.get("flash", False)
@@ -654,12 +646,27 @@ class InputHandler:
         elif submenu == "Connect":
             idx = config["submenu_index"]
             if idx == 0:          # Show QR
+                if not config.get("is_connected"):
+                    print("[SYSTEM] Starting server…")
+                    self._server.start()
+                    config["is_connected"] = True
                 config["show_connection_view"] = True
-            elif idx == 1:        # Stop connection
-                self._server.stop()
-                config["is_connected"]         = False
-                config["show_connection_view"] = False
-            # idx == 2 → Back (fall through, closes submenu below)
+                config["show_submenu"] = False
+                config["show_menu"] = False
+                return
+            elif idx == 1:        # Toggle WiFi
+                if config.get("is_connected"):
+                    self._server.stop()
+                    config["is_connected"] = False
+                    print("[SYSTEM] Stopped server.")
+                else:
+                    self._server.start()
+                    config["is_connected"] = True
+                    print("[SYSTEM] Started server.")
+                return # Keep menu open to show state toggle
+            elif idx == 2:        # Bluetooth
+                print("[SYSTEM] Bluetooth selected (Coming soon)")
+            # idx == 3 → Back (fall through, closes submenu below)
 
         config["show_submenu"] = False
         config["show_menu"]    = False
@@ -669,7 +676,9 @@ class InputHandler:
     def _submenu_length(self, config: dict) -> int:
         if config.get("current_submenu") == "Modes":
             return len(self._modes)
-        return 3  # Grid / Connect each have 3 options
+        if config.get("current_submenu") == "Connect":
+            return 4
+        return 3  # Grid
 
 
 # ==============================================================================

@@ -154,7 +154,8 @@ class TouchInterface:
                     if x < w // 2: return "LEFT", x, y
                     else: return "RIGHT", x, y
                     
-            elif is_sub and (sub == "Grid" or sub == "Connect"): max_items, cols, rows = 3, 2, 2
+            elif is_sub and sub == "Grid": max_items, cols, rows = 3, 2, 2
+            elif is_sub and sub == "Connect": max_items, cols, rows = 4, 2, 2
             else: max_items, cols, rows = 4, 2, 2
             
             grid_m_x, grid_m_y, header_h, gap = 15, 5, 45, 8

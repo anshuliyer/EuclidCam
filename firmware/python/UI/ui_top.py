@@ -150,7 +150,8 @@ class TopPanel:
             selected_idx = self.config.get("submenu_index", 0)
             title = "COMPOSITION"
         elif current_submenu == "Connect":
-            items = ["Show QR", "Stop Conn", "Back"]
+            wifi_pwr = "WiFi: ON" if self.config.get("is_connected") else "WiFi: OFF"
+            items = ["Show QR", wifi_pwr, "Bluetooth", "Back"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "NETWORK"
         else:
