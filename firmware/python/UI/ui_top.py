@@ -225,7 +225,7 @@ class TopPanel:
         
         available_w = w - (grid_margin_x * 2)
         available_h = h - header_h - (grid_margin_y * 2)
-        if current_submenu == "Modes":
+        if show_submenu and current_submenu == "Modes":
             available_h -= 40 # Reserve bottom space for pagination
             
         btn_w = (available_w - (gap * (cols - 1))) // cols
@@ -238,7 +238,7 @@ class TopPanel:
             bx = grid_margin_x + col * (btn_w + gap)
             by = header_h + grid_margin_y + row * (btn_h + gap)
             
-            if current_submenu == "Modes":
+            if show_submenu and current_submenu == "Modes":
                 is_selected = (page * 4 + i == selected_idx)
             else:
                 is_selected = (i == selected_idx)
@@ -280,7 +280,7 @@ class TopPanel:
             overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
 
         # 5. Pagination Arrows
-        if current_submenu == "Modes":
+        if show_submenu and current_submenu == "Modes":
             arrow_color = list(self.MAUVE) + [180]
             # Left Arrow
             if page > 0:
