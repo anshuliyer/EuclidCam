@@ -533,12 +533,29 @@ class InputHandler:
             "q":      self._on_back,
             "SELECT": self._on_select,
             "GALLERY": self._on_gallery_toggle,
+            "BT_SEND": self._on_bt_send,
         }
         handler = dispatch.get(key)
         if handler:
             handler(config, fb_map)
 
     # ── Per-command handlers ──────────────────────────────────────────────────
+
+    def _on_bt_send(self, config: dict, _fb_map) -> None:
+        if config.get("show_gallery") and config.get("bluetooth_on"):
+            path = self._gallery.current_path()
+            if path:
+                print(f"[BLUETOOTH] Initiating send for {path}...")
+                import threading
+                threading.Thread(target=self._send_via_bluetooth, args=(path,), daemon=True).start()
+
+    def _send_via_bluetooth(self, path: str) -> None:
+        import subprocess, sys, os
+        script_path = os.path.join(os.path.dirname(__file__), "connectivity/bt_send.py")
+        if os.path.exists(script_path):
+            subprocess.run([sys.executable, script_path, path], check=False)
+        else:
+            print(f"[BLUETOOTH] Please implement {script_path}")
 
     def _on_gallery_toggle(self, config: dict, _fb_map) -> None:
         config["show_gallery"] = True
@@ -665,7 +682,10 @@ class InputHandler:
                     print("[SYSTEM] Started server.")
                 return # Keep menu open to show state toggle
             elif idx == 2:        # Bluetooth
-                print("[SYSTEM] Bluetooth selected (Coming soon)")
+                config["bluetooth_on"] = not config.get("bluetooth_on", False)
+                state = "ON" if config["bluetooth_on"] else "OFF"
+                print(f"[SYSTEM] Bluetooth toggled {state}")
+                return # Keep menu open
             # idx == 3 → Back (fall through, closes submenu below)
 
         config["show_submenu"] = False

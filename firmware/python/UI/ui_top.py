@@ -151,7 +151,8 @@ class TopPanel:
             title = "COMPOSITION"
         elif current_submenu == "Connect":
             wifi_pwr = "WiFi: ON" if self.config.get("is_connected") else "WiFi: OFF"
-            items = ["Show QR", wifi_pwr, "Bluetooth", "Back"]
+            bt_pwr = "BT: ON" if self.config.get("bluetooth_on") else "BT: OFF"
+            items = ["Show QR", wifi_pwr, bt_pwr, "Back"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "NETWORK"
         else:
@@ -320,6 +321,24 @@ class TopPanel:
         draw.line([(ix + 8, iy + 4), (ix + 8, iy)], fill=icon_color, width=2)
         draw.line([(ix + 2, iy), (ix + 8, iy)], fill=icon_color, width=2)
 
+    def _draw_bt_icon(self, draw):
+        """
+        Draws a Bluetooth send icon next to the close button in the Gallery.
+        """
+        w, h = self.screen_res
+        bx, by = w - 100, 12
+        
+        draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
+        draw_func([bx, by, bx + 40, by + 40], radius=8, fill=(0, 0, 0, 0), outline=self.MAUVE, width=2)
+        
+        ix, iy = bx + 20, by + 10
+        bt_color = (100, 150, 255)
+        draw.line([(ix, iy), (ix, iy + 20)], fill=bt_color, width=2)
+        draw.line([(ix, iy), (ix + 8, iy + 5)], fill=bt_color, width=2)
+        draw.line([(ix + 8, iy + 5), (ix - 8, iy + 15)], fill=bt_color, width=2)
+        draw.line([(ix, iy + 20), (ix + 8, iy + 15)], fill=bt_color, width=2)
+        draw.line([(ix + 8, iy + 15), (ix - 8, iy + 5)], fill=bt_color, width=2)
+
 
 
 
@@ -374,6 +393,8 @@ class TopPanel:
         
         if show_gallery:
             self._draw_bin_icon(draw)
+            if self.config.get("bluetooth_on"):
+                self._draw_bt_icon(draw)
             self._draw_gallery_view(draw)
 
         elif self.config.get("show_connection_view", False):

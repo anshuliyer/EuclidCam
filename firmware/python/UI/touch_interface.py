@@ -129,10 +129,14 @@ class TouchInterface:
 
         if ui_state.get("show_gallery"):
             # 1. Delete Button (Top Left)
-            if x < 130 and y < 85: return "DOWN", x, y
+            if x < 85 and y < 85: return "DOWN", x, y
             
-            # 2. Exit Gallery (Top Right Cross - Matching Settings)
-            if x > w - 80 and y < 80: return "BACK", x, y
+            # 2. BT Send Button (Top Right next to Close)
+            if ui_state.get("bluetooth_on"):
+                if w - 110 < x < w - 60 and y < 85: return "BT_SEND", x, y
+                
+            # 3. Close Button (Top Right extreme)
+            if x > w - 60 and y < 60: return "BACK", x, y
             
             # 3. Navigation (Sides)
             return ("LEFT" if x < w // 2 else "RIGHT"), x, y
