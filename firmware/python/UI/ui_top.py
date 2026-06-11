@@ -107,24 +107,12 @@ class TopPanel:
         draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.MAUVE, width=2)
         
         # Standard Cross Button (Top Right)
-        bx, by = w - 60, 12
+        bx, by = w - 52, 12
         draw.rectangle([bx, by, bx + 40, by + 40], outline=self.MAUVE, width=2)
         draw.line([bx + 10, by + 10, bx + 30, by + 30], fill=self.MAUVE, width=2)
         draw.line([bx + 30, by + 10, bx + 10, by + 30], fill=self.MAUVE, width=2)
 
         # 2. Navigation Arrows
-        arrow_size = 25
-        arrow_color = list(self.MAUVE) + [180]
-        
-        # Left Arrow
-        lx, ly = 25, h // 2 + 20
-        draw.polygon([(lx, ly), (lx + arrow_size, ly - arrow_size), (lx + arrow_size, ly + arrow_size)], fill=tuple(arrow_color))
-        
-        # Right Arrow
-        rx, ry = w - 25, h // 2 + 20
-        draw.polygon([(rx, ry), (rx - arrow_size, ry - arrow_size), (rx - arrow_size, ry + arrow_size)], fill=tuple(arrow_color))
-        
-        # 3. Navigation Arrows
         arrow_size = 25
         arrow_color = list(self.MAUVE) + [180]
         
@@ -202,23 +190,23 @@ class TopPanel:
 
         from PIL import ImageFont
         try:
-            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 26)
-            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 15)
             font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
         except:
             font_title = font_item = font_small = None
 
-        # 2. Header Area
-        header_h = 65
-        title_w = overlay_draw.textlength(title, font=font_title) if hasattr(overlay_draw, "textlength") else len(title) * 12
-        overlay_draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
+        # 2. Header Area (Shrunk to give buttons more space)
+        header_h = 45
+        title_w = overlay_draw.textlength(title, font=font_title) if hasattr(overlay_draw, "textlength") else len(title) * 11
+        overlay_draw.text(((w - title_w) // 2, 10), title, fill=(255, 255, 255), font=font_title)
         
-        # Massive Cross Button (Top Right)
-        bx, by = w - 60, 12
-        overlay_draw.rectangle([bx, by, bx + 40, by + 40], outline=self.MAUVE, width=2)
+        # Cross Button (Top Right)
+        bx, by = w - 45, 5
+        overlay_draw.rectangle([bx, by, bx + 35, by + 35], outline=self.MAUVE, width=2)
         # Draw a bold X
-        overlay_draw.line([bx + 10, by + 10, bx + 30, by + 30], fill=self.MAUVE, width=2)
-        overlay_draw.line([bx + 30, by + 10, bx + 10, by + 30], fill=self.MAUVE, width=2)
+        overlay_draw.line([bx + 8, by + 8, bx + 27, by + 27], fill=self.MAUVE, width=2)
+        overlay_draw.line([bx + 27, by + 8, bx + 8, by + 27], fill=self.MAUVE, width=2)
         
         # Separator Line
         overlay_draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
@@ -230,8 +218,8 @@ class TopPanel:
         rows = (num_items + cols - 1) // cols
         
         grid_margin_x = 15
-        grid_margin_y = 10
-        gap = 12
+        grid_margin_y = 5
+        gap = 8
         
         available_w = w - (grid_margin_x * 2)
         available_h = h - header_h - (grid_margin_y * 2)
@@ -259,7 +247,7 @@ class TopPanel:
             draw_func([bx, by, bx + btn_w, by + btn_h], radius=10, fill=card_fill, outline=card_outline, width=2 if is_selected else 1)
 
             # 4. Professional Iconography
-            icon_y = by + (btn_h // 2) - 15
+            icon_y = by + (btn_h // 2) - 10
             cx = bx + btn_w // 2
             
             if item == "Modes":
@@ -281,8 +269,8 @@ class TopPanel:
                 status = "ON" if self.config.get("is_connected") else "OFF"
                 overlay_draw.text((bx + btn_w - 30, by + 8), status, fill=accent_color, font=font_small)
             
-            tw = overlay_draw.textlength(display_name, font=font_item) if hasattr(overlay_draw, "textlength") else len(display_name) * 11
-            overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 26), display_name, fill=text_color, font=font_item)
+            tw = overlay_draw.textlength(display_name, font=font_item) if hasattr(overlay_draw, "textlength") else len(display_name) * 9
+            overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
 
         # Finally, blend the fully populated RGBA overlay onto the main RGB image
         main_img = draw._image.convert("RGBA")
@@ -291,28 +279,23 @@ class TopPanel:
 
     def _draw_bin_icon(self, draw):
         """
-        Draws a transparent DELETE card in the top-left corner.
+        Draws a transparent DELETE icon in the top-left corner.
         """
-        bx, by = 15, 12
-        btn_w, btn_h = 100, 40
+        bx, by = 12, 12
+        btn_w, btn_h = 40, 40
         
         # Transparent Card (Outline only)
         draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
-        draw_func([bx, by, bx + btn_w, by + btn_h], radius=10, fill=(0, 0, 0, 0), outline=self.MAUVE, width=1)
+        draw_func([bx, by, bx + btn_w, by + btn_h], radius=8, fill=(0, 0, 0, 0), outline=self.MAUVE, width=2)
         
-        # Neutral Icon (White/Grey)
-        ix, iy = bx + 12, by + 10
+        # Neutral Trash Icon
+        ix, iy = bx + 15, by + 10
         icon_color = (220, 220, 230)
-        draw.rectangle([ix, iy + 4, ix + 10, iy + 16], outline=icon_color, width=1)
-        draw.line([(ix - 2, iy + 4), (ix + 12, iy + 4)], fill=icon_color, width=2)
-        
-        from PIL import ImageFont
-        try:
-            font_btn = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 14)
-        except:
-            font_btn = None
-            
-        draw.text((bx + 35, by + 10), "DELETE", fill=icon_color, font=font_btn)
+        draw.rectangle([ix, iy + 4, ix + 10, iy + 20], outline=icon_color, width=2)
+        draw.line([(ix - 4, iy + 4), (ix + 14, iy + 4)], fill=icon_color, width=2)
+        draw.line([(ix + 2, iy + 4), (ix + 2, iy)], fill=icon_color, width=2)
+        draw.line([(ix + 8, iy + 4), (ix + 8, iy)], fill=icon_color, width=2)
+        draw.line([(ix + 2, iy), (ix + 8, iy)], fill=icon_color, width=2)
 
 
 
