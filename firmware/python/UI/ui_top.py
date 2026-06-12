@@ -363,20 +363,24 @@ class TopPanel:
         # Title
         draw.text((x + 20, y + 25), "CONNECTIVITY ACTIVE", fill=self.MAUVE)
         
-        # Load the QR code image if it exists
-        import os
-        qr_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../connectivity/static/qr_code.png"))
-        if os.path.exists(qr_path):
+        # Generate the QR code dynamically to ensure correct IP
+        try:
+            import socket, fcntl, struct, qrcode
             try:
-                qr_img = Image.open(qr_path).convert("RGB")
-                qr_img = qr_img.resize((140, 140), Image.LANCZOS)
-                # Paste it onto the draw surface's image
-                draw._image.paste(qr_img, (x + (overlay_w - 140)//2, y + 50))
-            except Exception as e:
-                print(f"[ERROR] Loading QR for UI: {e}")
-                draw.text((x + 20, y + 100), "QR ERROR", fill=(255, 0, 0))
-        else:
-             draw.text((x + 20, y + 100), "GENERATING QR...", fill=self.MAUVE)
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                ip = socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', b'wlan0'))[20:24])
+            except Exception:
+                ip = "10.42.0.1" # fallback hotspot IP
+                
+            qr = qrcode.QRCode(version=1, box_size=4, border=1)
+            qr.add_data(f"http://{ip}:5000")
+            qr.make(fit=True)
+            qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+            qr_img = qr_img.resize((140, 140), Image.NEAREST)
+            draw._image.paste(qr_img, (x + (overlay_w - 140)//2, y + 50))
+        except Exception as e:
+            print(f"[ERROR] Live QR generation failed: {e}")
+            draw.text((x + 20, y + 100), "QR ERROR", fill=(255, 0, 0))
 
         # Instructions
         draw.text((x + 20, y + overlay_h - 40), "Scan to browse images", fill=self.MAUVE)
