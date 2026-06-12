@@ -372,6 +372,8 @@ class GalleryManager:
     def __init__(self, photo_dir: str) -> None:
         self.photo_dir = photo_dir
         self._idx: int = 0
+        self._cached_frame = None
+        self._cached_idx = -1
 
     # ── Public interface ──────────────────────────────────────────────────────
 
@@ -412,6 +414,7 @@ class GalleryManager:
             os.remove(path)
             remaining = self.files()
             self._idx = self._idx % len(remaining) if remaining else 0
+            self._cached_idx = -1  # Invalidate cache
         except OSError as e:
             print(f"[GALLERY] Delete failed: {e}")
 
@@ -432,9 +435,22 @@ class GalleryManager:
             draw.text(((SCREEN_RES[0] - tw) // 2, SCREEN_RES[1] // 2 - 10), msg, fill=(100, 100, 120), font=font)
             return np.array(img)
             
+        if self._idx == self._cached_idx and self._cached_frame is not None:
+            return self._cached_frame
+            
         try:
-            pil = Image.open(path).convert("RGB").resize(SCREEN_RES, Image.LANCZOS)
-            return np.array(pil)
+            # Use thumbnail for extreme libjpeg hardware decode speed instead of LANCZOS resize
+            pil = Image.open(path).convert("RGB")
+            pil.thumbnail(SCREEN_RES)
+            
+            # Pad onto a centered black canvas to ensure exact SCREEN_RES numpy dimensions
+            canvas = Image.new("RGB", SCREEN_RES, (0, 0, 0))
+            w, h = pil.size
+            canvas.paste(pil, ((SCREEN_RES[0] - w) // 2, (SCREEN_RES[1] - h) // 2))
+            
+            self._cached_frame = np.array(canvas)
+            self._cached_idx = self._idx
+            return self._cached_frame
         except Exception as e:
             print(f"[GALLERY] Load error ({path}): {e}")
             return np.zeros((SCREEN_RES[1], SCREEN_RES[0], 3), dtype=np.uint8)
