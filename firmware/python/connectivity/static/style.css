@@ -56,9 +56,6 @@ header {
   width: 90%;
   margin: 0 auto;
   display: block;
-  filter: grayscale(1) invert(1) sepia(0.2) contrast(1.2);
-  mix-blend-mode: screen;
-  opacity: 0.85;
 }
 
 .subtitle {
@@ -147,12 +144,6 @@ header {
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  filter: grayscale(1) sepia(0.2) contrast(1.1);
-  transition: filter 0.4s;
-}
-
-.card:hover img {
-  filter: none;
 }
 
 .actions {
