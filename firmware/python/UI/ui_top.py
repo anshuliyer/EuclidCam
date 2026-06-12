@@ -37,8 +37,16 @@ class TopPanel:
     def _draw_battery(self, draw, x_base, y_row):
         x_batt = x_base - 75
         y_batt = y_row - 10
-        draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=self.BEIGE, width=2)
-        draw.rectangle([x_batt + 20, y_batt + 3, x_batt + 22, y_batt + 7], fill=self.BEIGE)
+        
+        is_low = self.state.get("is_undervoltage", False)
+        color = (255, 50, 50) if is_low else self.BEIGE
+        
+        draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=color, width=2)
+        draw.rectangle([x_batt + 20, y_batt + 3, x_batt + 22, y_batt + 7], fill=color)
+        
+        if is_low:
+            # Draw a warning slash through the battery to indicate power issues
+            draw.line([x_batt + 2, y_batt + 8, x_batt + 18, y_batt + 2], fill=color, width=2)
 
     def _draw_wifi(self, draw, x_base, y_row):
         x_wifi = x_base - 115

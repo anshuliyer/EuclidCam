@@ -784,6 +784,18 @@ class CameraEngine:
             os.path.join(base_dir, "UI/touch_settings.json"), SCREEN_RES
         )
 
+        from IO import gpio_top as io_stubs
+        self.battery_mgr = io_stubs.BatteryManagement()
+        self.hardware_monitor_thread = threading.Thread(target=self._hardware_monitor_loop, daemon=True)
+        self.hardware_monitor_thread.start()
+
+    def _hardware_monitor_loop(self):
+        """Polls hardware status in the background so it doesn't block the UI framerate."""
+        import time
+        while True:
+            self.config["is_undervoltage"] = self.battery_mgr.is_undervoltage
+            time.sleep(2.0)
+
     # ── Entry point ───────────────────────────────────────────────────────────
 
     def run(self) -> None:
