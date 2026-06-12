@@ -37,7 +37,7 @@ def generate_explosion_gif(filename, width=320, height=240):
     # Load Font
     try:
         font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../connectivity/static/fonts/JetBrainsMono-Bold.ttf"))
-        font = ImageFont.truetype(font_path, 24)
+        font = ImageFont.truetype(font_path, 18)
     except:
         font = ImageFont.load_default()
     
@@ -126,8 +126,13 @@ def generate_explosion_gif(filename, width=320, height=240):
         # Draw Text (Draw AFTER logo to guarantee visibility)
         if text_opacity > 0:
             text1 = "EuclidCam"
-            tx1 = 16
-            ty1 = height - 25 - 24
+            
+            # Aligned with the base of the curve
+            # The curve's bounding box is roughly the resized logo dimensions (nw, nh) centered
+            # x = center_x - nw//2 + 16
+            # y = center_y + nh//2 - 25 (relative to curve base)
+            tx1 = (width - nw) // 2 + 16
+            ty1 = (height + nh) // 2 - 25 - 18 # 18 is font size approx
             
             # Use ImageDraw on the newly composited image
             final_draw = ImageDraw.Draw(img)
