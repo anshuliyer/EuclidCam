@@ -792,8 +792,37 @@ class CameraEngine:
     def _hardware_monitor_loop(self):
         """Polls hardware status in the background so it doesn't block the UI framerate."""
         import time
+        
+        is_benchmark = self.config.get("is_benchmark_mode", False)
+        if is_benchmark:
+            import datetime
+            logfile = f"battery_benchmark_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            with open(logfile, "w") as f:
+                f.write("Timestamp,Uptime_Seconds,Throttled_State\n")
+            print(f"[BENCHMARK] Logging battery life to {logfile}...")
+
+        start_time = time.time()
+        last_log_time = 0
+
         while True:
             self.config["is_undervoltage"] = self.battery_mgr.is_undervoltage
+            
+            if is_benchmark:
+                uptime = int(time.time() - start_time)
+                self.config["benchmark_uptime"] = uptime
+                
+                # Log to CSV every 60 seconds
+                if time.time() - last_log_time >= 60:
+                    try:
+                        import subprocess
+                        import datetime
+                        throttled = subprocess.run(['vcgencmd', 'get_throttled'], capture_output=True, text=True).stdout.strip().split('=')[-1]
+                        with open(logfile, "a") as f:
+                            f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')},{uptime},{throttled}\n")
+                        last_log_time = time.time()
+                    except Exception:
+                        pass
+            
             time.sleep(2.0)
 
     # ── Entry point ───────────────────────────────────────────────────────────
@@ -879,12 +908,13 @@ def _build_default_config(argv: list[str]) -> dict:
         "server_proc":          None,
         "flash":                True,
         "show_connection_view": False,
+        "is_benchmark_mode":    "--benchmark" in argv,
     }
 
     # WiFi credentials from CLI args
-    if len(argv) > 1:
+    if len(argv) > 1 and not argv[1].startswith("--"):
         config["wifi_ssid"] = argv[1]
-    if len(argv) > 2:
+    if len(argv) > 2 and not argv[2].startswith("--"):
         config["wifi_pass"] = argv[2]
     if "wifi_ssid" in config:
         print(f"[SYSTEM] WiFi SSID set via CLI: {config['wifi_ssid']}")

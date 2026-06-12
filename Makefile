@@ -51,6 +51,10 @@ _pip:
 run:
 	cd $(FW_DIR) && $(PYTHON) main.py
 
+.PHONY: benchmark
+benchmark:
+	cd $(FW_DIR) && $(PYTHON) main.py --benchmark
+
 # ── Code quality ───────────────────────────────────────────────────────────────
 
 .PHONY: check

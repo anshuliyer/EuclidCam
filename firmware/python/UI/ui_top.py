@@ -439,5 +439,11 @@ class TopPanel:
                 
                 self._draw_gear(draw)
                 self._draw_gallery_icon(draw)
+                
+                if self.config.get("is_benchmark_mode"):
+                    uptime = self.config.get("benchmark_uptime", 0)
+                    mins = uptime // 60
+                    secs = uptime % 60
+                    draw.text((10, self.screen_res[1] - 25), f"BENCHMARK: {mins:02d}:{secs:02d}", fill=(255, 50, 50))
 
         return np.array(img)
