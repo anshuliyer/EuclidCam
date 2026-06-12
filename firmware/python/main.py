@@ -667,7 +667,7 @@ class InputHandler:
                     import subprocess, time
                     print("[SYSTEM] Starting Hotspot & server…")
                     # Use Popen because 'nmcli device wifi hotspot' blocks the terminal!
-                    subprocess.Popen(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
+                    subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
                     time.sleep(3) # Give NetworkManager time to assign 10.42.0.1
                     self._server.start()
                     config["is_connected"] = True
@@ -681,11 +681,11 @@ class InputHandler:
                     config["is_connected"] = False
                     import subprocess
                     print("[SYSTEM] Stopping Hotspot...")
-                    subprocess.run(["nmcli", "connection", "down", "Hotspot"], check=False)
+                    subprocess.run(["sudo", "nmcli", "connection", "down", "Hotspot"], check=False)
                 else:
                     import subprocess, time
                     print("[SYSTEM] Starting Hotspot (EuclidCam)...")
-                    subprocess.Popen(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
+                    subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
                     time.sleep(3)
                     self._server.start()
                     config["is_connected"] = True
