@@ -4,13 +4,13 @@ Centralizes all color tokens and stylistic properties.
 """
 
 # Core Colors
-BG_CHARCOAL = (30, 30, 35)
-MAUVE_PRIMARY = (224, 176, 255)
-MAUVE_LIGHT = (235, 210, 255)
-DARK_MAUVE = (90, 45, 110)
+BG_CHARCOAL = (17, 17, 17)
+BEIGE_PRIMARY = (230, 213, 189)
+BEIGE_LIGHT = (244, 239, 234)
+DARK_BEIGE = (191, 164, 138)
 
 # UI Elements
-OVERLAY_FILL = (30, 30, 35, 240)  # Dark translucent matching charcoal
+OVERLAY_FILL = (28, 28, 28, 240)  # Dark translucent matching charcoal
 LOGO_OPACITY = 0.12               # Faint watermark
 PROGRESS_BAR_HEIGHT = 8
 PROGRESS_BAR_WIDTH = 280

@@ -200,7 +200,7 @@ class CameraMode:
             draw.rectangle([bx, by, bx + bw, by + bh], outline=(80, 80, 100), width=1)
             draw.rectangle(
                 [bx, by, bx + int(bw * progress), by + bh],
-                fill=theme.MAUVE_PRIMARY,
+                fill=theme.BEIGE_PRIMARY,
             )
 
         display_to_map(np.array(img), fb_map, config=config)

@@ -6,7 +6,7 @@ class TopPanel:
     """
     Handles drawing and rendering of the top-panel UI indicators.
     """
-    MAUVE = theme.MAUVE_PRIMARY
+    BEIGE = theme.BEIGE_PRIMARY
 
     def __init__(self, config, screen_res):
         self.config = config or {}
@@ -32,13 +32,13 @@ class TopPanel:
                 (x - 4, y + 12), (x - 8, y + 12),
                 (x, y)
             ]
-            draw.polygon(points, fill=self.MAUVE)
+            draw.polygon(points, fill=self.BEIGE)
 
     def _draw_battery(self, draw, x_base, y_row):
         x_batt = x_base - 75
         y_batt = y_row - 10
-        draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=self.MAUVE, width=2)
-        draw.rectangle([x_batt + 20, y_batt + 3, x_batt + 22, y_batt + 7], fill=self.MAUVE)
+        draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=self.BEIGE, width=2)
+        draw.rectangle([x_batt + 20, y_batt + 3, x_batt + 22, y_batt + 7], fill=self.BEIGE)
 
     def _draw_wifi(self, draw, x_base, y_row):
         x_wifi = x_base - 115
@@ -46,7 +46,7 @@ class TopPanel:
         for i in range(1, 4):
             r = i * 4
             bbox = [x_wifi + 10 - r, y_wifi + 10 - r, x_wifi + 10 + r, y_wifi + 10 + r]
-            draw.arc(bbox, 225, 315, fill=self.MAUVE, width=2)
+            draw.arc(bbox, 225, 315, fill=self.BEIGE, width=2)
 
     def _draw_gear(self, draw):
         """
@@ -54,7 +54,7 @@ class TopPanel:
         """
         w, h = self.screen_res
         x, y = w - self.padding - 20, h - self.padding - 20
-        draw.ellipse([x-14, y-14, x+14, y+14], outline=self.MAUVE, width=3)
+        draw.ellipse([x-14, y-14, x+14, y+14], outline=self.BEIGE, width=3)
         for i in range(8):
             import math
             angle = i * (360/8)
@@ -62,8 +62,8 @@ class TopPanel:
             y1 = y + 14 * math.sin(math.radians(angle))
             x2 = x + 22 * math.cos(math.radians(angle))
             y2 = y + 22 * math.sin(math.radians(angle))
-            draw.line([x1, y1, x2, y2], fill=self.MAUVE, width=4)
-        draw.ellipse([x-6, y-6, x+6, y+6], fill=self.MAUVE)
+            draw.line([x1, y1, x2, y2], fill=self.BEIGE, width=4)
+        draw.ellipse([x-6, y-6, x+6, y+6], fill=self.BEIGE)
 
     def _draw_gallery_icon(self, draw):
         """
@@ -72,16 +72,16 @@ class TopPanel:
         w, h = self.screen_res
         x, y = self.padding + 5, h - self.padding - 35
         # Draw a large "photo" frame
-        draw.rectangle([x, y, x+40, y+30], outline=self.MAUVE, width=3)
+        draw.rectangle([x, y, x+40, y+30], outline=self.BEIGE, width=3)
         # Draw a "mountain" inside
-        draw.polygon([(x+5, y+25), (x+15, y+10), (x+25, y+25)], fill=self.MAUVE)
-        draw.polygon([(x+20, y+25), (x+28, y+15), (x+35, y+25)], fill=self.MAUVE)
+        draw.polygon([(x+5, y+25), (x+15, y+10), (x+25, y+25)], fill=self.BEIGE)
+        draw.polygon([(x+20, y+25), (x+28, y+15), (x+35, y+25)], fill=self.BEIGE)
         # Sun
-        draw.ellipse([x+8, y+5, x+14, y+11], fill=self.MAUVE)
+        draw.ellipse([x+8, y+5, x+14, y+11], fill=self.BEIGE)
         
         # Highlight if gallery is active
         if self.config.get("show_gallery"):
-            draw.text((x + 50, y + 5), "GALLERY", fill=self.MAUVE)
+            draw.text((x + 50, y + 5), "GALLERY", fill=self.BEIGE)
 
     def _draw_gallery_view(self, draw):
         """
@@ -104,17 +104,17 @@ class TopPanel:
         
         # Separator Line (Same as Menu)
         draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
-        draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.MAUVE, width=2)
+        draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.BEIGE, width=2)
         
         # Standard Cross Button (Top Right)
         bx, by = w - 52, 12
-        draw.rectangle([bx, by, bx + 40, by + 40], outline=self.MAUVE, width=2)
-        draw.line([bx + 10, by + 10, bx + 30, by + 30], fill=self.MAUVE, width=2)
-        draw.line([bx + 30, by + 10, bx + 10, by + 30], fill=self.MAUVE, width=2)
+        draw.rectangle([bx, by, bx + 40, by + 40], outline=self.BEIGE, width=2)
+        draw.line([bx + 10, by + 10, bx + 30, by + 30], fill=self.BEIGE, width=2)
+        draw.line([bx + 30, by + 10, bx + 10, by + 30], fill=self.BEIGE, width=2)
 
         # 2. Navigation Arrows
         arrow_size = 25
-        arrow_color = list(self.MAUVE) + [180]
+        arrow_color = list(self.BEIGE) + [180]
         
         # Left Arrow
         lx, ly = 25, h // 2 + 20
@@ -188,7 +188,7 @@ class TopPanel:
             print(f"Theme watermark error: {e}")
 
         # Mauve Accent Border
-        overlay_draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], outline=self.MAUVE, width=2)
+        overlay_draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], outline=self.BEIGE, width=2)
         # Delay alpha composite until all UI elements are drawn on overlay_draw
         # Load Fonts
 
@@ -207,14 +207,14 @@ class TopPanel:
         
         # Cross Button (Top Right)
         bx, by = w - 45, 5
-        overlay_draw.rectangle([bx, by, bx + 35, by + 35], outline=self.MAUVE, width=2)
+        overlay_draw.rectangle([bx, by, bx + 35, by + 35], outline=self.BEIGE, width=2)
         # Draw a bold X
-        overlay_draw.line([bx + 8, by + 8, bx + 27, by + 27], fill=self.MAUVE, width=2)
-        overlay_draw.line([bx + 27, by + 8, bx + 8, by + 27], fill=self.MAUVE, width=2)
+        overlay_draw.line([bx + 8, by + 8, bx + 27, by + 27], fill=self.BEIGE, width=2)
+        overlay_draw.line([bx + 27, by + 8, bx + 8, by + 27], fill=self.BEIGE, width=2)
         
         # Separator Line
         overlay_draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
-        overlay_draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.MAUVE, width=2)
+        overlay_draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.BEIGE, width=2)
 
         # 3. Grid Calculation
         num_items = len(items)
@@ -246,10 +246,10 @@ class TopPanel:
                 is_selected = (i == selected_idx)
             
             # Button Card Logic - TRANSLUCENT GLASS EFFECT
-            card_fill = tuple(list(self.MAUVE) + [220]) if is_selected else (30, 30, 40, 150)
+            card_fill = tuple(list(self.BEIGE) + [220]) if is_selected else (30, 30, 40, 150)
             card_outline = (255, 255, 255) if is_selected else (70, 70, 90)
             text_color = (0, 0, 0) if is_selected else (220, 220, 230)
-            accent_color = (255, 255, 255, 180) if is_selected else self.MAUVE
+            accent_color = (255, 255, 255, 180) if is_selected else self.BEIGE
 
             # Draw Card (rounded_rectangle fallback)
             draw_func = getattr(overlay_draw, "rounded_rectangle", overlay_draw.rectangle)
@@ -283,7 +283,7 @@ class TopPanel:
 
         # 5. Pagination Arrows
         if show_submenu and current_submenu == "Modes":
-            arrow_color = list(self.MAUVE) + [180]
+            arrow_color = list(self.BEIGE) + [180]
             # Left Arrow
             if page > 0:
                 lx, ly = 30, h - 25
@@ -310,7 +310,7 @@ class TopPanel:
         
         # Transparent Card (Outline only)
         draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
-        draw_func([bx, by, bx + btn_w, by + btn_h], radius=8, fill=(0, 0, 0, 0), outline=self.MAUVE, width=2)
+        draw_func([bx, by, bx + btn_w, by + btn_h], radius=8, fill=(0, 0, 0, 0), outline=self.BEIGE, width=2)
         
         # Neutral Trash Icon
         ix, iy = bx + 15, by + 10
@@ -329,7 +329,7 @@ class TopPanel:
         bx, by = w - 100, 12
         
         draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
-        draw_func([bx, by, bx + 40, by + 40], radius=8, fill=(0, 0, 0, 0), outline=self.MAUVE, width=2)
+        draw_func([bx, by, bx + 40, by + 40], radius=8, fill=(0, 0, 0, 0), outline=self.BEIGE, width=2)
         
         ix, iy = bx + 20, by + 10
         bt_color = (100, 150, 255)
@@ -351,17 +351,17 @@ class TopPanel:
         x, y = (w - overlay_w) // 2, (h - overlay_h) // 2
         
         # Transparent-ish background box
-        draw.rectangle([x, y, x + overlay_w, y + overlay_h], fill=(0, 0, 0), outline=self.MAUVE, width=3)
+        draw.rectangle([x, y, x + overlay_w, y + overlay_h], fill=(0, 0, 0), outline=self.BEIGE, width=3)
         
         # Close Button (Top Right of overlay) - Massive and easily tappable
         bx, by = x + overlay_w - 70, y + 10
-        draw.rectangle([bx, by, bx + 60, by + 60], outline=self.MAUVE, width=2)
+        draw.rectangle([bx, by, bx + 60, by + 60], outline=self.BEIGE, width=2)
         # Draw a bold X
-        draw.line([bx + 15, by + 15, bx + 45, by + 45], fill=self.MAUVE, width=3)
-        draw.line([bx + 45, by + 15, bx + 15, by + 45], fill=self.MAUVE, width=3)
+        draw.line([bx + 15, by + 15, bx + 45, by + 45], fill=self.BEIGE, width=3)
+        draw.line([bx + 45, by + 15, bx + 15, by + 45], fill=self.BEIGE, width=3)
 
         # Title
-        draw.text((x + 20, y + 25), "CONNECTIVITY ACTIVE", fill=self.MAUVE)
+        draw.text((x + 20, y + 25), "CONNECTIVITY ACTIVE", fill=self.BEIGE)
         
         # Generate the QR code dynamically to ensure correct IP
         try:
@@ -390,8 +390,8 @@ class TopPanel:
             draw.text((x + 10, y + 100), f"ERR: {str(e)[:30]}", fill=(255, 0, 0))
 
         # Instructions
-        draw.text((x + 20, y + overlay_h - 40), "Scan to browse images", fill=self.MAUVE)
-        draw.text((x + 20, y + overlay_h - 20), "Tap [X] or edges to close", fill=self.MAUVE)
+        draw.text((x + 20, y + overlay_h - 40), "Scan to browse images", fill=self.BEIGE)
+        draw.text((x + 20, y + overlay_h - 20), "Tap [X] or edges to close", fill=self.BEIGE)
 
     def render(self, frame):
         """
