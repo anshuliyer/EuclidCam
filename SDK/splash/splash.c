@@ -9,6 +9,7 @@
 #include <linux/spi/spidev.h>
 
 #define SPI_DEVICE "/dev/spidev0.0"
+#define PIN_CS 8
 #define PIN_DC 24
 #define PIN_RST 25
 #define WIDTH 320
@@ -78,21 +79,28 @@ int main(int argc, char **argv) {
     }
 
     // 1. Setup GPIOs
+    gpio_export(PIN_CS);
     gpio_export(PIN_DC);
     gpio_export(PIN_RST);
+    gpio_dir_out(PIN_CS);
     gpio_dir_out(PIN_DC);
     gpio_dir_out(PIN_RST);
+    
+    gpio_set(PIN_CS, 1); // Deselect display initially
 
     // 2. Hardware Reset
     gpio_set(PIN_RST, 1); usleep(5000);
     gpio_set(PIN_RST, 0); usleep(20000);
     gpio_set(PIN_RST, 1); usleep(150000);
 
-    // 3. Open SPI
+    // 3. Open SPI with SPI_NO_CS so we can manually control PIN_CS
     spi_fd = open(SPI_DEVICE, O_RDWR);
     if (spi_fd < 0) { perror("SPI open"); return 1; }
-    uint8_t mode = SPI_MODE_0;
+    uint8_t mode = SPI_MODE_0 | SPI_NO_CS;
     ioctl(spi_fd, SPI_IOC_WR_MODE, &mode);
+    
+    // Select the display manually and hold it!
+    gpio_set(PIN_CS, 0);
 
     // 4. ILI9341 Initialization Sequence
     write_command(0x01); // Software reset
@@ -153,6 +161,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    gpio_set(PIN_CS, 1); // Deselect display
     close(spi_fd);
     return 0;
 }
