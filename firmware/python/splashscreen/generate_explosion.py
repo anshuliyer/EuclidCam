@@ -3,8 +3,12 @@ import os
 from PIL import Image, ImageDraw, ImageChops, ImageFont
 
 def generate_explosion_gif(filename, width=320, height=240):
+    # Core Mathematical Constants
+    phi = (1 + math.sqrt(5)) / 2.0  # Golden Ratio: ~1.6180339
     golden_angle = math.pi * (3 - math.sqrt(5))
-    num_particles = 300
+    
+    # Fibonacci numbers for organic structuring
+    num_particles = 377  # 14th Fibonacci number
     
     bg_color = (17, 17, 17)
     dot_color = (250, 214, 165)
@@ -30,8 +34,8 @@ def generate_explosion_gif(filename, width=320, height=240):
         logo_frames.append(frame_bg)
         
     logo_frame_count = len(logo_frames)
-    hold_frames = 75 # 3 seconds at 40ms per frame
-    explosion_frames = 25
+    hold_frames = 89  # Fibonacci (approx 3.5 seconds)
+    explosion_frames = 34  # Fibonacci
     total_frames = logo_frame_count + hold_frames + explosion_frames
     
     # Load Font
@@ -42,11 +46,14 @@ def generate_explosion_gif(filename, width=320, height=240):
         font = ImageFont.load_default()
     
     particles = []
-    c = 10
+    # Spacing factor correlated perfectly to the golden ratio
+    c = 10 * (phi - 0.5) 
+    
     for i in range(1, num_particles + 1):
         r = c * math.sqrt(i)
         theta = i * golden_angle
-        size = max(0.8, 2.5 - (r / 60))
+        # Size falls off based on golden ratio division
+        size = max(0.5, 2.5 - (r / (60 * phi)))
         particles.append({"r": r, "theta": theta, "size": size})
         
     frames = []
@@ -56,17 +63,17 @@ def generate_explosion_gif(filename, width=320, height=240):
         draw = ImageDraw.Draw(img)
         
         if f < logo_frame_count:
-            # Phase 1: Logo is animating, dots rotate slowly
-            rotation = f * 0.02
-            dot_opacity = 0.35
+            # Phase 1: Logo is animating, dots rotate slowly based on phi
+            rotation = f * (0.01 * phi)
+            dot_opacity = 0.15 # Extremely high transparency (faint watermark)
             logo_opacity = 1.0
             text_opacity = 0.0
             current_logo = logo_frames[f]
             exp_progress = 0.0
         elif f < logo_frame_count + hold_frames:
             # Phase 2: Hold, text fades in purely
-            rotation = f * 0.02
-            dot_opacity = 0.35
+            rotation = f * (0.01 * phi)
+            dot_opacity = 0.15
             logo_opacity = 1.0
             
             hold_progress = (f - logo_frame_count) / float(hold_frames)
@@ -79,9 +86,9 @@ def generate_explosion_gif(filename, width=320, height=240):
             # Phase 3: Explosion
             exp_f = f - (logo_frame_count + hold_frames)
             exp_progress = exp_f / float(explosion_frames)
-            # Smooth fade out
-            fade_out = max(0, 1.0 - exp_progress * 1.5)
-            dot_opacity = 0.35 * fade_out
+            # Smooth fade out governed by phi
+            fade_out = max(0, 1.0 - exp_progress * phi)
+            dot_opacity = 0.15 * fade_out
             logo_opacity = fade_out
             text_opacity = fade_out
             current_logo = logo_frames[-1]
@@ -93,12 +100,13 @@ def generate_explosion_gif(filename, width=320, height=240):
                 theta = p["theta"] + rotation
             else:
                 # Travel exactly along the Golden Spiral (cleanly, no depth variance)
-                index_boost = (exp_progress ** 3) * 600
+                # Expansion acceleration scaled by the golden ratio
+                index_boost = (exp_progress ** 3) * (377 * phi)
                 
                 n_new = (i + 1) + index_boost
                 r = c * math.sqrt(n_new)
                 
-                base_rotation = (logo_frame_count + hold_frames) * 0.02
+                base_rotation = (logo_frame_count + hold_frames) * (0.01 * phi)
                 theta = n_new * golden_angle + base_rotation
                 
             x = width / 2 + r * math.cos(theta)
