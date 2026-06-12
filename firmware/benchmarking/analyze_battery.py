@@ -15,6 +15,7 @@ def main():
         
     combined_data = []
     total_max_uptime = 0
+    cumulative_uptime = 0
     
     print("🔋 Battery Benchmark Analysis\n" + "="*40)
     
@@ -43,6 +44,8 @@ def main():
                         
         if max_uptime > total_max_uptime:
             total_max_uptime = max_uptime
+        
+        cumulative_uptime += max_uptime
             
         hours = max_uptime // 3600
         minutes = (max_uptime % 3600) // 60
@@ -66,7 +69,13 @@ def main():
         
         t_hours = total_max_uptime // 3600
         t_minutes = (total_max_uptime % 3600) // 60
-        print(f"🏆 Longest Run: {t_hours}h {t_minutes}m")
+        
+        c_hours = cumulative_uptime // 3600
+        c_minutes = (cumulative_uptime % 3600) // 60
+        c_seconds = cumulative_uptime % 60
+        
+        print(f"🏆 Longest Single Run: {t_hours}h {t_minutes}m")
+        print(f"🔋 Total Cumulative Time: {c_hours}h {c_minutes}m {c_seconds}s ({cumulative_uptime} sec)")
         print(f"✅ Combined data saved to: {combined_path}")
 
 if __name__ == "__main__":
