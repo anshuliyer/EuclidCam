@@ -379,7 +379,7 @@ class TopPanel:
             
             import io
             bio = io.BytesIO()
-            qr_img.save(bio)
+            qr_img.save(bio, format="PNG")
             bio.seek(0)
             
             from PIL import Image
