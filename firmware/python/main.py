@@ -863,12 +863,51 @@ def _build_default_config(argv: list[str]) -> dict:
     return config
 
 
-# ==============================================================================
-#  Public entry point (used by camera.py)
-# ==============================================================================
+def play_boot_splash() -> None:
+    """Plays the EuclidCam dark logo GIF on the ILI9341 display at boot."""
+    print("[SYSTEM] Playing Boot Splash Animation...")
+    try:
+        gif_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "connectivity/static/euclid_construction.gif"))
+        if not os.path.exists(gif_path):
+            print(f"[BOOT] Missing splash: {gif_path}")
+            return
+            
+        img = Image.open(gif_path)
+        
+        # BG_CHARCOAL from Chalk theme
+        bg = Image.new("RGB", (320, 240), (17, 17, 17))
+        
+        for frame in range(img.n_frames):
+            img.seek(frame)
+            frame_rgba = img.convert("RGBA")
+            
+            # Scale GIF beautifully centered
+            img_w, img_h = frame_rgba.size
+            scale = 0.8 * min(320 / img_w, 240 / img_h)
+            new_w = int(img_w * scale)
+            new_h = int(img_h * scale)
+            
+            frame_resized = frame_rgba.resize((new_w, new_h), Image.NEAREST)
+            
+            x = (320 - new_w) // 2
+            y = (240 - new_h) // 2
+            
+            frame_bg = bg.copy()
+            frame_bg.paste(frame_resized, (x, y), frame_resized)
+            
+            disp.image(frame_bg)
+            
+            duration = img.info.get('duration', 50)
+            time.sleep(max(0.01, duration / 1000.0))
+            
+        time.sleep(0.5)
+    except Exception as e:
+        print(f"[BOOT] Splash error: {e}")
+
 
 def run(config: dict | None = None) -> None:
     """Initialise and run the camera engine.  Called by camera.py."""
+    play_boot_splash()
     defaults = _build_default_config(sys.argv)
     if config:
         defaults.update(config)
