@@ -33,18 +33,63 @@ class CompositionGrid:
             draw.line([(0, 2 * h // 3), (w, 2 * h // 3)], fill=self.color, width=self.width)
         
         elif mode == self.EUCLID:
-            # Phi Grid (Golden Ratio: 1 : 0.618 : 1)
-            # Ratios: 0.382 and 0.618
-            v1, v2 = int(w * 0.382), int(w * 0.618)
-            h1, h2 = int(h * 0.382), int(h * 0.618)
+            # True Golden Spiral (Fibonacci recursive squares and arcs)
+            phi = 1.61803398875
             
-            # Vertical
-            draw.line([(v1, 0), (v1, h)], fill=self.color, width=self.width)
-            draw.line([(v2, 0), (v2, h)], fill=self.color, width=self.width)
-            # Horizontal
-            draw.line([(0, h1), (w, h1)], fill=self.color, width=self.width)
-            draw.line([(0, h2), (w, h2)], fill=self.color, width=self.width)
+            # Center a perfect Golden Rectangle in the screen
+            if w / h > phi:
+                # Screen is wider than GR, center horizontally
+                gr_h = h
+                gr_w = int(h * phi)
+                x0 = (w - gr_w) // 2
+                y0 = 0
+            else:
+                # Screen is taller than GR, center vertically
+                gr_w = w
+                gr_h = int(w / phi)
+                x0 = 0
+                y0 = (h - gr_h) // 2
+
+            rx, ry, rw, rh = x0, y0, gr_w, gr_h
             
+            # Direction of the cut: 0: right, 1: top, 2: left, 3: bottom
+            direction = 0
+            for i in range(8): # 8 iterations is visually perfect
+                if rw < 2 or rh < 2: break
+                
+                sq = min(rw, rh)
+                
+                if direction == 0: # Right
+                    sx, sy = rx + rw - sq, ry
+                    rw -= sq
+                    cx, cy = sx, sy + sq
+                    start, end = 270, 360
+                elif direction == 1: # Top
+                    sx, sy = rx, ry
+                    ry += sq
+                    rh -= sq
+                    cx, cy = sx + sq, sy + sq
+                    start, end = 180, 270
+                elif direction == 2: # Left
+                    sx, sy = rx, ry
+                    rx += sq
+                    rw -= sq
+                    cx, cy = sx + sq, sy
+                    start, end = 90, 180
+                else: # Bottom
+                    sx, sy = rx, ry + rh - sq
+                    rh -= sq
+                    cx, cy = sx, sy
+                    start, end = 0, 90
+                    
+                # Draw the bounding square
+                draw.rectangle([sx, sy, sx + sq, sy + sq], outline=self.color, width=self.width)
+                
+                # Draw the golden arc
+                draw.arc([cx - sq, cy - sq, cx + sq, cy + sq], start, end, fill=self.color, width=max(1, self.width))
+                
+                direction = (direction + 1) % 4
+                
         return pil_img
 
 if __name__ == "__main__":

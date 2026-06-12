@@ -907,11 +907,20 @@ def play_boot_splash() -> None:
 
 def run(config: dict | None = None) -> None:
     """Initialise and run the camera engine.  Called by camera.py."""
-    play_boot_splash()
+    import threading
+    
+    # Run splash in background so it masks the hardware setup
+    splash_thread = threading.Thread(target=play_boot_splash)
+    splash_thread.start()
+    
     defaults = _build_default_config(sys.argv)
     if config:
         defaults.update(config)
     engine = CameraEngine(defaults)
+    
+    # Ensure splash finishes before the camera engine takes over the display
+    splash_thread.join()
+    
     engine.run()
 
 
