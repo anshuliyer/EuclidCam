@@ -42,7 +42,7 @@ _apt:
 
 .PHONY: _pip
 _pip:
-	$(PYTHON) -m pip install -r requirements.txt || true
+	$(PYTHON) -m pip install --break-system-packages -r requirements.txt || true
 
 # ── Run ────────────────────────────────────────────────────────────────────────
 
