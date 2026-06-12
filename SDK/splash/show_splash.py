@@ -1,4 +1,5 @@
 import sys
+import os
 import board
 import digitalio
 from PIL import Image
@@ -6,7 +7,9 @@ import adafruit_rgb_display.ili9341 as ili9341
 
 def main():
     # Allow user to pass an image, or default to the blueprint logo in the repo
-    img_path = sys.argv[1] if len(sys.argv) > 1 else "../../assets/IMG_4712-Photoroom.png"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    default_img = os.path.abspath(os.path.join(script_dir, "..", "..", "assets", "IMG_4712-Photoroom.png"))
+    img_path = sys.argv[1] if len(sys.argv) > 1 else default_img
 
     print("Initializing SPI and GPIO...")
     spi = board.SPI()
