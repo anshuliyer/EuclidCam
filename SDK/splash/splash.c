@@ -15,6 +15,8 @@
 #define HEIGHT 240
 
 int spi_fd;
+int fd_dc = -1;
+int fd_rst = -1;
 
 void gpio_export(int pin) {
     int fd = open("/sys/class/gpio/export", O_WRONLY);
@@ -35,13 +37,20 @@ void gpio_dir_out(int pin) {
     close(fd);
 }
 
-void gpio_set(int pin, int val) {
+void gpio_open_fast() {
     char path[64];
-    snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/value", pin);
-    int fd = open(path, O_WRONLY);
-    if (fd == -1) return;
-    write(fd, val ? "1" : "0", 1);
-    close(fd);
+    snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/value", PIN_DC);
+    fd_dc = open(path, O_WRONLY);
+    snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/value", PIN_RST);
+    fd_rst = open(path, O_WRONLY);
+}
+
+void gpio_fast_dc(int val) {
+    if (fd_dc != -1) write(fd_dc, val ? "1" : "0", 1);
+}
+
+void gpio_fast_rst(int val) {
+    if (fd_rst != -1) write(fd_rst, val ? "1" : "0", 1);
 }
 
 void spi_transfer(uint8_t *data, int len) {
@@ -57,17 +66,17 @@ void spi_transfer(uint8_t *data, int len) {
 }
 
 void write_command(uint8_t cmd) {
-    gpio_set(PIN_DC, 0);
+    gpio_fast_dc(0);
     spi_transfer(&cmd, 1);
 }
 
 void write_data(uint8_t data) {
-    gpio_set(PIN_DC, 1);
+    gpio_fast_dc(1);
     spi_transfer(&data, 1);
 }
 
 void write_data_buf(uint8_t *data, int len) {
-    gpio_set(PIN_DC, 1);
+    gpio_fast_dc(1);
     spi_transfer(data, len);
 }
 
@@ -82,11 +91,12 @@ int main(int argc, char **argv) {
     gpio_export(PIN_RST);
     gpio_dir_out(PIN_DC);
     gpio_dir_out(PIN_RST);
+    gpio_open_fast();
 
     // 2. Hardware Reset
-    gpio_set(PIN_RST, 1); usleep(5000);
-    gpio_set(PIN_RST, 0); usleep(20000);
-    gpio_set(PIN_RST, 1); usleep(150000);
+    gpio_fast_rst(1); usleep(5000);
+    gpio_fast_rst(0); usleep(20000);
+    gpio_fast_rst(1); usleep(150000);
 
     // 3. Open SPI
     spi_fd = open(SPI_DEVICE, O_RDWR);
@@ -137,12 +147,12 @@ int main(int argc, char **argv) {
     for (int y = 0; y < HEIGHT; y++) {
         // Set window to a single line
         write_command(0x2A); // Column Set
-        write_data(0x00); write_data(0x00);
-        write_data((WIDTH-1) >> 8); write_data((WIDTH-1) & 0xFF);
+        uint8_t col_data[4] = {0x00, 0x00, (WIDTH-1) >> 8, (WIDTH-1) & 0xFF};
+        write_data_buf(col_data, 4);
         
         write_command(0x2B); // Page Set
-        write_data(y >> 8); write_data(y & 0xFF);
-        write_data(y >> 8); write_data(y & 0xFF);
+        uint8_t page_data[4] = {y >> 8, y & 0xFF, y >> 8, y & 0xFF};
+        write_data_buf(page_data, 4);
         
         write_command(0x2C); // Memory Write
         
