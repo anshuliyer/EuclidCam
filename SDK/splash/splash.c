@@ -96,15 +96,33 @@ int main(int argc, char **argv) {
 
     // 4. ILI9341 Initialization Sequence
     write_command(0x01); // Software reset
-    usleep(5000);
+    usleep(50000);
+    
+    // Standard ILI9341 Power & VCOM Sequence
+    write_command(0xEF); write_data(0x03); write_data(0x80); write_data(0x02);
+    write_command(0xCF); write_data(0x00); write_data(0xC1); write_data(0x30);
+    write_command(0xED); write_data(0x64); write_data(0x03); write_data(0x12); write_data(0x81);
+    write_command(0xE8); write_data(0x85); write_data(0x00); write_data(0x78);
+    write_command(0xCB); write_data(0x39); write_data(0x2C); write_data(0x00); write_data(0x34); write_data(0x02);
+    write_command(0xF7); write_data(0x20);
+    write_command(0xEA); write_data(0x00); write_data(0x00);
+    
+    write_command(0xC0); write_data(0x23); // Power control VRH
+    write_command(0xC1); write_data(0x10); // Power control SAP
+    write_command(0xC5); write_data(0x3E); write_data(0x28); // VCM control
+    write_command(0xC7); write_data(0x86); // VCM control2
+    
+    write_command(0x36); write_data(0xE8); // Memory Access Control (Landscape, MY, MX, MV, BGR)
+    write_command(0x3A); write_data(0x55); // Pixel format (16-bit)
+    
+    write_command(0xB1); write_data(0x00); write_data(0x18);
+    write_command(0xB6); write_data(0x08); write_data(0x82); write_data(0x27);
+    
     write_command(0x11); // Sleep out
     usleep(150000);
-    
-    write_command(0x3A); write_data(0x55); // Pixel format (16-bit)
-    write_command(0x36); write_data(0x28); // Memory Access Control (Rotation 90)
 
     write_command(0x29); // Display ON
-    usleep(100000);
+    usleep(50000);
 
     // 5. Set drawing window
     write_command(0x2A); // Column Address Set
