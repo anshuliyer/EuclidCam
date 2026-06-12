@@ -50,7 +50,7 @@ def generate_explosion_gif(filename, width=320, height=240):
             # Phase 1: Logo is animating, dots rotate slowly
             expansion = 1.0
             rotation = f * 0.02
-            dot_opacity = 1.0
+            dot_opacity = 0.35  # High transparency for background dots
             logo_opacity = 1.0
             current_logo = logo_frames[f]
         else:
@@ -58,7 +58,7 @@ def generate_explosion_gif(filename, width=320, height=240):
             progress = (f - logo_frame_count) / float(explosion_frames)
             expansion = 1.0 + (progress ** 3) * 25
             rotation = logo_frame_count * 0.02 + progress * 0.2
-            dot_opacity = max(0, 1.0 - progress * 1.5)
+            dot_opacity = max(0, 0.35 - progress * 1.5)
             logo_opacity = max(0, 1.0 - progress * 1.5)
             current_logo = logo_frames[-1]
             
