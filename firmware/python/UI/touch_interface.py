@@ -145,12 +145,12 @@ class TouchInterface:
             if w - 52 <= x <= w - 12 and 12 <= y <= 52: 
                 return "BACK", x, y
             
-            # 4. Left Navigation Arrow: exact bounds [25, h // 2 - 25, 50, h // 2 + 25]
-            if 10 <= x <= 65 and (h // 2 - 35) <= y <= (h // 2 + 35):
+            # 4. Left Navigation Arrow: exact drawn bounds around y = h // 2 + 20
+            if 10 <= x <= 65 and (h // 2 - 15) <= y <= (h // 2 + 55):
                 return "LEFT", x, y
                 
-            # 5. Right Navigation Arrow: exact bounds [w - 50, h // 2 - 25, w - 25, h // 2 + 25]
-            if w - 65 <= x <= w - 10 and (h // 2 - 35) <= y <= (h // 2 + 35):
+            # 5. Right Navigation Arrow: exact drawn bounds around y = h // 2 + 20
+            if w - 65 <= x <= w - 10 and (h // 2 - 15) <= y <= (h // 2 + 55):
                 return "RIGHT", x, y
                 
             # Ignore random touches in the gallery that don't hit a button

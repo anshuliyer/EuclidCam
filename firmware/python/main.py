@@ -436,7 +436,7 @@ class GalleryManager:
             return np.array(img)
             
         if self._idx == self._cached_idx and self._cached_frame is not None:
-            return self._cached_frame
+            return self._cached_frame.copy()
             
         try:
             # Use thumbnail for extreme libjpeg hardware decode speed instead of LANCZOS resize
