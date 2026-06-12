@@ -13,13 +13,24 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 def get_ip_address():
     try:
+        import fcntl
+        import struct
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
+        ip = socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', b'wlan0')
+        )[20:24])
         return ip
     except Exception:
-        return "127.0.0.1"
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception:
+            return "10.42.0.1"
 
 def generate_qr_code(url):
     qr = qrcode.QRCode(version=1, border=2, box_size=10)

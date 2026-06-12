@@ -664,22 +664,28 @@ class InputHandler:
             idx = config["submenu_index"]
             if idx == 0:          # Show QR
                 if not config.get("is_connected"):
-                    print("[SYSTEM] Starting server…")
+                    import subprocess
+                    print("[SYSTEM] Starting Hotspot & server…")
+                    subprocess.run(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], check=False)
                     self._server.start()
                     config["is_connected"] = True
                 config["show_connection_view"] = True
                 config["show_submenu"] = False
                 config["show_menu"] = False
                 return
-            elif idx == 1:        # Toggle WiFi
+            elif idx == 1:        # Toggle WiFi Hotspot
                 if config.get("is_connected"):
                     self._server.stop()
                     config["is_connected"] = False
-                    print("[SYSTEM] Stopped server.")
+                    import subprocess
+                    print("[SYSTEM] Stopping Hotspot...")
+                    subprocess.run(["nmcli", "connection", "down", "Hotspot"], check=False)
                 else:
+                    import subprocess
+                    print("[SYSTEM] Starting Hotspot (EuclidCam)...")
+                    subprocess.run(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], check=False)
                     self._server.start()
                     config["is_connected"] = True
-                    print("[SYSTEM] Started server.")
                 return # Keep menu open to show state toggle
             elif idx == 2:        # Bluetooth
                 is_on = not config.get("bluetooth_on", False)
