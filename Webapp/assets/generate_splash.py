@@ -94,7 +94,7 @@ def generate_euclid_design(width, height, filename, theme="light", is_logo=False
         mode, factor = i % 4, i / 11.0
         color = interpolate_color(colors["dark_accent"], colors["light_accent"], factor)
         arc_width = int(max(int(scale), int((4 - i//3) * scale)) * (1.5 if is_logo else 1))
-        draw_dotted_rect(draw, curr_x, curr_y, s, s, colors["dotted"], main_dash, main_gap, pen_width, chalk=is_logo)
+        # draw_dotted_rect(draw, curr_x, curr_y, s, s, colors["dotted"], main_dash, main_gap, pen_width, chalk=is_logo)
         
         if mode == 0: 
             draw_smooth_arc(draw, curr_x + s, curr_y + s, s, 180, 270, color, arc_width, chalk=is_logo)
@@ -197,7 +197,7 @@ def generate_construction_gif(width, height, filename, theme="light", duration=1
         else:
             equation = f"R{i} = R{i-1} + R{i-2} = {radii[i]}"
             
-        draw_dotted_rect(draw, curr_x, curr_y, s, s, colors["dotted"], main_dash, main_gap, pen_width)
+        # draw_dotted_rect(draw, curr_x, curr_y, s, s, colors["dotted"], main_dash, main_gap, pen_width)
         
         temp_img = img.copy()
         temp_draw = ImageDraw.Draw(temp_img)
