@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+Captured/*
+!Captured/.gitkeep
+*.sparseimage
+.DS_Store
