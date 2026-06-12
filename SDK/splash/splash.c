@@ -58,7 +58,7 @@ void spi_transfer(uint8_t *data, int len) {
         .tx_buf = (unsigned long)data,
         .rx_buf = 0,
         .len = len,
-        .speed_hz = 24000000,
+        .speed_hz = 10000000,
         .delay_usecs = 0,
         .bits_per_word = 8,
     };
