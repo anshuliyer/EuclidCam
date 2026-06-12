@@ -9,7 +9,6 @@
 #include <linux/spi/spidev.h>
 
 #define SPI_DEVICE "/dev/spidev0.0"
-#define PIN_CS 8
 #define PIN_DC 24
 #define PIN_RST 25
 #define WIDTH 320
@@ -79,28 +78,21 @@ int main(int argc, char **argv) {
     }
 
     // 1. Setup GPIOs
-    gpio_export(PIN_CS);
     gpio_export(PIN_DC);
     gpio_export(PIN_RST);
-    gpio_dir_out(PIN_CS);
     gpio_dir_out(PIN_DC);
     gpio_dir_out(PIN_RST);
-    
-    gpio_set(PIN_CS, 1); // Deselect display initially
 
     // 2. Hardware Reset
     gpio_set(PIN_RST, 1); usleep(5000);
     gpio_set(PIN_RST, 0); usleep(20000);
     gpio_set(PIN_RST, 1); usleep(150000);
 
-    // 3. Open SPI with SPI_NO_CS so we can manually control PIN_CS
+    // 3. Open SPI
     spi_fd = open(SPI_DEVICE, O_RDWR);
     if (spi_fd < 0) { perror("SPI open"); return 1; }
-    uint8_t mode = SPI_MODE_0 | SPI_NO_CS;
+    uint8_t mode = SPI_MODE_0;
     ioctl(spi_fd, SPI_IOC_WR_MODE, &mode);
-    
-    // Select the display manually and hold it!
-    gpio_set(PIN_CS, 0);
 
     // 4. ILI9341 Initialization Sequence
     write_command(0x01); // Software reset
@@ -132,36 +124,33 @@ int main(int argc, char **argv) {
     write_command(0x29); // Display ON
     usleep(50000);
 
-    // 5. Set drawing window
-    write_command(0x2A); // Column Address Set
-    write_data(0x00); write_data(0x00);
-    write_data((WIDTH-1) >> 8); write_data((WIDTH-1) & 0xFF);
+    // 5. Draw Image Line-by-Line (Avoids CS hardware toggling issues)
+    uint8_t *img_buf = malloc(WIDTH * HEIGHT * 2);
+    memset(img_buf, 0, WIDTH * HEIGHT * 2); // default black
     
-    write_command(0x2B); // Page Address Set
-    write_data(0x00); write_data(0x00);
-    write_data((HEIGHT-1) >> 8); write_data((HEIGHT-1) & 0xFF);
-
-    write_command(0x2C); // Memory Write
-    
-    // 6. Draw RGB565 Image
     int img_fd = open(argv[1], O_RDONLY);
     if (img_fd > 0) {
-        uint8_t chunk[4096];
-        int bytes_read;
-        while ((bytes_read = read(img_fd, chunk, sizeof(chunk))) > 0) {
-            write_data_buf(chunk, bytes_read);
-        }
+        read(img_fd, img_buf, WIDTH * HEIGHT * 2);
         close(img_fd);
-    } else {
-        // Fallback: Fill screen with black
-        uint8_t chunk[4096];
-        memset(chunk, 0, sizeof(chunk));
-        for(int i=0; i<(WIDTH*HEIGHT*2)/sizeof(chunk); i++) {
-            write_data_buf(chunk, sizeof(chunk));
-        }
     }
-
-    gpio_set(PIN_CS, 1); // Deselect display
+    
+    for (int y = 0; y < HEIGHT; y++) {
+        // Set window to a single line
+        write_command(0x2A); // Column Set
+        write_data(0x00); write_data(0x00);
+        write_data((WIDTH-1) >> 8); write_data((WIDTH-1) & 0xFF);
+        
+        write_command(0x2B); // Page Set
+        write_data(y >> 8); write_data(y & 0xFF);
+        write_data(y >> 8); write_data(y & 0xFF);
+        
+        write_command(0x2C); // Memory Write
+        
+        // Write exactly 1 row (320 pixels * 2 bytes = 640 bytes)
+        write_data_buf(img_buf + (y * WIDTH * 2), WIDTH * 2);
+    }
+    
+    free(img_buf);
     close(spi_fd);
     return 0;
 }
