@@ -375,9 +375,17 @@ class TopPanel:
             qr = qrcode.QRCode(version=1, box_size=4, border=1)
             qr.add_data(f"http://{ip}:5000")
             qr.make(fit=True)
-            qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
-            qr_img = qr_img.resize((140, 140), Image.NEAREST)
-            draw._image.paste(qr_img, (x + (overlay_w - 140)//2, y + 50))
+            qr_img = qr.make_image(fill_color="black", back_color="white")
+            
+            import io
+            bio = io.BytesIO()
+            qr_img.save(bio)
+            bio.seek(0)
+            
+            from PIL import Image
+            qr_pil = Image.open(bio).convert("RGB")
+            qr_pil = qr_pil.resize((140, 140), Image.NEAREST)
+            draw._image.paste(qr_pil, (x + (overlay_w - 140)//2, y + 50))
         except Exception as e:
             print(f"[ERROR] Live QR generation failed: {e}")
             draw.text((x + 20, y + 100), "QR ERROR", fill=(255, 0, 0))
