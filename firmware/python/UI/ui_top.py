@@ -387,7 +387,7 @@ class TopPanel:
             draw._image.paste(qr_pil, (x + (overlay_w - 140)//2, y + 50))
         except Exception as e:
             print(f"[ERROR] Live QR generation failed: {e}")
-            draw.text((x + 20, y + 100), "QR ERROR", fill=(255, 0, 0))
+            draw.text((x + 10, y + 100), f"ERR: {str(e)[:30]}", fill=(255, 0, 0))
 
         # Instructions
         draw.text((x + 20, y + overlay_h - 40), "Scan to browse images", fill=self.MAUVE)
