@@ -54,6 +54,10 @@ def generate_explosion_gif(filename, width=320, height=240):
         img = Image.new("RGB", (width, height), bg_color)
         draw = ImageDraw.Draw(img)
         
+        # Phase Variables
+        text_y_offset = 0
+        logo_scale = 1.0
+        
         if f < logo_frame_count:
             # Phase 1: Logo is animating, dots rotate slowly
             rotation = f * 0.02
@@ -63,31 +67,45 @@ def generate_explosion_gif(filename, width=320, height=240):
             current_logo = logo_frames[f]
             exp_progress = 0.0
         elif f < logo_frame_count + hold_frames:
-            # Phase 2: Hold, text fades in
+            # Phase 2: Hold, text fades and slides up
             rotation = f * 0.02
             dot_opacity = 0.35
             logo_opacity = 1.0
-            # Fade in quickly over first 15 frames of the hold
-            text_opacity = min(1.0, (f - logo_frame_count) / 15.0)
+            
+            hold_progress = (f - logo_frame_count) / float(hold_frames)
+            # Smooth ease-out for text fade and slide (premium UI feel)
+            text_ease = 1.0 - (1.0 - min(1.0, hold_progress * 4.0)) ** 3
+            text_opacity = text_ease
+            text_y_offset = int(10 * (1.0 - text_ease)) # Slides up by 10px
+            
+            # The "Breath" - slight implosion tension right before explosion
+            if hold_progress > 0.85:
+                tension = (hold_progress - 0.85) / 0.15 # 0 to 1
+                logo_scale = 1.0 - (tension * 0.04) # Contract by 4%
+            
             current_logo = logo_frames[-1]
             exp_progress = 0.0
         else:
             # Phase 3: Explosion
             exp_f = f - (logo_frame_count + hold_frames)
             exp_progress = exp_f / float(explosion_frames)
-            dot_opacity = max(0, 0.35 - exp_progress * 1.5)
-            logo_opacity = max(0, 1.0 - exp_progress * 1.5)
-            text_opacity = max(0, 1.0 - exp_progress * 1.5)
+            # Exponential fade out
+            fade_out = max(0, 1.0 - (exp_progress ** 1.5) * 1.2)
+            dot_opacity = 0.35 * fade_out
+            logo_opacity = fade_out
+            text_opacity = fade_out
             current_logo = logo_frames[-1]
             
         # Draw Dots
         for i, p in enumerate(particles):
             if exp_progress == 0.0:
-                r = p["r"]
+                r = p["r"] * logo_scale # Apply tension breath
                 theta = p["theta"] + rotation
             else:
-                # Travel exactly along the Golden Spiral
-                index_boost = (exp_progress ** 3) * 600
+                # Volumetric Spiral Detonation: closer dots accelerate slightly differently
+                depth_variance = 1.0 + (50.0 / max(1.0, p["r"])) * 0.2
+                index_boost = (exp_progress ** 3) * 800 * depth_variance
+                
                 n_new = (i + 1) + index_boost
                 r = c * math.sqrt(n_new)
                 
@@ -104,15 +122,25 @@ def generate_explosion_gif(filename, width=320, height=240):
                 
         # Composite Logo on top
         if logo_opacity > 0:
-            if logo_opacity < 1.0:
-                # Fade out logo
-                logo_faded = current_logo.copy()
-                logo_pixels = logo_faded.load()
-                for y in range(height):
-                    for x in range(width):
-                        cp = logo_pixels[x, y]
-                        logo_pixels[x, y] = tuple(int(bg_color[i] + (cp[i] - bg_color[i]) * logo_opacity) for i in range(3))
-                img = ImageChops.lighter(img, logo_faded)
+            if logo_scale < 1.0 or logo_opacity < 1.0:
+                # Apply scaling (implosion) and fade
+                lw, lh = current_logo.size
+                nw = int(lw * logo_scale)
+                nh = int(lh * logo_scale)
+                if nw > 0 and nh > 0:
+                    scaled_logo = current_logo.resize((nw, nh), Image.LANCZOS)
+                    # Center it back
+                    temp_img = Image.new("RGB", (width, height), bg_color)
+                    temp_img.paste(scaled_logo, ((width - nw)//2, (height - nh)//2))
+                    
+                    if logo_opacity < 1.0:
+                        logo_pixels = temp_img.load()
+                        for y in range(height):
+                            for x in range(width):
+                                cp = logo_pixels[x, y]
+                                logo_pixels[x, y] = tuple(int(bg_color[i] + (cp[i] - bg_color[i]) * logo_opacity) for i in range(3))
+                    
+                    img = ImageChops.lighter(img, temp_img)
             else:
                 img = ImageChops.lighter(img, current_logo)
                 
@@ -120,7 +148,7 @@ def generate_explosion_gif(filename, width=320, height=240):
         if text_opacity > 0:
             text1 = "EuclidCam"
             tx1 = 16
-            ty1 = height - 25 - 24
+            ty1 = height - 25 - 24 + text_y_offset # Apply the slide-up easing offset
             
             # Use ImageDraw on the newly composited image
             final_draw = ImageDraw.Draw(img)
