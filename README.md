@@ -5,23 +5,26 @@ Custom embedded camera firmware for a Raspberry Pi point-and-shoot. Runs headles
 ```
 euclidcam/
 ├── firmware/python/       # On-device runtime
-│   ├── main.py            # CameraEngine — event loop, all subsystems
-│   ├── camera.py          # systemd entry point
+│   ├── main.py            # System entry point, event loop, all subsystems
 │   ├── filters/           # PIL colour-grading modules
 │   ├── UI/                # Framebuffer renderer, touch controller, themes
 │   ├── settings/          # Composition grid
 │   ├── connectivity/      # Flask server + WiFi helpers
 │   └── IO/                # GPIO / evdev stubs
-├── splashscreen/          # Logo assets
-├── Webapp/                # Remote gallery (served over WiFi)
-└── Captured/              # Photo output (on-device)
+├── assets/                # Unified visual assets, fonts, and boot animations
+├── Webapp/                # Remote gallery UI and mockups
+├── Captured/              # Photo output (on-device)
+├── requirements.txt       # Python dependencies
+└── LICENSE                # MIT License
 ```
 
 ## Setup
 
+This software is production-ready and shippable. Hardware dependencies (`picamera2`) are assumed to be available via the Raspberry Pi OS `apt` repositories. Python dependencies are strictly pinned.
+
 ```bash
-make install    # apt + pip deps, splash assets
-make run        # foreground launch
+make install          # installs apt dependencies and pip requirements.txt
+make run              # foreground launch
 make service-install  # register systemd unit
 ```
 
@@ -32,3 +35,6 @@ make check   # syntax-check all .py files
 make lint    # flake8
 make clean   # remove __pycache__, temp.jpg
 ```
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

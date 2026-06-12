@@ -27,7 +27,7 @@ help:
 # ── Install ────────────────────────────────────────────────────────────────────
 
 .PHONY: install
-install: _apt _splash
+install: _apt _pip
 
 .PHONY: _apt
 _apt:
@@ -41,15 +41,15 @@ _apt:
 		libcap-dev libcamera-apps \
 		fonts-dejavu-core v4l-utils flake8 git
 
-.PHONY: _splash
-_splash:
-	$(PYTHON) splashscreen/generate_splash.py || true
+.PHONY: _pip
+_pip:
+	$(PYTHON) -m pip install -r requirements.txt || true
 
 # ── Run ────────────────────────────────────────────────────────────────────────
 
 .PHONY: run
 run:
-	cd $(FW_DIR) && $(PYTHON) camera.py
+	cd $(FW_DIR) && $(PYTHON) main.py
 
 # ── Code quality ───────────────────────────────────────────────────────────────
 
@@ -68,7 +68,7 @@ lint:
 
 # ── systemd ────────────────────────────────────────────────────────────────────
 
-EXEC_PATH := $(shell realpath $(FW_DIR)/camera.py)
+EXEC_PATH := $(shell realpath $(FW_DIR)/main.py)
 USER_NAME := $(shell whoami)
 WORK_DIR  := $(shell realpath $(FW_DIR))
 
