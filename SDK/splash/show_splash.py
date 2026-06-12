@@ -34,12 +34,24 @@ def main():
         print(f"Error loading image! Make sure the path is correct. Details: {e}")
         sys.exit(1)
 
-    # Resize to fit the exact hardware bounds
-    print("Resizing image to 320x240...")
-    image = image.resize((320, 240))
+    # Fix aspect ratio and apply very low opacity
+    print("Applying low opacity and fixing aspect ratio...")
+    
+    # 1. Lower opacity by blending with a solid black background
+    black_bg = Image.new('RGB', image.size, (0, 0, 0))
+    image = Image.blend(black_bg, image, alpha=0.15) # 15% opacity
+    
+    # 2. Maintain aspect ratio while scaling to fit within 320x240
+    image.thumbnail((320, 240), Image.Resampling.LANCZOS)
+    
+    # 3. Create a clean 320x240 black canvas and center the image on it
+    canvas = Image.new('RGB', (320, 240), (0, 0, 0))
+    paste_x = (320 - image.width) // 2
+    paste_y = (240 - image.height) // 2
+    canvas.paste(image, (paste_x, paste_y))
     
     print("Flashing image to screen...")
-    disp.image(image)
+    disp.image(canvas)
     
     print("Success! Image is on the screen.")
 
