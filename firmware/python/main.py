@@ -664,9 +664,11 @@ class InputHandler:
             idx = config["submenu_index"]
             if idx == 0:          # Show QR
                 if not config.get("is_connected"):
-                    import subprocess
+                    import subprocess, time
                     print("[SYSTEM] Starting Hotspot & server…")
-                    subprocess.run(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], check=False)
+                    # Use Popen because 'nmcli device wifi hotspot' blocks the terminal!
+                    subprocess.Popen(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
+                    time.sleep(3) # Give NetworkManager time to assign 10.42.0.1
                     self._server.start()
                     config["is_connected"] = True
                 config["show_connection_view"] = True
@@ -681,9 +683,10 @@ class InputHandler:
                     print("[SYSTEM] Stopping Hotspot...")
                     subprocess.run(["nmcli", "connection", "down", "Hotspot"], check=False)
                 else:
-                    import subprocess
+                    import subprocess, time
                     print("[SYSTEM] Starting Hotspot (EuclidCam)...")
-                    subprocess.run(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], check=False)
+                    subprocess.Popen(["nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
+                    time.sleep(3)
                     self._server.start()
                     config["is_connected"] = True
                 return # Keep menu open to show state toggle
