@@ -1,15 +1,32 @@
 import sys
 import os
+import time
+import argparse
 import board
 import digitalio
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import adafruit_rgb_display.ili9341 as ili9341
 
+def get_tail_lines(filepath, n=15):
+    if not os.path.exists(filepath):
+        return []
+    try:
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+            return [l.strip()[-40:] for l in lines[-n:]]
+    except Exception:
+        return []
+
 def main():
-    # Allow user to pass an image, or default to the blueprint logo in the repo
     script_dir = os.path.dirname(os.path.abspath(__file__))
     default_img = os.path.abspath(os.path.join(script_dir, "..", "..", "assets", "IMG_4712-Photoroom.png"))
-    img_path = sys.argv[1] if len(sys.argv) > 1 else default_img
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--img", default=default_img)
+    parser.add_argument("--log", default=None)
+    args = parser.parse_args()
+
+    img_path = args.img
 
     print("Initializing SPI and GPIO...")
     spi = board.SPI()
@@ -45,15 +62,43 @@ def main():
     image.thumbnail((320, 240), Image.Resampling.LANCZOS)
     
     # 3. Create a clean 320x240 black canvas and center the image on it
-    canvas = Image.new('RGB', (320, 240), (0, 0, 0))
+    base_canvas = Image.new('RGB', (320, 240), (0, 0, 0))
     paste_x = (320 - image.width) // 2
     paste_y = (240 - image.height) // 2
-    canvas.paste(image, (paste_x, paste_y))
+    base_canvas.paste(image, (paste_x, paste_y))
     
-    print("Flashing image to screen...")
-    disp.image(canvas)
+    print("Flashing base image to screen...")
+    disp.image(base_canvas)
     
-    print("Success! Image is on the screen.")
+    if args.log:
+        print(f"Tailing logs from {args.log}...")
+        font = ImageFont.load_default()
+        last_lines = []
+        
+        while not os.path.exists("install.done"):
+            lines = get_tail_lines(args.log, 15)
+            if lines != last_lines:
+                frame = base_canvas.copy()
+                draw = ImageDraw.Draw(frame)
+                
+                y = 10
+                for line in lines:
+                    # Beige color
+                    draw.text((10, y), line, font=font, fill=(245, 245, 220))
+                    y += 14
+                    
+                disp.image(frame)
+                last_lines = lines
+                
+            time.sleep(0.2)
+            
+        # Final update to show completion
+        frame = base_canvas.copy()
+        draw = ImageDraw.Draw(frame)
+        draw.text((10, 10), "INSTALLATION COMPLETE!", font=font, fill=(0, 255, 0))
+        disp.image(frame)
+        
+    print("Success! Operation finished.")
 
 if __name__ == "__main__":
     main()
