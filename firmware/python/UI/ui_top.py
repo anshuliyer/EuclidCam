@@ -377,13 +377,12 @@ class TopPanel:
             qr.make(fit=True)
             qr_img = qr.make_image(fill_color="black", back_color="white")
             
-            import io
-            bio = io.BytesIO()
-            qr_img.save(bio, format="PNG")
-            bio.seek(0)
+            # Save to RAM disk (/tmp) to avoid library kwargs mismatch
+            tmp_path = "/tmp/euclidcam_qr.png"
+            qr_img.save(tmp_path)
             
             from PIL import Image
-            qr_pil = Image.open(bio).convert("RGB")
+            qr_pil = Image.open(tmp_path).convert("RGB")
             qr_pil = qr_pil.resize((140, 140), Image.NEAREST)
             draw._image.paste(qr_pil, (x + (overlay_w - 140)//2, y + 50))
         except Exception as e:
