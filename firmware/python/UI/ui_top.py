@@ -41,7 +41,14 @@ class TopPanel:
         is_low = self.config.get("is_undervoltage", False)
         color = (255, 50, 50) if is_low else self.BEIGE
         
-        draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=color, width=2)
+        if not is_low:
+            # Solid beige fill when healthy
+            draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], fill=color)
+        else:
+            # Empty red outline when low
+            draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=color, width=2)
+            
+        # Draw battery tip
         draw.rectangle([x_batt + 20, y_batt + 3, x_batt + 22, y_batt + 7], fill=color)
         
         if is_low:
