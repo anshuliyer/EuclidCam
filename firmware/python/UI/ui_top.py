@@ -172,9 +172,9 @@ class TopPanel:
         try:
             import os
             # Use absolute path resolution from this file up to the project root
-            # UI -> python -> firmware -> root -> splashscreen
+            # UI -> python -> firmware -> root -> assets
             proj_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
-            logo_path = os.path.join(proj_root, "splashscreen", "transparent_logo_light.png")
+            logo_path = os.path.join(proj_root, "assets", "transparent_logo_light.png")
             logo = Image.open(logo_path).convert("RGBA")
             logo.thumbnail((250, 250), Image.LANCZOS)
             r, g, b, a = logo.split()

@@ -10,6 +10,11 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(__file__)
 PHOTO_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../../Captured"))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
+ASSETS_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../../assets"))
+
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return send_from_directory(ASSETS_DIR, filename)
 
 def get_ip_address():
     try:

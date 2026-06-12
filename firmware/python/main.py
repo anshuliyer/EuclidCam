@@ -158,7 +158,7 @@ class CameraMode:
         try:
             logo_path = os.path.join(
                 os.path.dirname(__file__),
-                "../../splashscreen/transparent_logo_light.png",
+                "../../assets/transparent_logo_light.png",
             )
             logo = Image.open(logo_path).convert("RGBA")
             logo.thumbnail((250, 250), Image.LANCZOS)
@@ -884,7 +884,7 @@ def play_boot_splash() -> None:
     """Plays the EuclidCam dark logo GIF on the ILI9341 display at boot."""
     print("[SYSTEM] Playing Boot Splash Animation...")
     try:
-        gif_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "splashscreen/explosion_splash.gif"))
+        gif_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../assets/explosion_splash.gif"))
         if not os.path.exists(gif_path):
             print(f"[BOOT] Missing splash: {gif_path}")
             return
@@ -942,4 +942,18 @@ def run(config: dict | None = None) -> None:
 
 
 if __name__ == "__main__":
-    run()
+    from IO import gpio_top as io_stubs
+    from UI.settings import ORIENTATION
+    
+    print("[SYSTEM] Starting EuclidCam Camera Engine...")
+    battery = io_stubs.BatteryManagement()
+    gpio = io_stubs.GPIOTop()
+    
+    hw_config = {
+        "flash": gpio.flash_setting,
+        "battery": battery.battery_level,
+        "ui_rotation": ORIENTATION,
+        "ui_padding": 20
+    }
+    
+    run(hw_config)
