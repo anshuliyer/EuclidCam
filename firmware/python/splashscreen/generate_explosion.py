@@ -1,6 +1,6 @@
 import math
 import os
-from PIL import Image, ImageDraw, ImageChops
+from PIL import Image, ImageDraw, ImageChops, ImageFont
 
 def generate_explosion_gif(filename, width=320, height=240):
     golden_angle = math.pi * (3 - math.sqrt(5))
@@ -29,8 +29,16 @@ def generate_explosion_gif(filename, width=320, height=240):
         logo_frames.append(frame_bg)
         
     logo_frame_count = len(logo_frames)
+    hold_frames = 20
     explosion_frames = 25
-    total_frames = logo_frame_count + explosion_frames
+    total_frames = logo_frame_count + hold_frames + explosion_frames
+    
+    # Load Font
+    try:
+        font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../connectivity/static/fonts/JetBrainsMono-Bold.ttf"))
+        font = ImageFont.truetype(font_path, 12)
+    except:
+        font = ImageFont.load_default()
     
     particles = []
     c = 10
@@ -49,28 +57,40 @@ def generate_explosion_gif(filename, width=320, height=240):
         if f < logo_frame_count:
             # Phase 1: Logo is animating, dots rotate slowly
             rotation = f * 0.02
-            dot_opacity = 0.35  # High transparency for background dots
+            dot_opacity = 0.35
             logo_opacity = 1.0
+            text_opacity = 0.0
             current_logo = logo_frames[f]
+            exp_progress = 0.0
+        elif f < logo_frame_count + hold_frames:
+            # Phase 2: Hold, text fades in
+            rotation = f * 0.02
+            dot_opacity = 0.35
+            logo_opacity = 1.0
+            text_opacity = (f - logo_frame_count) / float(hold_frames)
+            current_logo = logo_frames[-1]
+            exp_progress = 0.0
         else:
-            # Phase 2: Explosion
-            progress = (f - logo_frame_count) / float(explosion_frames)
-            dot_opacity = max(0, 0.35 - progress * 1.5)
-            logo_opacity = max(0, 1.0 - progress * 1.5)
+            # Phase 3: Explosion
+            exp_f = f - (logo_frame_count + hold_frames)
+            exp_progress = exp_f / float(explosion_frames)
+            dot_opacity = max(0, 0.35 - exp_progress * 1.5)
+            logo_opacity = max(0, 1.0 - exp_progress * 1.5)
+            text_opacity = max(0, 1.0 - exp_progress * 1.5)
             current_logo = logo_frames[-1]
             
         # Draw Dots
         for i, p in enumerate(particles):
-            if f < logo_frame_count:
+            if exp_progress == 0.0:
                 r = p["r"]
                 theta = p["theta"] + rotation
             else:
-                # Travel exactly along the Golden Spiral by increasing the virtual index!
-                index_boost = (progress ** 3) * 600
+                # Travel exactly along the Golden Spiral
+                index_boost = (exp_progress ** 3) * 600
                 n_new = (i + 1) + index_boost
                 r = c * math.sqrt(n_new)
                 
-                base_rotation = logo_frame_count * 0.02
+                base_rotation = (logo_frame_count + hold_frames) * 0.02
                 theta = n_new * golden_angle + base_rotation
                 
             x = width / 2 + r * math.cos(theta)
@@ -80,6 +100,21 @@ def generate_explosion_gif(filename, width=320, height=240):
             if -10 < x < width + 10 and -10 < y < height + 10:
                 c_val = tuple(int(bg_color[i] + (dot_color[i] - bg_color[i]) * dot_opacity) for i in range(3))
                 draw.ellipse([x-s, y-s, x+s, y+s], fill=c_val)
+                
+        # Draw Text
+        if text_opacity > 0:
+            text = "built to be built upon_"
+            try:
+                bbox = draw.textbbox((0, 0), text, font=font)
+                tw = bbox[2] - bbox[0]
+            except AttributeError:
+                tw, _ = draw.textsize(text, font=font)
+            
+            tx = (width - tw) // 2
+            ty = 205
+            
+            c_val = tuple(int(bg_color[i] + (dot_color[i] - bg_color[i]) * text_opacity) for i in range(3))
+            draw.text((tx, ty), text, font=font, fill=c_val)
                 
         # Composite Logo on top
         if logo_opacity > 0:
