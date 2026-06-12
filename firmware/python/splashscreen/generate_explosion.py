@@ -48,7 +48,6 @@ def generate_explosion_gif(filename, width=320, height=240):
         
         if f < logo_frame_count:
             # Phase 1: Logo is animating, dots rotate slowly
-            expansion = 1.0
             rotation = f * 0.02
             dot_opacity = 0.35  # High transparency for background dots
             logo_opacity = 1.0
@@ -56,16 +55,24 @@ def generate_explosion_gif(filename, width=320, height=240):
         else:
             # Phase 2: Explosion
             progress = (f - logo_frame_count) / float(explosion_frames)
-            expansion = 1.0 + (progress ** 3) * 25
-            rotation = logo_frame_count * 0.02 + progress * 0.2
             dot_opacity = max(0, 0.35 - progress * 1.5)
             logo_opacity = max(0, 1.0 - progress * 1.5)
             current_logo = logo_frames[-1]
             
         # Draw Dots
-        for p in particles:
-            r = p["r"] * expansion
-            theta = p["theta"] + rotation
+        for i, p in enumerate(particles):
+            if f < logo_frame_count:
+                r = p["r"]
+                theta = p["theta"] + rotation
+            else:
+                # Travel exactly along the Golden Spiral by increasing the virtual index!
+                index_boost = (progress ** 3) * 600
+                n_new = (i + 1) + index_boost
+                r = c * math.sqrt(n_new)
+                
+                base_rotation = logo_frame_count * 0.02
+                theta = n_new * golden_angle + base_rotation
+                
             x = width / 2 + r * math.cos(theta)
             y = height / 2 + r * math.sin(theta)
             s = p["size"]
