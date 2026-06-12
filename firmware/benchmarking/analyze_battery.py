@@ -28,14 +28,17 @@ def main():
             if rows:
                 for row in rows:
                     try:
-                        uptime = int(row.get('Uptime_Seconds', 0))
+                        uptime_str = row.get('Uptime_Seconds')
+                        if not uptime_str:
+                            continue
+                        uptime = int(uptime_str)
                         if uptime > max_uptime:
                             max_uptime = uptime
                         
                         # Add a column for the run name to distinguish in combined CSV
                         row['Run_ID'] = run_name
                         combined_data.append(row)
-                    except ValueError:
+                    except (ValueError, TypeError):
                         pass
                         
         if max_uptime > total_max_uptime:
