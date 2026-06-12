@@ -38,7 +38,7 @@ class TopPanel:
         x_batt = x_base - 75
         y_batt = y_row - 10
         
-        is_low = self.state.get("is_undervoltage", False)
+        is_low = self.config.get("is_undervoltage", False)
         color = (255, 50, 50) if is_low else self.BEIGE
         
         draw.rectangle([x_batt, y_batt, x_batt + 20, y_batt + 10], outline=color, width=2)
