@@ -31,8 +31,8 @@ install:
 	@echo "Initializing Installation..." > install.log
 	rm -f install.done
 	$(MAKE) _init_splash
-	$(MAKE) _apt >> install.log 2>&1
-	$(MAKE) _pip >> install.log 2>&1
+	stdbuf -oL -eL $(MAKE) _apt >> install.log 2>&1
+	stdbuf -oL -eL $(MAKE) _pip >> install.log 2>&1
 	@echo "Installation Complete!" >> install.log
 	touch install.done
 

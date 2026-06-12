@@ -13,7 +13,7 @@ def get_tail_lines(filepath, n=15):
     try:
         with open(filepath, 'r') as f:
             lines = f.readlines()
-            return [l.strip()[-40:] for l in lines[-n:]]
+            return [l.strip()[:45] for l in lines[-n:]]
     except Exception:
         return []
 
