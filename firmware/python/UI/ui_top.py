@@ -103,7 +103,7 @@ class TopPanel:
         draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
         
         # Separator Line (Same as Menu)
-        draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
+        draw.line([(25, header_h), (w - 25, header_h)], fill=(90, 80, 70), width=1)
         draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.BEIGE, width=2)
         
         # Standard Cross Button (Top Right)
@@ -213,7 +213,7 @@ class TopPanel:
         overlay_draw.line([bx + 27, by + 8, bx + 8, by + 27], fill=self.BEIGE, width=2)
         
         # Separator Line
-        overlay_draw.line([(25, header_h), (w - 25, header_h)], fill=(60, 60, 75), width=1)
+        overlay_draw.line([(25, header_h), (w - 25, header_h)], fill=(90, 80, 70), width=1)
         overlay_draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.BEIGE, width=2)
 
         # 3. Grid Calculation
@@ -246,9 +246,9 @@ class TopPanel:
                 is_selected = (i == selected_idx)
             
             # Button Card Logic - TRANSLUCENT GLASS EFFECT
-            card_fill = tuple(list(self.BEIGE) + [220]) if is_selected else (30, 30, 40, 150)
-            card_outline = (255, 255, 255) if is_selected else (70, 70, 90)
-            text_color = (0, 0, 0) if is_selected else (220, 220, 230)
+            card_fill = tuple(list(self.BEIGE) + [220]) if is_selected else (45, 40, 35, 180)
+            card_outline = (255, 255, 255) if is_selected else (140, 125, 110)
+            text_color = (15, 10, 5) if is_selected else (245, 240, 230)
             accent_color = (255, 255, 255, 180) if is_selected else self.BEIGE
 
             # Draw Card (rounded_rectangle fallback)

@@ -5,12 +5,12 @@ Centralizes all color tokens and stylistic properties.
 
 # Core Colors
 BG_CHARCOAL = (17, 17, 17)
-BEIGE_PRIMARY = (230, 213, 189)
-BEIGE_LIGHT = (244, 239, 234)
-DARK_BEIGE = (191, 164, 138)
+BEIGE_PRIMARY = (250, 214, 165)  # More vibrant, golden beige for the LCD screen
+BEIGE_LIGHT = (255, 242, 225)
+DARK_BEIGE = (210, 170, 115)
 
 # UI Elements
-OVERLAY_FILL = (28, 28, 28, 240)  # Dark translucent matching charcoal
+OVERLAY_FILL = (32, 28, 25, 240)  # Warm charcoal tint
 LOGO_OPACITY = 0.12               # Faint watermark
 PROGRESS_BAR_HEIGHT = 8
 PROGRESS_BAR_WIDTH = 280
