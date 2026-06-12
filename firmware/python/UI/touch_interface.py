@@ -41,25 +41,29 @@ class TouchInterface:
             pass
             
         try:
-            self.spi.configure(baudrate=2000000)
+            # Lowering baudrate to 1MHz significantly increases ADC stability on jumper wires
+            self.spi.configure(baudrate=1000000)
             
             xs, ys = [], []
             buf = bytearray(3)
-            # Take 15 samples for aggressive filtering
+            
+            self.cs.value = False
+            
+            # Read X (0xD0) consecutively to allow physical RC layers to settle
+            self.spi.write_readinto(bytearray([0xD0, 0x00, 0x00]), buf) # Dummy read to settle voltage
             for _ in range(15):
-                self.cs.value = False
-                
-                # Read X (0xD0)
                 self.spi.write_readinto(bytearray([0xD0, 0x00, 0x00]), buf)
                 x = (buf[1] << 5) | (buf[2] >> 3)
+                xs.append(x)
                 
-                # Read Y (0x90)
+            # Read Y (0x90) consecutively
+            self.spi.write_readinto(bytearray([0x90, 0x00, 0x00]), buf) # Dummy read to settle voltage
+            for _ in range(15):
                 self.spi.write_readinto(bytearray([0x90, 0x00, 0x00]), buf)
                 y = (buf[1] << 5) | (buf[2] >> 3)
-                
-                self.cs.value = True
-                xs.append(x)
                 ys.append(y)
+                
+            self.cs.value = True
                 
             xs.sort()
             ys.sort()
@@ -69,8 +73,8 @@ class TouchInterface:
             mid_ys = ys[5:10]
             
             # Fat finger / Smudge rejection
-            # If the spread of the middle samples is too large, the touch is rolling/unstable
-            if (mid_xs[-1] - mid_xs[0]) > 150 or (mid_ys[-1] - mid_ys[0]) > 150:
+            # Relaxed the spread from 150 to 300 to accept lighter, less-stable touches (increases perceived sensitivity)
+            if (mid_xs[-1] - mid_xs[0]) > 300 or (mid_ys[-1] - mid_ys[0]) > 300:
                 return None, None, True # Touching, but too noisy to use
                 
             return mid_xs[2], mid_ys[2], True # Return median of stable touch
