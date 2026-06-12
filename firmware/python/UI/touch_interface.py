@@ -125,30 +125,42 @@ class TouchInterface:
         if ui_state.get("show_connection_view"):
             overlay_w, overlay_h = 300, 240
             ox, oy = (w - overlay_w) // 2, (h - overlay_h) // 2
-            # Expand the close button (cross) hitbox for easier tapping
-            if (x > ox + overlay_w - 80 and y < oy + 80) or (x < ox or x > ox + overlay_w or y < oy or y > oy + overlay_h):
+            # Close Button exact drawn bounds: [ox + overlay_w - 70, oy + 10, ox + overlay_w - 10, oy + 70]
+            if ox + overlay_w - 70 <= x <= ox + overlay_w - 10 and oy + 10 <= y <= oy + 70:
                 return "BACK", x, y
-            # Block fallthrough: if they tapped inside the QR box but missed the cross, ignore the touch
+            # Block fallthrough: if they tapped inside the connection overlay but missed the cross
             return None, x, y
 
         if ui_state.get("show_gallery"):
-            # 1. Delete Button (Top Left)
-            if x < 85 and y < 85: return "DOWN", x, y
+            # 1. Delete Button (Top Left): _draw_bin_icon exact bounds [12, 12, 52, 52]
+            if 12 <= x <= 52 and 12 <= y <= 52: 
+                return "DOWN", x, y
             
-            # 2. BT Send Button (Top Right next to Close)
+            # 2. BT Send Button (Top Right next to Close): _draw_bt_icon exact bounds [w - 100, 12, w - 60, 52]
             if ui_state.get("bluetooth_on"):
-                if w - 110 < x < w - 60 and y < 85: return "BT_SEND", x, y
+                if w - 100 <= x <= w - 60 and 12 <= y <= 52: 
+                    return "BT_SEND", x, y
                 
-            # 3. Close Button (Top Right extreme)
-            if x > w - 60 and y < 60: return "BACK", x, y
+            # 3. Close Button (Top Right extreme): _draw_gallery_view exact bounds [w - 52, 12, w - 12, 52]
+            if w - 52 <= x <= w - 12 and 12 <= y <= 52: 
+                return "BACK", x, y
             
-            # 3. Navigation (Sides)
-            return ("LEFT" if x < w // 2 else "RIGHT"), x, y
+            # 4. Left Navigation Arrow: exact bounds [25, h // 2 - 25, 50, h // 2 + 25]
+            if 10 <= x <= 65 and (h // 2 - 35) <= y <= (h // 2 + 35):
+                return "LEFT", x, y
+                
+            # 5. Right Navigation Arrow: exact bounds [w - 50, h // 2 - 25, w - 25, h // 2 + 25]
+            if w - 65 <= x <= w - 10 and (h // 2 - 35) <= y <= (h // 2 + 35):
+                return "RIGHT", x, y
+                
+            # Ignore random touches in the gallery that don't hit a button
+            return None, x, y
 
         # --- Layer 2: Menu System (Grid + Header) ---
         if ui_state.get("show_menu"):
-            # Massive Cross Button Area (Top Right)
-            if x > w - 80 and y < 80: return "BACK", x, y
+            # Menu Close Button (Top Right): _draw_menu exact bounds [w - 45, 5, w - 10, 40]
+            if w - 55 <= x <= w and 0 <= y <= 50: 
+                return "BACK", x, y
             
             # Grid Detection (Prioritize this over edge-back)
             sub = ui_state.get("current_submenu")
@@ -194,10 +206,17 @@ class TouchInterface:
                 return "BACK", x, y
 
         # --- Layer 3: Main UI State ---
-        # Gear (Bottom Right)
-        if x > w - 85 and y > h - 85: return "SPACE", x, y
-        # Gallery (Bottom Left)
-        if x < 85 and y > h - 85: return "GALLERY", x, y
+        padding = ui_state.get("ui_padding", 20)
+        
+        # Gear (Settings): _draw_gear exact bounds [w - padding - 42, h - padding - 42, w - padding + 2, h - padding + 2]
+        gx, gy = w - padding - 20, h - padding - 20
+        if gx - 25 <= x <= gx + 25 and gy - 25 <= y <= gy + 25: 
+            return "SPACE", x, y
+            
+        # Gallery (Bottom Left): _draw_gallery_icon exact bounds [padding + 5, h - padding - 35, padding + 45, h - padding - 5]
+        gal_x, gal_y = padding + 5, h - padding - 35
+        if gal_x - 10 <= x <= gal_x + 50 and gal_y - 10 <= y <= gal_y + 40: 
+            return "GALLERY", x, y
         # Capture (Center)
         if not ui_state.get("show_menu") and not ui_state.get("show_gallery"):
             if 80 < x < w - 80 and 80 < y < h - 80: return "ENTER", x, y
