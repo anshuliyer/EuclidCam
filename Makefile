@@ -37,7 +37,6 @@ _apt:
 		python3-picamera2 python3-numpy python3-pil \
 		python3-flask python3-evdev \
 		python3-qrcode python3-requests \
-		python3-adafruit-blinka python3-adafruit-circuitpython-rgb-display \
 		libcap-dev libcamera-apps \
 		fonts-dejavu-core v4l-utils flake8 git
 
