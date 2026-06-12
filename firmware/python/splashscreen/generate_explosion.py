@@ -36,11 +36,9 @@ def generate_explosion_gif(filename, width=320, height=240):
     # Load Font
     try:
         font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../connectivity/static/fonts/JetBrainsMono-Bold.ttf"))
-        font_large = ImageFont.truetype(font_path, 16)
-        font_small = ImageFont.truetype(font_path, 10)
+        font = ImageFont.truetype(font_path, 24)
     except:
-        font_large = ImageFont.load_default()
-        font_small = ImageFont.load_default()
+        font = ImageFont.load_default()
     
     particles = []
     c = 10
@@ -107,31 +105,13 @@ def generate_explosion_gif(filename, width=320, height=240):
         # Draw Text
         if text_opacity > 0:
             text1 = "EuclidCam"
-            text2 = "built to be built upon_"
             
-            # EuclidCam Text
-            try:
-                bbox1 = draw.textbbox((0, 0), text1, font=font_large)
-                tw1 = bbox1[2] - bbox1[0]
-            except AttributeError:
-                tw1, _ = draw.textsize(text1, font=font_large)
-            
-            tx1 = (width - tw1) // 2
-            ty1 = 185
-            
-            # Slogan Text
-            try:
-                bbox2 = draw.textbbox((0, 0), text2, font=font_small)
-                tw2 = bbox2[2] - bbox2[0]
-            except AttributeError:
-                tw2, _ = draw.textsize(text2, font=font_small)
-            
-            tx2 = (width - tw2) // 2
-            ty2 = 205
+            # Position at bottom left (similar to website: left 16px, bottom 25px)
+            tx1 = 16
+            ty1 = height - 25 - 24
             
             c_val = tuple(int(bg_color[i] + (dot_color[i] - bg_color[i]) * text_opacity) for i in range(3))
-            draw.text((tx1, ty1), text1, font=font_large, fill=c_val)
-            draw.text((tx2, ty2), text2, font=font_small, fill=c_val)
+            draw.text((tx1, ty1), text1, font=font, fill=c_val)
                 
         # Composite Logo on top
         if logo_opacity > 0:
