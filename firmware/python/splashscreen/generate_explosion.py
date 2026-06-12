@@ -102,17 +102,6 @@ def generate_explosion_gif(filename, width=320, height=240):
                 c_val = tuple(int(bg_color[i] + (dot_color[i] - bg_color[i]) * dot_opacity) for i in range(3))
                 draw.ellipse([x-s, y-s, x+s, y+s], fill=c_val)
                 
-        # Draw Text
-        if text_opacity > 0:
-            text1 = "EuclidCam"
-            
-            # Position at bottom left (similar to website: left 16px, bottom 25px)
-            tx1 = 16
-            ty1 = height - 25 - 24
-            
-            c_val = tuple(int(bg_color[i] + (dot_color[i] - bg_color[i]) * text_opacity) for i in range(3))
-            draw.text((tx1, ty1), text1, font=font, fill=c_val)
-                
         # Composite Logo on top
         if logo_opacity > 0:
             if logo_opacity < 1.0:
@@ -126,6 +115,17 @@ def generate_explosion_gif(filename, width=320, height=240):
                 img = ImageChops.lighter(img, logo_faded)
             else:
                 img = ImageChops.lighter(img, current_logo)
+                
+        # Draw Text (Draw AFTER logo to guarantee visibility)
+        if text_opacity > 0:
+            text1 = "EuclidCam"
+            tx1 = 16
+            ty1 = height - 25 - 24
+            
+            # Use ImageDraw on the newly composited image
+            final_draw = ImageDraw.Draw(img)
+            c_val = tuple(int(bg_color[i] + (dot_color[i] - bg_color[i]) * text_opacity) for i in range(3))
+            final_draw.text((tx1, ty1), text1, font=font, fill=c_val)
                 
         frames.append(img)
         
