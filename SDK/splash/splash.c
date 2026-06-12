@@ -145,13 +145,17 @@ int main(int argc, char **argv) {
     }
     
     for (int y = 0; y < HEIGHT; y++) {
-        // Set window to a single line
-        write_command(0x2A); // Column Set
-        uint8_t col_data[4] = {0x00, 0x00, (WIDTH-1) >> 8, (WIDTH-1) & 0xFF};
+        // Set window to a single line in hardware coordinates
+        // ILI9341 in Landscape (MV=1) swaps X and Y.
+        // Physical Column (0x2A) goes 0-239 (maps to Image Y)
+        // Physical Page (0x2B) goes 0-319 (maps to Image X)
+        
+        write_command(0x2A); // Physical Column Set (Y axis of image)
+        uint8_t col_data[4] = {y >> 8, y & 0xFF, y >> 8, y & 0xFF};
         write_data_buf(col_data, 4);
         
-        write_command(0x2B); // Page Set
-        uint8_t page_data[4] = {y >> 8, y & 0xFF, y >> 8, y & 0xFF};
+        write_command(0x2B); // Physical Page Set (X axis of image)
+        uint8_t page_data[4] = {0x00, 0x00, (WIDTH-1) >> 8, (WIDTH-1) & 0xFF};
         write_data_buf(page_data, 4);
         
         write_command(0x2C); // Memory Write
