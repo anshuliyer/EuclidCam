@@ -29,16 +29,18 @@ def generate_explosion_gif(filename, width=320, height=240):
         logo_frames.append(frame_bg)
         
     logo_frame_count = len(logo_frames)
-    hold_frames = 20
+    hold_frames = 75 # 3 seconds at 40ms per frame
     explosion_frames = 25
     total_frames = logo_frame_count + hold_frames + explosion_frames
     
     # Load Font
     try:
         font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../connectivity/static/fonts/JetBrainsMono-Bold.ttf"))
-        font = ImageFont.truetype(font_path, 12)
+        font_large = ImageFont.truetype(font_path, 16)
+        font_small = ImageFont.truetype(font_path, 10)
     except:
-        font = ImageFont.load_default()
+        font_large = ImageFont.load_default()
+        font_small = ImageFont.load_default()
     
     particles = []
     c = 10
@@ -67,7 +69,8 @@ def generate_explosion_gif(filename, width=320, height=240):
             rotation = f * 0.02
             dot_opacity = 0.35
             logo_opacity = 1.0
-            text_opacity = (f - logo_frame_count) / float(hold_frames)
+            # Fade in quickly over first 15 frames of the hold
+            text_opacity = min(1.0, (f - logo_frame_count) / 15.0)
             current_logo = logo_frames[-1]
             exp_progress = 0.0
         else:
@@ -103,18 +106,32 @@ def generate_explosion_gif(filename, width=320, height=240):
                 
         # Draw Text
         if text_opacity > 0:
-            text = "built to be built upon_"
-            try:
-                bbox = draw.textbbox((0, 0), text, font=font)
-                tw = bbox[2] - bbox[0]
-            except AttributeError:
-                tw, _ = draw.textsize(text, font=font)
+            text1 = "EuclidCam"
+            text2 = "built to be built upon_"
             
-            tx = (width - tw) // 2
-            ty = 205
+            # EuclidCam Text
+            try:
+                bbox1 = draw.textbbox((0, 0), text1, font=font_large)
+                tw1 = bbox1[2] - bbox1[0]
+            except AttributeError:
+                tw1, _ = draw.textsize(text1, font=font_large)
+            
+            tx1 = (width - tw1) // 2
+            ty1 = 185
+            
+            # Slogan Text
+            try:
+                bbox2 = draw.textbbox((0, 0), text2, font=font_small)
+                tw2 = bbox2[2] - bbox2[0]
+            except AttributeError:
+                tw2, _ = draw.textsize(text2, font=font_small)
+            
+            tx2 = (width - tw2) // 2
+            ty2 = 205
             
             c_val = tuple(int(bg_color[i] + (dot_color[i] - bg_color[i]) * text_opacity) for i in range(3))
-            draw.text((tx, ty), text, font=font, fill=c_val)
+            draw.text((tx1, ty1), text1, font=font_large, fill=c_val)
+            draw.text((tx2, ty2), text2, font=font_small, fill=c_val)
                 
         # Composite Logo on top
         if logo_opacity > 0:
