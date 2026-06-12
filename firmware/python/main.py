@@ -867,7 +867,7 @@ def play_boot_splash() -> None:
     """Plays the EuclidCam dark logo GIF on the ILI9341 display at boot."""
     print("[SYSTEM] Playing Boot Splash Animation...")
     try:
-        gif_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "connectivity/static/euclid_construction.gif"))
+        gif_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "splashscreen/explosion_splash.gif"))
         if not os.path.exists(gif_path):
             print(f"[BOOT] Missing splash: {gif_path}")
             return
@@ -883,7 +883,7 @@ def play_boot_splash() -> None:
             
             # Scale GIF beautifully centered
             img_w, img_h = frame_rgba.size
-            scale = 0.8 * min(320 / img_w, 240 / img_h)
+            scale = min(320 / img_w, 240 / img_h)
             new_w = int(img_w * scale)
             new_h = int(img_h * scale)
             
