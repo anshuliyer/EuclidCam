@@ -49,7 +49,7 @@ void spi_transfer(uint8_t *data, int len) {
         .tx_buf = (unsigned long)data,
         .rx_buf = 0,
         .len = len,
-        .speed_hz = 32000000,
+        .speed_hz = 24000000,
         .delay_usecs = 0,
         .bits_per_word = 8,
     };
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     write_command(0xC5); write_data(0x3E); write_data(0x28); // VCM control
     write_command(0xC7); write_data(0x86); // VCM control2
     
-    write_command(0x36); write_data(0xE8); // Memory Access Control (Landscape, MY, MX, MV, BGR)
+    write_command(0x36); write_data(0x28); // Memory Access Control (Landscape, MV, BGR)
     write_command(0x3A); write_data(0x55); // Pixel format (16-bit)
     
     write_command(0xB1); write_data(0x00); write_data(0x18);
