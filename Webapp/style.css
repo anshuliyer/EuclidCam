@@ -329,6 +329,11 @@ body.dark-mode .hero-brand-text {
   text-align: center;
   width: 100%;
   position: relative;
+  transition: transform 0.3s;
+}
+
+body.dark-mode .boot-text {
+  transform: translateY(-40px);
 }
 
 .blinking-cursor {

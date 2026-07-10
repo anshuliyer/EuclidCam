@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const bootGifImg = document.getElementById('boot-gif-img');
       if (bootGifImg) {
-        bootGifImg.src = isDark ? 'assets/euclid_construction_dark.gif' : 'assets/euclid_construction_light.gif';
+        bootGifImg.src = isDark ? 'assets/transparent_logo_dark.png' : 'assets/euclid_construction_light.gif';
       }
     });
   }
@@ -69,6 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mainGrid.style.display = 'none';
             galleryScreen.classList.remove('hidden');
           }, 1000);
+        } else if (label.toLowerCase() === 'design') {
+          window.location.href = 'viewer.html';
         }
       }, 200);
     });
