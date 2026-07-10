@@ -71,6 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }, 1000);
         } else if (label.toLowerCase() === 'design') {
           window.location.href = 'viewer.html';
+        } else if (label.toLowerCase() === 'sdk') {
+          window.open('https://github.com/anshuliyer/EuclidCamSDK', '_blank');
         }
       }, 200);
     });
