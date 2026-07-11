@@ -151,6 +151,25 @@ document.addEventListener('DOMContentLoaded', () => {
     mouse.y = null;
   });
 
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      mouse.x = e.touches[0].clientX;
+      mouse.y = e.touches[0].clientY;
+    }
+  });
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+      mouse.x = e.touches[0].clientX;
+      mouse.y = e.touches[0].clientY;
+    }
+  });
+
+  window.addEventListener('touchend', () => {
+    mouse.x = null;
+    mouse.y = null;
+  });
+
   class GoldenParticle {
     constructor(index) {
       this.index = index;
