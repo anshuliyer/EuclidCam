@@ -217,8 +217,8 @@
             // Define the 5 parts and their perfect CAD-space snapped coordinates
             const parts = [
                 { path: 'exports/main_chassis.stl', color: 0xf5f5f0, pos: [0, 0, 0], rot: [0, 0, 0] },
-                { path: 'exports/front_plate.stl', color: 0xb5a391, pos: [0, 24, 0], rot: [-Math.PI / 2, 0, 0] },
-                { path: 'exports/back_plate.stl', color: 0xb5a391, pos: [0, -24, 0], rot: [-Math.PI / 2, 0, Math.PI] },
+                { path: 'exports/front_plate.stl', color: 0xff5500, roughness: 0.1, metalness: 0.4, pos: [0, 24, 0], rot: [-Math.PI / 2, 0, 0] },
+                { path: 'exports/back_plate.stl', color: 0xff5500, roughness: 0.1, metalness: 0.4, pos: [0, -24, 0], rot: [-Math.PI / 2, 0, Math.PI] },
                 { path: 'exports/battery_door.stl', color: 0xf5f5f0, pos: [-69.25, 0, 2.0], rot: [0, -Math.PI / 2, 0] },
                 { path: 'exports/sd_door.stl', color: 0xf5f5f0, pos: [69.25, 0, -20.0], rot: [Math.PI, Math.PI / 2, 0] }
             ];
@@ -228,7 +228,9 @@
             parts.forEach(part => {
                 loader.load(part.path + "?t=" + timestamp, function (geometry) {
                     const material = new THREE.MeshStandardMaterial({
-                        color: part.color, roughness: 0.8, metalness: 0.1
+                        color: part.color, 
+                        roughness: part.roughness !== undefined ? part.roughness : 0.8, 
+                        metalness: part.metalness !== undefined ? part.metalness : 0.1
                     });
 
                     const partMesh = new THREE.Mesh(geometry, material);
@@ -402,15 +404,19 @@
 
             loader.load(nocachePath, function (geometry) {
                 // Set colors based on the part being loaded
-                let partColor = 0xb5a391; // Dark Beige (Front/Back Plates)
+                let partColor = 0xff5500; // Bright Candy Orange (Front/Back Plates)
+                let partRoughness = 0.1;
+                let partMetalness = 0.4;
                 if (path.includes("main_chassis") || path.includes("door")) {
                     partColor = 0xf5f5f0; // Crisp Off-White (Chassis/Doors)
+                    partRoughness = 0.8;
+                    partMetalness = 0.1;
                 }
 
                 const material = new THREE.MeshStandardMaterial({
                     color: partColor,
-                    roughness: 0.8, // Slightly rougher for an industrial feel
-                    metalness: 0.1,
+                    roughness: partRoughness, // Slightly rougher for an industrial feel
+                    metalness: partMetalness,
                 });
                 mesh = new THREE.Mesh(geometry, material);
 
