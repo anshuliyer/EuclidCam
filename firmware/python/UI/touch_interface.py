@@ -73,8 +73,8 @@ class TouchInterface:
             mid_ys = ys[5:10]
             
             # Fat finger / Smudge rejection
-            # Relaxed the spread from 150 to 300 to accept lighter, less-stable touches (increases perceived sensitivity)
-            if (mid_xs[-1] - mid_xs[0]) > 300 or (mid_ys[-1] - mid_ys[0]) > 300:
+            # Increased the spread from 300 to 800 to accept much lighter, noisier touches
+            if (mid_xs[-1] - mid_xs[0]) > 800 or (mid_ys[-1] - mid_ys[0]) > 800:
                 return None, None, True # Touching, but too noisy to use
                 
             return mid_xs[2], mid_ys[2], True # Return median of stable touch
