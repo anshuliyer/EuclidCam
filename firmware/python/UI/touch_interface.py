@@ -97,8 +97,7 @@ class TouchInterface:
             if self.touch_active:
                 self.touch_active = False
                 cmd, mapped_x, mapped_y = self._map_to_command(self.last_x, self.last_y, ui_state)
-                if cmd:
-                    print(f"[TOUCH] {cmd} at ({int(mapped_x)}, {int(mapped_y)})")
+                print(f"[DEBUG TOUCH] RAW: ({self.last_x}, {self.last_y}) -> MAPPED: ({int(mapped_x)}, {int(mapped_y)}) -> CMD: {cmd}")
                 return cmd
                 
         return None
