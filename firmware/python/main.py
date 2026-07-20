@@ -872,17 +872,43 @@ class CameraEngine:
         display_to_map(frame, fb_map, config=self.config)
 
     def _process_input(self, fb_map) -> None:
-        """Read touch and physical button input."""
-        touch_cmd = self.touch.get_touch_command(self.config)
+        """Read physical button input (Touch disabled for single-button mode)."""
+        touch_cmd = None
         
         # Physical Shutter Button (Active Low)
         if not shutter_button.value:
             if not getattr(self, "_shutter_pressed", False):
                 self._shutter_pressed = True
-                touch_cmd = "ENTER"
+                self._shutter_press_time = time.time()
+                self._shutter_long_fired = False
+            else:
+                # Hold detection
+                hold_time = time.time() - self._shutter_press_time
+                if hold_time > 0.6 and not getattr(self, "_shutter_long_fired", False):
+                    self._shutter_long_fired = True
+                    # Long press action
+                    if self.config.get("show_connection_view"):
+                        pass # Do nothing
+                    elif self.config.get("show_menu"):
+                        touch_cmd = "DOWN" # Next menu item
+                    elif self.config.get("show_gallery"):
+                        touch_cmd = "RIGHT" # Next photo
+                    else:
+                        touch_cmd = "SPACE" # Open menu
         else:
-            self._shutter_pressed = False
-            
+            if getattr(self, "_shutter_pressed", False):
+                self._shutter_pressed = False
+                if not getattr(self, "_shutter_long_fired", False):
+                    # Short press action
+                    if self.config.get("show_connection_view"):
+                        touch_cmd = "BACK" # Exit QR code
+                    elif self.config.get("show_menu"):
+                        touch_cmd = "SELECT" # Confirm menu item
+                    elif self.config.get("show_gallery"):
+                        touch_cmd = "BACK" # Exit gallery
+                    else:
+                        touch_cmd = "ENTER" # Capture photo
+                        
         self.input.handle(touch_cmd, self.config, fb_map)
 
 

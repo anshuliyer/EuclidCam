@@ -437,8 +437,9 @@ class TopPanel:
                 self._draw_battery(draw, x_base, y_row)
                 self._draw_wifi(draw, x_base, y_row)
                 
-                self._draw_gear(draw)
-                self._draw_gallery_icon(draw)
+                # touch disabled for experiment
+                # self._draw_gear(draw)
+                # self._draw_gallery_icon(draw)
                 
                 if self.config.get("is_benchmark_mode"):
                     uptime = self.config.get("benchmark_uptime", 0)
