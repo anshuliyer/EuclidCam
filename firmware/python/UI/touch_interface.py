@@ -120,56 +120,50 @@ class TouchInterface:
         y = y_norm * self.screen_res[1]
         w, h = self.screen_res
 
-        # --- Layer 1: High Priority Overlays (Gallery/Connection) ---
+        # --- Layer 1: High Priority Overlays (Connection) ---
         if ui_state.get("show_connection_view"):
-            overlay_w, overlay_h = 300, 240
-            ox, oy = (w - overlay_w) // 2, (h - overlay_h) // 2
-            # Close Button exact drawn bounds: [ox + overlay_w - 70, oy + 10, ox + overlay_w - 10, oy + 70]
-            if ox + overlay_w - 70 <= x <= ox + overlay_w - 10 and oy + 10 <= y <= oy + 70:
+            # Close button (Top Right): Huge 120x120 hit box
+            if x > w - 120 and y < 120:
                 return "BACK", x, y
-            # Block fallthrough: if they tapped inside the connection overlay but missed the cross
             return None, x, y
 
+        # --- Layer 2: Gallery ---
         if ui_state.get("show_gallery"):
-            # 1. Delete Button (Top Left): _draw_bin_icon exact bounds [12, 12, 52, 52]
-            if 12 <= x <= 52 and 12 <= y <= 52: 
+            # Top Left (Delete): 100x100 box
+            if x < 100 and y < 100:
                 return "DOWN", x, y
-            
-            # 2. BT Send Button (Top Right next to Close): _draw_bt_icon exact bounds [w - 100, 12, w - 60, 52]
-            if ui_state.get("bluetooth_on"):
-                if w - 100 <= x <= w - 60 and 12 <= y <= 52: 
-                    return "BT_SEND", x, y
                 
-            # 3. Close Button (Top Right extreme): _draw_gallery_view exact bounds [w - 52, 12, w - 12, 52]
-            if w - 52 <= x <= w - 12 and 12 <= y <= 52: 
+            # Top Right (Close): 80x100 box at extreme right
+            if x > w - 80 and y < 100:
                 return "BACK", x, y
-            
-            # 4. Left Navigation Arrow: exact drawn bounds around y = h // 2 + 20
-            if 10 <= x <= 65 and (h // 2 - 15) <= y <= (h // 2 + 55):
+                
+            # Top Right (BT Send): 80x100 box next to close
+            if ui_state.get("bluetooth_on") and w - 160 < x <= w - 80 and y < 100:
+                return "BT_SEND", x, y
+                
+            # Left Nav: Entire left edge below top 100px
+            if x < 100 and y >= 100:
                 return "LEFT", x, y
                 
-            # 5. Right Navigation Arrow: exact drawn bounds around y = h // 2 + 20
-            if w - 65 <= x <= w - 10 and (h // 2 - 15) <= y <= (h // 2 + 55):
+            # Right Nav: Entire right edge below top 100px
+            if x > w - 100 and y >= 100:
                 return "RIGHT", x, y
                 
-            # Ignore random touches in the gallery that don't hit a button
             return None, x, y
 
-        # --- Layer 2: Menu System (Grid + Header) ---
+        # --- Layer 3: Menu System ---
         if ui_state.get("show_menu"):
-            # Menu Close Button (Top Right): _draw_menu exact bounds [w - 45, 5, w - 10, 40]
-            if w - 55 <= x <= w and 0 <= y <= 50: 
+            # Menu Close Button (Top Right): Huge 100x100 hit box
+            if x > w - 100 and y < 100:
                 return "BACK", x, y
             
-            # Grid Detection (Prioritize this over edge-back)
             sub = ui_state.get("current_submenu")
             is_sub = ui_state.get("show_submenu")
             
             if is_sub and sub == "Modes": 
                 max_items, cols, rows = 4, 2, 2
-                
-                # Pagination arrows at the bottom
-                if y > h - 50:
+                # Pagination arrows: Bottom 80px
+                if y > h - 80:
                     if x < w // 2: return "LEFT", x, y
                     else: return "RIGHT", x, y
                     
@@ -177,47 +171,39 @@ class TouchInterface:
             elif is_sub and sub == "Connect": max_items, cols, rows = 4, 2, 2
             else: max_items, cols, rows = 4, 2, 2
             
-            grid_m_x, grid_m_y, header_h, gap = 15, 5, 45, 8
-            avail_w = w - (grid_m_x * 2)
-            avail_h = h - header_h - (grid_m_y * 2)
+            header_h = 45
+            avail_w = w
+            avail_h = h - header_h
             if is_sub and sub == "Modes":
-                avail_h -= 40 # Pagination space
+                avail_h -= 80 # Reserve pagination space
                 
-            btn_w = (avail_w - (gap * (cols - 1))) // cols
-            btn_h = (avail_h - (gap * (rows - 1))) // rows
-            
-            rel_x = x - grid_m_x
-            rel_y = y - (header_h + grid_m_y)
-            
-            col = int(rel_x // (btn_w + gap))
-            row = int(rel_y // (btn_h + gap))
-            
-            if 0 <= col < cols and 0 <= row < rows:
-                lx, ly = rel_x % (btn_w + gap), rel_y % (btn_h + gap)
-                if lx < btn_w and ly < btn_h:
+            # Only process grid if below header
+            if y > header_h and y < (header_h + avail_h):
+                rel_x = x
+                rel_y = y - header_h
+                
+                col = int(rel_x / (avail_w / cols))
+                row = int(rel_y / (avail_h / rows))
+                
+                if 0 <= col < cols and 0 <= row < rows:
                     idx = row * cols + col
                     if idx < max_items:
                         ui_state["touch_menu_idx"] = idx
                         return "TOUCH_SELECT", x, y
             
-            # If in menu area but not on a button, check for edge close (Strict)
-            if x < 10 or x > w - 10 or y > h - 10:
-                return "BACK", x, y
+            return None, x, y
 
-        # --- Layer 3: Main UI State ---
-        padding = ui_state.get("ui_padding", 20)
-        
-        # Gear (Settings): _draw_gear exact bounds [w - padding - 42, h - padding - 42, w - padding + 2, h - padding + 2]
-        gx, gy = w - padding - 20, h - padding - 20
-        if gx - 25 <= x <= gx + 25 and gy - 25 <= y <= gy + 25: 
+        # --- Layer 4: Main Viewfinder UI ---
+        # Bottom Left corner (Gallery): 120x120 hit box
+        if x < 120 and y > h - 120:
+            return "GALLERY", x, y
+            
+        # Bottom Right corner (Settings): 120x120 hit box
+        if x > w - 120 and y > h - 120:
             return "SPACE", x, y
             
-        # Gallery (Bottom Left): _draw_gallery_icon exact bounds [padding + 5, h - padding - 35, padding + 45, h - padding - 5]
-        gal_x, gal_y = padding + 5, h - padding - 35
-        if gal_x - 10 <= x <= gal_x + 50 and gal_y - 10 <= y <= gal_y + 40: 
-            return "GALLERY", x, y
-        # Capture (Center)
-        if not ui_state.get("show_menu") and not ui_state.get("show_gallery"):
-            if 80 < x < w - 80 and 80 < y < h - 80: return "ENTER", x, y
+        # Capture: Anything else that is roughly in the center
+        if 80 < x < w - 80 and 80 < y < h - 80: 
+            return "ENTER", x, y
 
         return None, x, y
