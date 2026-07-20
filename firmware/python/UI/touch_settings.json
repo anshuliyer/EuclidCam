@@ -1,9 +1,9 @@
 {
-  "x_min": 500,
-  "x_max": 3700,
-  "y_min": 400,
-  "y_max": 3800,
-  "swap_xy": false,
-  "invert_x": true,
-  "invert_y": false
+  "x_min": 700,
+  "x_max": 3850,
+  "y_min": 850,
+  "y_max": 3600,
+  "swap_xy": true,
+  "invert_x": false,
+  "invert_y": true
 }
