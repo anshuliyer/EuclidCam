@@ -90,51 +90,61 @@ def main():
         print(f"Hardware error: {e}")
         return
         
-    print("\n[STEP 1/3] Tap the TOP-LEFT corner of the screen.")
-    x1, y1 = get_stable_touch(spi, cs)
+    print("\n[STEP 1/4] Tap the TOP-LEFT corner of the screen.")
+    tl_x, tl_y = get_stable_touch(spi, cs)
     
     time.sleep(1)
-    print("[STEP 2/3] Tap the BOTTOM-RIGHT corner of the screen.")
-    x2, y2 = get_stable_touch(spi, cs)
+    print("[STEP 2/4] Tap the TOP-RIGHT corner of the screen.")
+    tr_x, tr_y = get_stable_touch(spi, cs)
     
     time.sleep(1)
-    print("[STEP 3/3] Tap the TOP-RIGHT corner of the screen.")
-    x3, y3 = get_stable_touch(spi, cs)
+    print("[STEP 3/4] Tap the BOTTOM-LEFT corner of the screen.")
+    bl_x, bl_y = get_stable_touch(spi, cs)
     
-    print("Calculating perfect calibration matrix...")
+    time.sleep(1)
+    print("[STEP 4/4] Tap the BOTTOM-RIGHT corner of the screen.")
+    br_x, br_y = get_stable_touch(spi, cs)
     
-    # Determine axes by seeing which one changed the most between Top-Left and Top-Right
-    x_change = abs(x3 - x1)
-    y_change = abs(y3 - y1)
+    print("Calculating perfect calibration matrix using 4-point averaging...")
     
-    swap_xy = y_change > x_change
+    # Determine axes by seeing which one changes most when moving horizontally
+    dx_horiz = abs(tr_x - tl_x) + abs(br_x - bl_x)
+    dy_horiz = abs(tr_y - tl_y) + abs(br_y - bl_y)
     
-    if not swap_xy:
-        # X is horizontal, Y is vertical
-        x_min = min(x1, x2, x3) - 50 # Add a tiny 50px buffer so edges are easy to hit
-        x_max = max(x1, x2, x3) + 50
-        y_min = min(y1, y2, y3) - 50
-        y_max = max(y1, y2, y3) + 50
+    swap_xy = dy_horiz > dx_horiz
+    
+    if swap_xy:
+        # Horizontal (Screen X) is mapped to Raw Y
+        left_val = (tl_y + bl_y) / 2
+        right_val = (tr_y + br_y) / 2
+        x_min = min(left_val, right_val)
+        x_max = max(left_val, right_val)
+        invert_x = left_val > right_val
         
-        # Left is P1, Right is P3
-        invert_x = x1 > x3
-        # Top is P1, Bottom is P2
-        invert_y = y1 > y2
+        # Vertical (Screen Y) is mapped to Raw X
+        top_val = (tl_x + tr_x) / 2
+        bottom_val = (bl_x + br_x) / 2
+        y_min = min(top_val, bottom_val)
+        y_max = max(top_val, bottom_val)
+        invert_y = top_val > bottom_val
     else:
-        # Y is horizontal, X is vertical
-        x_min = min(y1, y2, y3) - 50
-        x_max = max(y1, y2, y3) + 50
-        y_min = min(x1, x2, x3) - 50
-        y_max = max(x1, x2, x3) + 50
+        # Horizontal (Screen X) is mapped to Raw X
+        left_val = (tl_x + bl_x) / 2
+        right_val = (tr_x + br_x) / 2
+        x_min = min(left_val, right_val)
+        x_max = max(left_val, right_val)
+        invert_x = left_val > right_val
         
-        # Left is P1, Right is P3 (but using raw Y)
-        invert_x = y1 > y3
-        # Top is P1, Bottom is P2 (but using raw X)
-        invert_y = x1 > x2
+        # Vertical (Screen Y) is mapped to Raw Y
+        top_val = (tl_y + tr_y) / 2
+        bottom_val = (bl_y + br_y) / 2
+        y_min = min(top_val, bottom_val)
+        y_max = max(top_val, bottom_val)
+        invert_y = top_val > bottom_val
         
-    # Clamp bounds to 0-4095
-    x_min, x_max = max(0, x_min), min(4095, x_max)
-    y_min, y_max = max(0, y_min), min(4095, y_max)
+    # Clamp bounds to 0-4095 and cast to int
+    x_min, x_max = int(max(0, x_min)), int(min(4095, x_max))
+    y_min, y_max = int(max(0, y_min)), int(min(4095, y_max))
     
     config = {
         "x_min": x_min,
