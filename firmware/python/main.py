@@ -504,8 +504,8 @@ class InputHandler:
     Keeps all navigation / selection logic out of the main loop.
     """
 
-    _MAIN_MENU_ITEMS = ["Modes", "Connect", "Flash", "Grid"]
-    _GRID_OPTIONS    = ["OFF", "3x3", "Euclid"]
+    _MAIN_MENU_ITEMS = ["Gallery", "Modes", "Connect", "Flash", "Grid", "Exit"]
+    _GRID_OPTIONS    = ["OFF", "3x3", "Euclid", "Back"]
 
     def __init__(
         self,
@@ -586,7 +586,8 @@ class InputHandler:
     def _on_up(self, config: dict, _fb_map) -> None:
         if config.get("show_menu"):
             if not config.get("show_submenu"):
-                config["menu_index"] = (config["menu_index"] - 1) % 4
+                n = len(self._MAIN_MENU_ITEMS)
+                config["menu_index"] = (config["menu_index"] - 1) % n
             else:
                 n = self._submenu_length(config)
                 config["submenu_index"] = (config["submenu_index"] - 1) % n
@@ -594,7 +595,8 @@ class InputHandler:
     def _on_down(self, config: dict, _fb_map) -> None:
         if config.get("show_menu"):
             if not config.get("show_submenu"):
-                config["menu_index"] = (config["menu_index"] + 1) % 4
+                n = len(self._MAIN_MENU_ITEMS)
+                config["menu_index"] = (config["menu_index"] + 1) % n
             else:
                 n = self._submenu_length(config)
                 config["submenu_index"] = (config["submenu_index"] + 1) % n
@@ -605,16 +607,16 @@ class InputHandler:
         if config.get("show_gallery"):
             self._gallery.prev()
         elif config.get("show_submenu") and config.get("current_submenu") == "Modes":
-            page = config.get("modes_page", 0)
-            config["modes_page"] = max(0, page - 1)
+            n = self._submenu_length(config)
+            config["submenu_index"] = (config["submenu_index"] - 1) % n
 
     def _on_right(self, config: dict, _fb_map) -> None:
         if config.get("show_gallery"):
             self._gallery.next()
         elif config.get("show_submenu") and config.get("current_submenu") == "Modes":
-            page = config.get("modes_page", 0)
-            max_page = (len(self._modes) - 1) // 4
-            config["modes_page"] = min(max_page, page + 1)
+            # Just move to next item instead of pagination
+            n = self._submenu_length(config)
+            config["submenu_index"] = (config["submenu_index"] + 1) % n
 
     def _on_back(self, config: dict, _fb_map) -> None:
         if config.get("show_connection_view"):
@@ -639,7 +641,14 @@ class InputHandler:
     def _enter_main_menu_item(self, config: dict) -> None:
         selected = self._MAIN_MENU_ITEMS[config["menu_index"]]
 
-        if selected == "Modes":
+        if selected == "Gallery":
+            config["show_gallery"] = True
+            config["show_menu"] = False
+            config["show_submenu"] = False
+        elif selected == "Exit":
+            config["show_menu"] = False
+            config["show_submenu"] = False
+        elif selected == "Modes":
             config["show_submenu"]    = True
             config["current_submenu"] = "Modes"
             config["submenu_index"]   = config.get("mode_idx", 0)
@@ -664,24 +673,36 @@ class InputHandler:
 
     def _confirm_submenu_item(self, config: dict) -> None:
         submenu = config.get("current_submenu")
+        idx = config.get("submenu_index", 0)
 
         if submenu == "Modes":
-            config["mode_idx"] = config["submenu_index"]
+            if idx == len(self._modes): # Back
+                config["show_submenu"] = False
+                return
+            config["mode_idx"] = idx
             print(f"[SYSTEM] Mode → {self._modes[config['mode_idx']].name}")
+            config["show_submenu"] = False
+            config["show_menu"] = False
 
         elif submenu == "Grid":
-            config["grid_mode"] = self._GRID_OPTIONS[config["submenu_index"]]
+            if idx == len(self._GRID_OPTIONS) - 1: # Back
+                config["show_submenu"] = False
+                return
+            config["grid_mode"] = self._GRID_OPTIONS[idx]
             print(f"[SYSTEM] Grid → {config['grid_mode']}")
+            config["show_submenu"] = False
+            config["show_menu"] = False
 
         elif submenu == "Connect":
-            idx = config["submenu_index"]
+            if idx == 3: # Back
+                config["show_submenu"] = False
+                return
             if idx == 0:          # Show QR
                 if not config.get("is_connected"):
                     import subprocess, time
                     print("[SYSTEM] Starting Hotspot & server…")
-                    # Use Popen because 'nmcli device wifi hotspot' blocks the terminal!
                     subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
-                    time.sleep(3) # Give NetworkManager time to assign 10.42.0.1
+                    time.sleep(3)
                     self._server.start()
                     config["is_connected"] = True
                 config["show_connection_view"] = True
@@ -735,10 +756,10 @@ class InputHandler:
 
     def _submenu_length(self, config: dict) -> int:
         if config.get("current_submenu") == "Modes":
-            return len(self._modes)
+            return len(self._modes) + 1 # +1 for Back
         if config.get("current_submenu") == "Connect":
             return 4
-        return 3  # Grid
+        return len(self._GRID_OPTIONS)
 
 
 # ==============================================================================

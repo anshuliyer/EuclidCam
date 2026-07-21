@@ -42,7 +42,7 @@
 }
 
 :root {
-  --bg-base: #F4F4F4;
+  --bg-base: #F5F5F0;
   /* Clean, warm off-white */
   --bg-card: #FFFFFF;
   /* Pure white cards */
@@ -52,7 +52,7 @@
   /* Deep charcoal */
   --text-secondary: #555555;
   /* Balanced gray */
-  --accent-beige: #D9C8B0;
+  --accent-beige: #E4AE86;
   /* Vibrant accent */
   --accent-light: #EBEBEB;
   /* Softer borders */
@@ -63,9 +63,9 @@
 
 /* Dark Mode Color Palette */
 body.dark-mode {
-  --bg-base: #111111;
+  --bg-base: #121110;
   /* Pure dark black */
-  --bg-card: #1C1C1C;
+  --bg-card: #1A1817;
   /* Deep charcoal cards */
   --bg-card-hover: #262626;
   /* Hover state */
@@ -73,7 +73,7 @@ body.dark-mode {
   /* Pure white */
   --text-secondary: #A0A0A0;
   /* Light gray */
-  --accent-beige: #E6D5BD;
+  --accent-beige: #F2BA9A;
   /* Brighter beige */
   --accent-light: #2A2A2A;
   /* Dark borders */

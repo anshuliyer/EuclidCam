@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     draw() {
-      ctx.fillStyle = document.body.classList.contains('dark-mode') ? 'rgba(230, 213, 189, 0.4)' : 'rgba(197, 179, 154, 0.6)';
+      ctx.fillStyle = document.body.classList.contains('dark-mode') ? 'rgba(242, 186, 154, 0.4)' : 'rgba(228, 174, 134, 0.6)';
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
       ctx.closePath();

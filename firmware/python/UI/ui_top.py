@@ -100,68 +100,31 @@ class TopPanel:
 
     def _draw_gallery_view(self, draw):
         """
-        Draws the gallery navigation arrows and header.
+        Draws the gallery UI. For single-button mode, we want this to be completely immersive.
         """
-        w, h = self.screen_res
-        
-        # 1. Reuse Settings Header Style
-        from PIL import ImageFont
-        try:
-            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
-            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-        except:
-            font_title = font_small = None
-            
-        title = "GALLERY"
-        header_h = 65
-        title_w = draw.textlength(title, font=font_title) if hasattr(draw, "textlength") else len(title) * 12
-        draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
-        
-        # Separator Line (Same as Menu)
-        draw.line([(25, header_h), (w - 25, header_h)], fill=(90, 80, 70), width=1)
-        draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.BEIGE, width=2)
-        
-        # Standard Cross Button (Top Right)
-        bx, by = w - 52, 12
-        draw.rectangle([bx, by, bx + 40, by + 40], outline=self.BEIGE, width=2)
-        draw.line([bx + 10, by + 10, bx + 30, by + 30], fill=self.BEIGE, width=2)
-        draw.line([bx + 30, by + 10, bx + 10, by + 30], fill=self.BEIGE, width=2)
-
-        # 2. Navigation Arrows
-        arrow_size = 25
-        arrow_color = list(self.BEIGE) + [180]
-        
-        # Left Arrow
-        lx, ly = 25, h // 2 + 20
-        draw.polygon([(lx, ly), (lx + arrow_size, ly - arrow_size), (lx + arrow_size, ly + arrow_size)], fill=tuple(arrow_color))
-        
-        # Right Arrow
-        rx, ry = w - 25, h // 2 + 20
-        draw.polygon([(rx, ry), (rx - arrow_size, ry - arrow_size), (rx - arrow_size, ry + arrow_size)], fill=tuple(arrow_color))
+        pass
 
 
 
 
     def _draw_menu(self, draw):
         """
-        Draws a professional, aesthetic grid menu with card-based layout.
+        Draws a gorgeous horizontal scrolling carousel for single-button navigation.
         """
         w, h = self.screen_res
         show_submenu = self.config.get("show_submenu", False)
         current_submenu = self.config.get("current_submenu", "Modes")
         
         if not show_submenu:
-            items = ["Modes", "Connect", "Flash", "Grid"]
+            items = ["Gallery", "Modes", "Connect", "Flash", "Grid", "Exit"]
             selected_idx = self.config.get("menu_index", 0)
-            title = "SYSTEM SETTINGS"
+            title = "SYSTEM MENU"
         elif current_submenu == "Modes":
-            all_items = self.config.get("mode_names", ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia"])
-            page = self.config.get("modes_page", 0)
-            items = all_items[page*4 : (page+1)*4]
+            items = self.config.get("mode_names", []) + ["Back"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT VISION"
         elif current_submenu == "Grid":
-            items = ["OFF", "3x3", "Euclid"]
+            items = ["OFF", "3x3", "Euclid", "Back"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "COMPOSITION"
         elif current_submenu == "Connect":
@@ -175,19 +138,14 @@ class TopPanel:
             selected_idx = 0
             title = "MENU"
 
-        # 1. Solid Charcoal Background (Matching Capture Screen)
-        overlay_margin = 0 # Full screen menu
-        
         # Create a solid charcoal overlay image
-        bg_color = list(theme.BG_CHARCOAL) + [255] # Ensure solid alpha
+        bg_color = list(theme.BG_CHARCOAL) + [255]
         overlay = Image.new('RGBA', self.screen_res, tuple(bg_color))
         overlay_draw = ImageDraw.Draw(overlay)
         
         # --- PASTE LOGO WATERMARK ---
         try:
             import os
-            # Use absolute path resolution from this file up to the project root
-            # UI -> python -> firmware -> root -> assets
             proj_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
             logo_path = os.path.join(proj_root, "assets", "transparent_logo_light.png")
             logo = Image.open(logo_path).convert("RGBA")
@@ -197,121 +155,88 @@ class TopPanel:
             logo = Image.merge('RGBA', (r, g, b, a))
             lw, lh = logo.size
             cx, cy = w // 2, h // 2
-            # Paste onto the translucent overlay
             overlay.paste(logo, (cx - lw // 2, cy - lh // 2), logo)
         except Exception as e:
             print(f"Theme watermark error: {e}")
 
         # Mauve Accent Border
-        overlay_draw.rectangle([overlay_margin, overlay_margin, w - overlay_margin, h - overlay_margin], outline=self.BEIGE, width=2)
-        # Delay alpha composite until all UI elements are drawn on overlay_draw
-        # Load Fonts
+        overlay_draw.rectangle([0, 0, w, h], outline=self.BEIGE, width=2)
 
+        # Load Fonts
         from PIL import ImageFont
         try:
             font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
-            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 15)
+            font_item = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
             font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
         except:
             font_title = font_item = font_small = None
 
-        # 2. Header Area (Shrunk to give buttons more space)
-        header_h = 45
+        # Header Area
         title_w = overlay_draw.textlength(title, font=font_title) if hasattr(overlay_draw, "textlength") else len(title) * 11
-        overlay_draw.text(((w - title_w) // 2, 10), title, fill=(255, 255, 255), font=font_title)
-        
-        # Cross Button (Top Right)
-        bx, by = w - 45, 5
-        overlay_draw.rectangle([bx, by, bx + 35, by + 35], outline=self.BEIGE, width=2)
-        # Draw a bold X
-        overlay_draw.line([bx + 8, by + 8, bx + 27, by + 27], fill=self.BEIGE, width=2)
-        overlay_draw.line([bx + 27, by + 8, bx + 8, by + 27], fill=self.BEIGE, width=2)
+        overlay_draw.text(((w - title_w) // 2, 20), title, fill=(255, 255, 255), font=font_title)
         
         # Separator Line
+        header_h = 55
         overlay_draw.line([(25, header_h), (w - 25, header_h)], fill=(90, 80, 70), width=1)
         overlay_draw.line([(w//2 - 30, header_h), (w//2 + 30, header_h)], fill=self.BEIGE, width=2)
 
-        # 3. Grid Calculation
-        num_items = len(items)
-        cols = 2
-        rows = (num_items + cols - 1) // cols
+        # Draw Carousel
+        n = len(items)
+        if n == 0:
+            return
+
+        prev_idx = (selected_idx - 1) % n
+        next_idx = (selected_idx + 1) % n
+
+        # Dimensions
+        center_w, center_h = 140, 100
+        cx, cy = w // 2, h // 2 + 25
         
-        grid_margin_x = 15
-        grid_margin_y = 5
-        gap = 8
-        
-        available_w = w - (grid_margin_x * 2)
-        available_h = h - header_h - (grid_margin_y * 2)
-        if show_submenu and current_submenu == "Modes":
-            available_h -= 40 # Reserve bottom space for pagination
+        side_w, side_h = 100, 70
+        lx, ly = cx - center_w//2 - 15 - side_w//2, cy
+        rx, ry = cx + center_w//2 + 15 + side_w//2, cy
+
+        def draw_card(idx, x, y, width, height, is_selected):
+            bx = x - width // 2
+            by = y - height // 2
+            item = items[idx]
             
-        btn_w = (available_w - (gap * (cols - 1))) // cols
-        btn_h = (available_h - (gap * (rows - 1))) // rows
-        
-        for i, item in enumerate(items):
-            row = i // cols
-            col = i % cols
-            
-            bx = grid_margin_x + col * (btn_w + gap)
-            by = header_h + grid_margin_y + row * (btn_h + gap)
-            
-            if show_submenu and current_submenu == "Modes":
-                is_selected = (page * 4 + i == selected_idx)
-            else:
-                is_selected = (i == selected_idx)
-            
-            # Button Card Logic - TRANSLUCENT GLASS EFFECT
             card_fill = tuple(list(self.BEIGE) + [220]) if is_selected else (45, 40, 35, 180)
             card_outline = (255, 255, 255) if is_selected else (140, 125, 110)
             text_color = (15, 10, 5) if is_selected else (245, 240, 230)
             accent_color = (255, 255, 255, 180) if is_selected else self.BEIGE
-
-            # Draw Card (rounded_rectangle fallback)
-            draw_func = getattr(overlay_draw, "rounded_rectangle", overlay_draw.rectangle)
-            draw_func([bx, by, bx + btn_w, by + btn_h], radius=10, fill=card_fill, outline=card_outline, width=2 if is_selected else 1)
-
-            # 4. Professional Iconography
-            icon_y = by + (btn_h // 2) - 10
-            cx = bx + btn_w // 2
             
-            if item == "Modes":
-                overlay_draw.ellipse([cx-12, icon_y-12, cx+12, icon_y+12], outline=text_color, width=2)
-                overlay_draw.ellipse([cx-4, icon_y-4, cx+4, icon_y+4], fill=text_color)
-            elif item == "Flash":
-                overlay_draw.polygon([(cx, icon_y-12), (cx-6, icon_y), (cx+4, icon_y), (cx-2, icon_y+12)], fill=text_color)
-            elif item == "Connect":
-                for r in [6, 12, 18]:
-                    overlay_draw.arc([cx-r, icon_y-r, cx+r, icon_y+r], start=210, end=330, fill=text_color, width=2)
-            elif item == "Grid":
-                for off in [-6, 6]:
-                    overlay_draw.line([cx+off, icon_y-10, cx+off, icon_y+10], fill=text_color, width=1)
-                    overlay_draw.line([cx-10, icon_y+off, cx+10, icon_y+off], fill=text_color, width=1)
-
+            draw_func = getattr(overlay_draw, "rounded_rectangle", overlay_draw.rectangle)
+            draw_func([bx, by, bx + width, by + height], radius=10, fill=card_fill, outline=card_outline, width=3 if is_selected else 1)
+            
             # Content Text
             display_name = item
             if item == "Connect":
                 status = "ON" if self.config.get("is_connected") else "OFF"
-                overlay_draw.text((bx + btn_w - 30, by + 8), status, fill=accent_color, font=font_small)
+                if is_selected:
+                    overlay_draw.text((bx + width - 35, by + 8), status, fill=accent_color, font=font_small)
             
-            tw = overlay_draw.textlength(display_name, font=font_item) if hasattr(overlay_draw, "textlength") else len(display_name) * 9
-            overlay_draw.text((bx + (btn_w - tw) // 2, by + btn_h - 22), display_name, fill=text_color, font=font_item)
+            font = font_item if is_selected else font_small
+            tw = overlay_draw.textlength(display_name, font=font) if hasattr(overlay_draw, "textlength") else len(display_name) * (9 if is_selected else 7)
+            
+            # Center the text vertically and horizontally
+            overlay_draw.text((bx + (width - tw) // 2, by + height // 2 - 10), display_name, fill=text_color, font=font)
 
-        # 5. Pagination Arrows
-        if show_submenu and current_submenu == "Modes":
-            arrow_color = list(self.BEIGE) + [180]
-            # Left Arrow
-            if page > 0:
-                lx, ly = 30, h - 25
-                overlay_draw.polygon([(lx, ly), (lx + 15, ly - 15), (lx + 15, ly + 15)], fill=tuple(arrow_color))
-                overlay_draw.text((lx + 25, ly - 7), "PREV", fill=tuple(arrow_color), font=font_small)
-            # Right Arrow
-            total_pages = (len(all_items) + 3) // 4
-            if page < total_pages - 1:
-                rx, ry = w - 30, h - 25
-                overlay_draw.polygon([(rx, ry), (rx - 15, ry - 15), (rx - 15, ry + 15)], fill=tuple(arrow_color))
-                overlay_draw.text((rx - 65, ry - 7), "NEXT", fill=tuple(arrow_color), font=font_small)
+        # Draw left and right cards first (behind)
+        if n > 2:
+            draw_card(prev_idx, lx, ly, side_w, side_h, False)
+        if n > 1:
+            draw_card(next_idx, rx, ry, side_w, side_h, False)
+        
+        # Draw center card (in front)
+        draw_card(selected_idx, cx, cy, center_w, center_h, True)
+        
+        # Instructional text at bottom
+        inst_text = "Hold Shutter: Next  |  Click: Select"
+        iw = overlay_draw.textlength(inst_text, font=font_small) if hasattr(overlay_draw, "textlength") else len(inst_text) * 7
+        overlay_draw.text(((w - iw) // 2, h - 25), inst_text, fill=(150, 150, 150), font=font_small)
 
-        # Finally, blend the fully populated RGBA overlay onto the main RGB image
+        # Blend
         main_img = draw._image.convert("RGBA")
         main_img = Image.alpha_composite(main_img, overlay)
         draw._image.paste(main_img)
