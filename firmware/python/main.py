@@ -1004,9 +1004,9 @@ def play_boot_splash() -> None:
             disp.image(frame_bg)
             
             duration = img.info.get('duration', 50)
-            time.sleep(max(0.01, duration / 1000.0))
+            time.sleep(max(0.001, duration / 2500.0)) # 2.5x faster animation
             
-        time.sleep(0.5)
+        # Removed trailing 0.5s sleep to drop immediately into the viewfinder
     except Exception as e:
         print(f"[BOOT] Splash error: {e}")
 
