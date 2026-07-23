@@ -782,6 +782,11 @@ class CameraEngine:
 
         while True:
             self.config["is_undervoltage"] = self.battery_mgr.is_undervoltage
+            try:
+                from connectivity import wifi_utils
+                self.config["is_wifi_active"] = wifi_utils.is_online()
+            except Exception:
+                pass
             
             if is_benchmark:
                 uptime = int(time.time() - start_time)
@@ -936,6 +941,7 @@ def _build_default_config(argv: list[str]) -> dict:
         "server_proc":          None,
         "flash":                True,
         "show_connection_view": False,
+        "is_wifi_active":       False,
         "is_benchmark_mode":    "--benchmark" in argv,
     }
 

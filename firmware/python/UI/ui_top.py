@@ -56,12 +56,28 @@ class TopPanel:
             draw.line([x_batt + 2, y_batt + 8, x_batt + 18, y_batt + 2], fill=color, width=2)
 
     def _draw_wifi(self, draw, x_base, y_row):
-        x_wifi = x_base - 115
-        y_wifi = y_row - 10
-        for i in range(1, 4):
-            r = i * 4
-            bbox = [x_wifi + 10 - r, y_wifi + 10 - r, x_wifi + 10 + r, y_wifi + 10 + r]
-            draw.arc(bbox, 225, 315, fill=self.BEIGE, width=2)
+        x_pos = x_base - 115
+        y_pos = y_row - 10
+
+        # Case 1: Connect App / Hotspot active -> Display "EC" badge
+        if self.config.get("show_connection_view") or (self.config.get("is_connected") and not self.config.get("is_wifi_active")):
+            try:
+                from PIL import ImageFont
+                font_ec = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 11)
+            except Exception:
+                font_ec = None
+            draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
+            draw_func([x_pos - 4, y_pos - 1, x_pos + 22, y_pos + 15], radius=4, fill=(45, 40, 35), outline=self.BEIGE, width=1)
+            draw.text((x_pos + 1, y_pos), "EC", fill=self.BEIGE, font=font_ec)
+
+        # Case 2: WiFi network connected -> Display WiFi signal arcs
+        elif self.config.get("is_wifi_active"):
+            x_wifi = x_pos
+            y_wifi = y_pos
+            for i in range(1, 4):
+                r = i * 4
+                bbox = [x_wifi + 10 - r, y_wifi + 10 - r, x_wifi + 10 + r, y_wifi + 10 + r]
+                draw.arc(bbox, 225, 315, fill=self.BEIGE, width=2)
 
     def _draw_gear(self, draw):
         """
