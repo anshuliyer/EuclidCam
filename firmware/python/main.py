@@ -903,20 +903,26 @@ class CameraEngine:
                 self._shutter_pressed = True
                 self._shutter_press_time = time.time()
                 self._shutter_long_fired = False
+                self._last_hold_repeat = 0.0
             else:
                 # Hold detection
                 hold_time = time.time() - self._shutter_press_time
-                if hold_time > 0.25 and not getattr(self, "_shutter_long_fired", False):
-                    self._shutter_long_fired = True
-                    # Long press action
-                    if self.config.get("show_connection_view"):
-                        pass # Do nothing
-                    elif self.config.get("show_menu"):
-                        touch_cmd = "DOWN" # Next menu item
-                    elif self.config.get("show_gallery"):
-                        touch_cmd = "RIGHT" # Next photo
-                    else:
-                        touch_cmd = "SPACE" # Open menu
+                if hold_time > 0.35:
+                    if not getattr(self, "_shutter_long_fired", False):
+                        self._shutter_long_fired = True
+                        self._last_hold_repeat = time.time()
+                        # Long press action
+                        if self.config.get("show_connection_view"):
+                            pass # Do nothing
+                        elif self.config.get("show_menu"):
+                            touch_cmd = "DOWN" # Next menu item
+                        elif self.config.get("show_gallery"):
+                            touch_cmd = "RIGHT" # Next photo
+                        else:
+                            touch_cmd = "SPACE" # Open menu
+                    elif self.config.get("show_menu") and (time.time() - getattr(self, "_last_hold_repeat", 0.0) > 0.35):
+                        self._last_hold_repeat = time.time()
+                        touch_cmd = "DOWN" # Auto-repeat next item while holding
         else:
             if getattr(self, "_shutter_pressed", False):
                 self._shutter_pressed = False
