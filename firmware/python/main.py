@@ -857,12 +857,12 @@ class CameraEngine:
                 cmd = cmd_data.get("cmd")
                 if cmd == "capture":
                     print("[SYSTEM] Remote capture command received!")
-                    self.input._on_select(self.config, fb_map)
+                    self.input.handle("ENTER", self.config, fb_map)
                 elif cmd == "set_mode":
                     m_idx = cmd_data.get("mode_idx", 0)
                     if 0 <= m_idx < len(self.modes):
                         self.config["mode_idx"] = m_idx
-                        print(f"[SYSTEM] Remote mode switched to index {m_idx}")
+                        print(f"[SYSTEM] Remote mode switched to index {m_idx} ({self.modes[m_idx].name})")
             except Exception as e:
                 print(f"[SYSTEM] Remote command processing error: {e}")
 
@@ -891,10 +891,13 @@ class CameraEngine:
 
         frame = self.panel.render(frame)
         
-        # Export stream frame for web remote live view
+        # Export stream frame atomically for web remote live view
         try:
+            tmp_path = "/tmp/euclidcam_stream_tmp.jpg"
+            final_path = "/tmp/euclidcam_stream.jpg"
             pil_stream = Image.fromarray(frame)
-            pil_stream.save("/tmp/euclidcam_stream.jpg", format="JPEG", quality=75)
+            pil_stream.save(tmp_path, format="JPEG", quality=70)
+            os.replace(tmp_path, final_path)
         except Exception:
             pass
 

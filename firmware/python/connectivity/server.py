@@ -113,6 +113,8 @@ def delete_batch():
             os.remove(img_path)
     return {"status": "success"}, 200
 
+DEFAULT_MODES = ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia", "Disco"]
+
 @app.route('/video_feed')
 def video_feed():
     def gen_frames():
@@ -122,12 +124,17 @@ def video_feed():
                 try:
                     with open(stream_path, "rb") as f:
                         frame_bytes = f.read()
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                    if frame_bytes and len(frame_bytes) > 100:
+                        yield (b'--frame\r\n'
+                               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
                 except Exception:
                     pass
-            time.sleep(0.08)
+            time.sleep(0.06)
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/api/remote/status')
+def remote_status():
+    return {"modes": DEFAULT_MODES}, 200
 
 @app.route('/api/remote/capture', methods=['POST'])
 def remote_capture():

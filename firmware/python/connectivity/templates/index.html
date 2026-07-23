@@ -92,12 +92,10 @@
             <div class="remote-card modes-card">
                 <div class="remote-card-header">
                     <h2>MODE SELECTION</h2>
-                    <p class="settings-desc">Select active processing mode for EuclidCam</p>
+                    <p class="settings-desc">Select active processing filter for EuclidCam</p>
                 </div>
-                <div class="mode-buttons-grid">
-                    <button class="mode-btn active" id="mode-btn-0" onclick="setRemoteMode(0, this)">STANDARD</button>
-                    <button class="mode-btn" id="mode-btn-1" onclick="setRemoteMode(1, this)">CHALK</button>
-                    <button class="mode-btn" id="mode-btn-2" onclick="setRemoteMode(2, this)">DRAFT</button>
+                <div class="mode-buttons-grid" id="mode-buttons-grid">
+                    <!-- Dynamically populated camera filter modes -->
                 </div>
             </div>
         </div>
@@ -144,6 +142,23 @@
     </footer>
 
     <script>
+        const CAMERA_MODES = ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia", "Disco"];
+
+        function initModeButtons() {
+            const container = document.getElementById('mode-buttons-grid');
+            if (!container) return;
+            container.innerHTML = '';
+            CAMERA_MODES.forEach((mode, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `mode-btn ${idx === 0 ? 'active' : ''}`;
+                btn.id = `mode-btn-${idx}`;
+                btn.textContent = mode.toUpperCase();
+                btn.onclick = () => setRemoteMode(idx, btn);
+                container.appendChild(btn);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', initModeButtons);
+
         function switchTab(tabName) {
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
