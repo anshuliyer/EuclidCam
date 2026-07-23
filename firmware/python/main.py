@@ -876,10 +876,10 @@ class CameraEngine:
                     print(f"[SYSTEM] Remote flash set to {'ON' if f_val else 'OFF'}")
                 elif cmd == "set_grid":
                     g_val = str(cmd_data.get("grid", "OFF")).upper()
-                    if g_val in ("RULE_OF_THIRDS", "THIRDS"):
-                        self.config["grid_mode"] = grid_settings.CompositionGrid.RULE_OF_THIRDS
-                    elif g_val in ("GOLDEN_RATIO", "GOLDEN"):
-                        self.config["grid_mode"] = grid_settings.CompositionGrid.GOLDEN_RATIO
+                    if g_val in ("RULE_OF_THIRDS", "THIRDS", "3X3"):
+                        self.config["grid_mode"] = grid_settings.CompositionGrid.GRID_3x3
+                    elif g_val in ("GOLDEN_RATIO", "GOLDEN", "EUCLID", "PHI"):
+                        self.config["grid_mode"] = grid_settings.CompositionGrid.EUCLID
                     else:
                         self.config["grid_mode"] = grid_settings.CompositionGrid.OFF
                     print(f"[SYSTEM] Remote grid set to {self.config['grid_mode']}")
