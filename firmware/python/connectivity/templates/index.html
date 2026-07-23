@@ -26,6 +26,13 @@
                 </svg>
                 <span>Roll</span>
             </button>
+            <button class="nav-tab" id="tab-btn-remote" onclick="switchTab('remote')">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                <span>Remote</span>
+            </button>
             <button class="nav-tab" id="tab-btn-settings" onclick="switchTab('settings')">
                 <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -61,6 +68,39 @@
             </div>
             {% endfor %}
         </main>
+    </section>
+
+    <!-- REMOTE VIEW -->
+    <section id="view-remote" class="tab-view">
+        <div class="remote-container">
+            <div class="remote-card viewfinder-card">
+                <div class="remote-card-header">
+                    <h2>LIVE VIEW & SHUTTER</h2>
+                    <span class="live-indicator"><span class="dot"></span> LIVE</span>
+                </div>
+                <div class="stream-wrapper">
+                    <img src="/video_feed" id="video-stream" class="stream-feed" alt="Live Stream" />
+                </div>
+                <div class="remote-shutter-container">
+                    <button class="btn-remote-shutter" onclick="triggerRemoteCapture(this)" id="btn-shutter">
+                        <span class="shutter-inner"></span>
+                    </button>
+                    <span class="shutter-label" id="shutter-status">TAP TO CAPTURE</span>
+                </div>
+            </div>
+
+            <div class="remote-card modes-card">
+                <div class="remote-card-header">
+                    <h2>MODE SELECTION</h2>
+                    <p class="settings-desc">Select active processing mode for EuclidCam</p>
+                </div>
+                <div class="mode-buttons-grid">
+                    <button class="mode-btn active" id="mode-btn-0" onclick="setRemoteMode(0, this)">STANDARD</button>
+                    <button class="mode-btn" id="mode-btn-1" onclick="setRemoteMode(1, this)">CHALK</button>
+                    <button class="mode-btn" id="mode-btn-2" onclick="setRemoteMode(2, this)">DRAFT</button>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- SETTINGS VIEW -->
@@ -114,6 +154,41 @@
             if (activeTab && activeView) {
                 activeTab.classList.add('active');
                 activeView.classList.add('active');
+            }
+        }
+
+        async function triggerRemoteCapture(btn) {
+            const label = document.getElementById('shutter-status');
+            if (label) label.textContent = 'CAPTURING...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/remote/capture', { method: 'POST' });
+                if (response.ok) {
+                    if (label) label.textContent = 'PHOTO CAPTURED!';
+                    setTimeout(() => { if (label) label.textContent = 'TAP TO CAPTURE'; }, 2000);
+                } else {
+                    if (label) label.textContent = 'CAPTURE ERROR';
+                }
+            } catch (err) {
+                if (label) label.textContent = 'ERROR: ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function setRemoteMode(modeIdx, btn) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            try {
+                await fetch('/api/remote/mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode_idx: modeIdx })
+                });
+            } catch (err) {
+                console.error(err);
             }
         }
 

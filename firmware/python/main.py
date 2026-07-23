@@ -846,6 +846,26 @@ class CameraEngine:
             except Exception as e:
                 print(f"[SYSTEM] Status check error: {e}")
 
+        # Check for remote commands from web server (capture / mode switch)
+        remote_cmd_file = "/tmp/euclidcam_remote_cmd.json"
+        if os.path.exists(remote_cmd_file):
+            try:
+                import json
+                with open(remote_cmd_file, "r") as f:
+                    cmd_data = json.load(f)
+                os.remove(remote_cmd_file)
+                cmd = cmd_data.get("cmd")
+                if cmd == "capture":
+                    print("[SYSTEM] Remote capture command received!")
+                    self.input._on_select(self.config, fb_map)
+                elif cmd == "set_mode":
+                    m_idx = cmd_data.get("mode_idx", 0)
+                    if 0 <= m_idx < len(self.modes):
+                        self.config["mode_idx"] = m_idx
+                        print(f"[SYSTEM] Remote mode switched to index {m_idx}")
+            except Exception as e:
+                print(f"[SYSTEM] Remote command processing error: {e}")
+
         self._render(fb_map)
         self._process_input(fb_map)
 
@@ -870,6 +890,14 @@ class CameraEngine:
             frame = np.array(pil)
 
         frame = self.panel.render(frame)
+        
+        # Export stream frame for web remote live view
+        try:
+            pil_stream = Image.fromarray(frame)
+            pil_stream.save("/tmp/euclidcam_stream.jpg", format="JPEG", quality=75)
+        except Exception:
+            pass
+
         display_to_map(frame, fb_map, config=self.config)
 
     def _process_input(self, fb_map) -> None:

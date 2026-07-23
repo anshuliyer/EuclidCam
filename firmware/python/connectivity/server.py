@@ -1,7 +1,7 @@
 import os
 import socket
 import shutil
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, Response
 
 app = Flask(__name__)
 
@@ -112,6 +112,44 @@ def delete_batch():
         if os.path.exists(img_path):
             os.remove(img_path)
     return {"status": "success"}, 200
+
+@app.route('/video_feed')
+def video_feed():
+    def gen_frames():
+        stream_path = "/tmp/euclidcam_stream.jpg"
+        while True:
+            if os.path.exists(stream_path):
+                try:
+                    with open(stream_path, "rb") as f:
+                        frame_bytes = f.read()
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                except Exception:
+                    pass
+            time.sleep(0.08)
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/api/remote/capture', methods=['POST'])
+def remote_capture():
+    try:
+        import json
+        with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
+            json.dump({"cmd": "capture", "time": time.time()}, f)
+        return {"success": True, "message": "Capture triggered"}, 200
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
+@app.route('/api/remote/mode', methods=['POST'])
+def remote_mode():
+    try:
+        import json
+        data = request.get_json(silent=True) or request.form
+        mode_idx = int(data.get("mode_idx", 0))
+        with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
+            json.dump({"cmd": "set_mode", "mode_idx": mode_idx, "time": time.time()}, f)
+        return {"success": True, "message": f"Mode set to {mode_idx}"}, 200
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
 
 @app.route('/api/wifi/config', methods=['POST'])
 def wifi_config():
