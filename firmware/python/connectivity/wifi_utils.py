@@ -30,46 +30,52 @@ def connect_to_wifi(ssid, password):
     if not ssid:
         return False, "No SSID provided"
     
-    print(f"[SYSTEM] Attempting to connect to {ssid}...")
+    print(f"[SYSTEM] Attempting to connect to '{ssid}'...")
     
     try:
         # Check if nmcli is available
         subprocess.check_output(["which", "nmcli"])
         
-        # 1. Purge any stale/incomplete connection profile for this SSID
-        subprocess.run(["nmcli", "connection", "delete", "id", ssid], capture_output=True, text=True)
+        # 1. Bring down Hotspot if active so wlan0 can switch to client/station mode
+        subprocess.run(["sudo", "nmcli", "connection", "down", "Hotspot"], capture_output=True, text=True)
+        time.sleep(1)
         
-        # 2. Try standard wifi connect
-        cmd = ["nmcli", "device", "wifi", "connect", ssid]
+        # 2. Trigger WiFi rescan
+        subprocess.run(["sudo", "nmcli", "device", "wifi", "rescan"], capture_output=True, text=True)
+        time.sleep(2)
+        
+        # 3. Direct wifi connect using nmcli
+        cmd = ["sudo", "nmcli", "device", "wifi", "connect", ssid]
         if password:
             cmd.extend(["password", password])
             
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
         
         if result.returncode == 0:
             return True, f"Connected to {ssid}"
             
-        # 3. Fallback: If key-mgmt or direct connect failed, build explicit profile with wpa-psk key-mgmt
-        print(f"[SYSTEM] Direct connect note: {result.stderr.strip()}. Retrying with explicit WPA profile...")
-        subprocess.run(["nmcli", "connection", "delete", "id", ssid], capture_output=True, text=True)
+        # 4. Fallback: Create explicit profile with wpa-psk if direct connect failed
+        err_msg = result.stderr.strip() or result.stdout.strip()
+        print(f"[SYSTEM] Direct wifi connect note: {err_msg}. Retrying with explicit WPA profile...")
         
-        add_cmd = ["nmcli", "connection", "add", "type", "wifi", "con-name", ssid, "ifname", "wlan0", "ssid", ssid]
-        subprocess.run(add_cmd, capture_output=True, text=True)
+        subprocess.run(["sudo", "nmcli", "connection", "delete", "id", ssid], capture_output=True, text=True)
         
+        add_cmd = ["sudo", "nmcli", "connection", "add", "type", "wifi", "con-name", ssid, "ifname", "wlan0", "ssid", ssid]
         if password:
-            sec_cmd = ["nmcli", "connection", "modify", ssid, "wifi-sec.key-mgmt", "wpa-psk", "wifi-sec.psk", password]
-            subprocess.run(sec_cmd, capture_output=True, text=True)
+            add_cmd.extend(["wifi-sec.key-mgmt", "wpa-psk", "wifi-sec.psk", password])
             
-        up_result = subprocess.run(["nmcli", "connection", "up", ssid], capture_output=True, text=True, timeout=20)
+        add_res = subprocess.run(add_cmd, capture_output=True, text=True)
         
-        if up_result.returncode == 0:
-            return True, f"Connected to {ssid}"
+        if add_res.returncode == 0:
+            up_result = subprocess.run(["sudo", "nmcli", "connection", "up", ssid], capture_output=True, text=True, timeout=20)
+            if up_result.returncode == 0:
+                return True, f"Connected to {ssid}"
+            else:
+                return False, f"Failed: {up_result.stderr.strip() or err_msg}"
         else:
-            err = up_result.stderr.strip() or result.stderr.strip() or "Connection failed"
-            return False, f"Failed: {err}"
+            return False, f"Failed: {add_res.stderr.strip() or err_msg}"
             
     except subprocess.CalledProcessError:
-        # fallback or nmcli missing
         return False, "nmcli not found or error"
     except Exception as e:
         return False, f"Error: {e}"
