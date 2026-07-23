@@ -130,8 +130,7 @@ class TopPanel:
             title = "COMPOSITION"
         elif current_submenu == "Connect":
             wifi_pwr = "Hotspot: ON" if self.config.get("is_connected") else "Hotspot: OFF"
-            bt_pwr = "BT: ON" if self.config.get("bluetooth_on") else "BT: OFF"
-            items = ["Show QR", wifi_pwr, bt_pwr, "Back"]
+            items = ["Show QR", wifi_pwr, "Back"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "NETWORK"
         else:
@@ -348,8 +347,6 @@ class TopPanel:
         show_gallery = self.config.get("show_gallery", False)
         
         if show_gallery:
-            if self.config.get("bluetooth_on"):
-                self._draw_bt_icon(draw)
             self._draw_gallery_view(draw)
 
         elif self.config.get("show_connection_view", False):
