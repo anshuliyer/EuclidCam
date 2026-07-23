@@ -666,13 +666,13 @@ class InputHandler:
                 import subprocess, time
                 print("[SYSTEM] Auto-enabling Hotspot & server…")
                 # Show animated progress overlay/scroller
-                self.modes[0]._draw_capture_overlay(None, config, "ENABLING CONNECT…", progress=0.3)
+                self._modes[0]._draw_capture_overlay(None, config, "ENABLING CONNECT…", progress=0.3)
                 subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
-                self.modes[0]._draw_capture_overlay(None, config, "STARTING SERVER…", progress=0.7)
+                self._modes[0]._draw_capture_overlay(None, config, "STARTING SERVER…", progress=0.7)
                 time.sleep(2)
-                self.server.start()
+                self._server.start()
                 config["is_connected"] = True
-                self.modes[0]._draw_capture_overlay(None, config, "CONNECT READY!", progress=1.0)
+                self._modes[0]._draw_capture_overlay(None, config, "CONNECT READY!", progress=1.0)
                 time.sleep(0.3)
             config["show_connection_view"] = True
             config["show_submenu"] = False
