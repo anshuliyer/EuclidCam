@@ -129,6 +129,14 @@ def wifi_config():
             from connectivity.wifi_utils import connect_to_wifi
             
         success, message = connect_to_wifi(ssid, password)
+        if success:
+            try:
+                import json
+                status_file = "/tmp/euclidcam_wifi_status.json"
+                with open(status_file, "w") as f:
+                    json.dump({"status": "connected", "ssid": ssid}, f)
+            except Exception as ex:
+                print(f"[SERVER] Failed to write status file: {ex}")
         return {"success": success, "message": message}, (200 if success else 400)
     except Exception as e:
         return {"success": False, "message": str(e)}, 500

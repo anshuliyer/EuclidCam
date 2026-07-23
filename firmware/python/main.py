@@ -665,10 +665,15 @@ class InputHandler:
             if not config.get("is_connected"):
                 import subprocess, time
                 print("[SYSTEM] Auto-enabling Hotspot & server…")
+                # Show animated progress overlay/scroller
+                self.modes[0]._draw_capture_overlay(None, config, "ENABLING CONNECT…", progress=0.3)
                 subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
-                time.sleep(3)
-                self._server.start()
+                self.modes[0]._draw_capture_overlay(None, config, "STARTING SERVER…", progress=0.7)
+                time.sleep(2)
+                self.server.start()
                 config["is_connected"] = True
+                self.modes[0]._draw_capture_overlay(None, config, "CONNECT READY!", progress=1.0)
+                time.sleep(0.3)
             config["show_connection_view"] = True
             config["show_submenu"] = False
             config["show_menu"] = False
@@ -816,6 +821,26 @@ class CameraEngine:
     # ── Per-frame tick ────────────────────────────────────────────────────────
 
     def _tick(self, fb_map) -> None:
+        # Check for background WiFi connected signal from server
+        status_file = "/tmp/euclidcam_wifi_status.json"
+        if os.path.exists(status_file):
+            try:
+                import json
+                with open(status_file, "r") as f:
+                    st = json.load(f)
+                os.remove(status_file)
+                if st.get("status") == "connected":
+                    ssid = st.get("ssid", "Wi-Fi")
+                    print(f"[SYSTEM] WiFi connected to {ssid}! Exiting menu...")
+                    self.config["wifi_connected_toast"] = f"WiFi Connected to {ssid}"
+                    self.config["wifi_connected_time"] = time.time()
+                    self.config["show_connection_view"] = False
+                    self.config["show_menu"] = False
+                    self.config["show_submenu"] = False
+                    self.config["is_connected"] = False
+            except Exception as e:
+                print(f"[SYSTEM] Status check error: {e}")
+
         self._render(fb_map)
         self._process_input(fb_map)
 

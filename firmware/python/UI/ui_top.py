@@ -330,6 +330,25 @@ class TopPanel:
         draw.text((x + 20, y + overlay_h - 40), "Scan to browse images", fill=self.BEIGE)
         draw.text((x + 20, y + overlay_h - 20), "Press shutter to exit", fill=self.BEIGE)
 
+    def _draw_toast(self, draw, text: str):
+        """Draws a sleek notification toast banner at top center of screen."""
+        w, h = self.screen_res
+        try:
+            from PIL import ImageFont
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 14)
+        except Exception:
+            font = None
+            
+        tw = draw.textlength(text, font=font) if hasattr(draw, "textlength") else len(text) * 8
+        card_w, card_h = int(tw + 40), 36
+        cx, cy = w // 2, 30
+        bx, by = cx - card_w // 2, cy - card_h // 2
+        
+        draw_func = getattr(draw, "rounded_rectangle", draw.rectangle)
+        draw_func([bx, by, bx + card_w, by + card_h], radius=10, fill=(35, 30, 25, 230), outline=self.BEIGE, width=2)
+        
+        draw.text((bx + 20, by + 9), text, fill=(255, 255, 255), font=font)
+
     def render(self, frame):
         """
         Applies the UI overlay to the provided frame.
@@ -365,5 +384,12 @@ class TopPanel:
                     mins = uptime // 60
                     secs = uptime % 60
                     draw.text((10, self.screen_res[1] - 25), f"BENCHMARK: {mins:02d}:{secs:02d}", fill=(255, 50, 50))
+
+        # Check for active toast notification
+        toast_text = self.config.get("wifi_connected_toast")
+        toast_time = self.config.get("wifi_connected_time", 0)
+        import time
+        if toast_text and (time.time() - toast_time < 4.0):
+            self._draw_toast(draw, toast_text)
 
         return np.array(img)
