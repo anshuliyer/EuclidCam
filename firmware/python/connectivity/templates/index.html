@@ -3,178 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EuclidCam | Gallery</title>
+    <title>EuclidCam Connect</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header>
-        <div class="header-top">
-            <button id="wifi-gear-btn" class="gear-btn" title="Configure Board WiFi" onclick="toggleWifiModal()">
-                <svg class="gear-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <header class="connect-header">
+        <img src="/assets/transparent_logo_light.png" alt="EuclidCam Logo" class="hero-logo">
+        <h1 class="main-heading">EuclidCam Connect</h1>
+        
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" id="tab-btn-roll" onclick="switchTab('roll')">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                    <line x1="7" y1="2" x2="7" y2="22"></line>
+                    <line x1="17" y1="2" x2="17" y2="22"></line>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <line x1="2" y1="7" x2="7" y2="7"></line>
+                    <line x1="2" y1="17" x2="7" y2="17"></line>
+                    <line x1="17" y1="17" x2="22" y2="17"></line>
+                    <line x1="17" y1="7" x2="22" y2="7"></line>
+                </svg>
+                <span>Roll</span>
+            </button>
+            <button class="nav-tab" id="tab-btn-settings" onclick="switchTab('settings')">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
+                <span>Settings</span>
             </button>
-        </div>
-        <img src="/assets/transparent_logo_light.png" alt="EuclidCam Logo" class="hero-gif">
-        <h2 class="subtitle">Roll</h2>
+        </nav>
     </header>
 
-    <!-- WiFi Configuration Modal -->
-    <div id="wifi-modal" class="wifi-modal">
-        <div class="wifi-modal-content">
-            <div class="wifi-modal-header">
-                <h3>CONFIGURE BOARD WIFI</h3>
-                <button class="close-btn" onclick="toggleWifiModal()">&times;</button>
+    <!-- ROLL VIEW -->
+    <section id="view-roll" class="tab-view active">
+        <div class="batch-actions" id="batch-actions">
+            <button class="btn-batch-delete" onclick="deleteSelected()">Delete Selected (<span id="select-count">0</span>)</button>
+        </div>
+
+        <main class="gallery">
+            {% for image in images %}
+            <div class="card" id="card-{{ loop.index }}">
+                <input type="checkbox" class="select-checkbox" data-filename="{{ image }}" onchange="updateSelection()">
+                <img src="{{ url_for('serve_image', filename=image) }}" alt="{{ image }}">
+                <div class="actions">
+                    <span class="filename">{{ image }}</span>
+                    <div class="buttons">
+                        <a href="{{ url_for('serve_image', filename=image) }}" download class="btn download">Save</a>
+                        <button onclick="deleteImage('{{ image }}')" class="btn delete">Drop</button>
+                    </div>
+                </div>
             </div>
-            <form id="wifi-form" onsubmit="saveWifiConfig(event)">
-                <div class="form-group">
-                    <label for="wifi-ssid">WiFi Network Name (SSID)</label>
-                    <input type="text" id="wifi-ssid" placeholder="Enter WiFi SSID" required />
+            {% else %}
+            <div class="empty">
+                <p>No photos in roll yet</p>
+            </div>
+            {% endfor %}
+        </main>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section id="view-settings" class="tab-view">
+        <div class="settings-container">
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h2>BOARD WIFI CONFIGURATION</h2>
+                    <p class="settings-desc">Connect your EuclidCam camera board to a local Wi-Fi network</p>
                 </div>
-                <div class="form-group">
-                    <label for="wifi-password">Password</label>
-                    <input type="password" id="wifi-password" placeholder="Enter WiFi Password" />
-                </div>
-                <div id="wifi-status" class="wifi-status"></div>
-                <div class="form-actions">
+                <form id="wifi-form" onsubmit="saveWifiConfig(event)">
+                    <div class="form-group">
+                        <label for="wifi-ssid">WiFi Network Name (SSID)</label>
+                        <input type="text" id="wifi-ssid" placeholder="Enter network name" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="wifi-password">Password</label>
+                        <input type="password" id="wifi-password" placeholder="Enter network password" />
+                    </div>
+                    <div id="wifi-status" class="wifi-status"></div>
                     <button type="submit" id="wifi-submit-btn" class="btn-save-wifi">CONNECT BOARD</button>
+                </form>
+            </div>
+
+            <div class="settings-card status-card">
+                <div class="settings-card-header">
+                    <h2>CAMERA STORAGE</h2>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="batch-actions" id="batch-actions">
-        <button class="btn-batch-delete" onclick="deleteSelected()">Delete Selected (<span
-                id="select-count">0</span>)</button>
-    </div>
-
-    <main class="gallery">
-        {% for image in images %}
-        <div class="card" id="card-{{ loop.index }}">
-            <input type="checkbox" class="select-checkbox" data-filename="{{ image }}" onchange="updateSelection()">
-            <img src="{{ url_for('serve_image', filename=image) }}" alt="{{ image }}">
-            <div class="actions">
-                <span class="filename">{{ image }}</span>
-                <div class="buttons">
-                    <a href="{{ url_for('serve_image', filename=image) }}" download class="btn download">Save</a>
-                    <button onclick="deleteImage('{{ image }}')" class="btn delete">Drop</button>
+                <div class="storage-info">
+                    <div class="storage-text">Free: {{ storage.free }} / {{ storage.total }}</div>
+                    <div class="storage-bar">
+                        <div class="storage-progress" style="width: {{ storage.percent }}%"></div>
                     </div>
-                    </div>
-                    </div>
-        {% else %}
-        <div class="empty">
-            <p>Damn Dawg! Thought I was doing a good job</p>
+                </div>
             </div>
-        {% endfor %}
-    </main>
-<script>
-    function toggleWifiModal() {
-        const modal = document.getElementById('wifi-modal');
-        modal.classList.toggle('active');
-    }
+        </div>
+    </section>
 
-    async function saveWifiConfig(event) {
-        event.preventDefault();
-        const ssid = document.getElementById('wifi-ssid').value.trim();
-        const password = document.getElementById('wifi-password').value;
-        const statusDiv = document.getElementById('wifi-status');
-        const submitBtn = document.getElementById('wifi-submit-btn');
+    <footer>
+        <p>&copy; 2026 EuclidCam | Captured with Curiosity</p>
+    </footer>
 
-        if (!ssid) return;
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
 
-        statusDiv.className = 'wifi-status info';
-        statusDiv.textContent = 'Attempting connection on board...';
-        submitBtn.disabled = true;
+            const activeTab = document.getElementById(`tab-btn-${tabName}`);
+            const activeView = document.getElementById(`view-${tabName}`);
 
-        try {
-            const response = await fetch('/api/wifi/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ssid: ssid, password: password })
-            });
+            if (activeTab && activeView) {
+                activeTab.classList.add('active');
+                activeView.classList.add('active');
+            }
+        }
 
-            const data = await response.json();
-            if (response.ok && data.success) {
-                statusDiv.className = 'wifi-status success';
-                statusDiv.textContent = data.message || 'Connected successfully!';
-                setTimeout(() => {
-                    toggleWifiModal();
-                }, 2500);
-            } else {
+        async function saveWifiConfig(event) {
+            event.preventDefault();
+            const ssid = document.getElementById('wifi-ssid').value.trim();
+            const password = document.getElementById('wifi-password').value;
+            const statusDiv = document.getElementById('wifi-status');
+            const submitBtn = document.getElementById('wifi-submit-btn');
+
+            if (!ssid) return;
+
+            statusDiv.className = 'wifi-status info';
+            statusDiv.textContent = 'Attempting connection on board...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/wifi/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ssid: ssid, password: password })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    statusDiv.className = 'wifi-status success';
+                    statusDiv.textContent = data.message || 'Connected successfully!';
+                } else {
+                    statusDiv.className = 'wifi-status error';
+                    statusDiv.textContent = data.message || 'Connection failed.';
+                }
+            } catch (err) {
                 statusDiv.className = 'wifi-status error';
-                statusDiv.textContent = data.message || 'Connection failed.';
+                statusDiv.textContent = 'Network error: ' + err.message;
+            } finally {
+                submitBtn.disabled = false;
             }
-        } catch (err) {
-            statusDiv.className = 'wifi-status error';
-            statusDiv.textContent = 'Network error: ' + err.message;
-        } finally {
-            submitBtn.disabled = false;
         }
-    }
 
-    function updateSelection() {
-        const selected = document.querySelectorAll('.select-checkbox:checked');
-        const batchActions = document.getElementById('batch-actions');
-        const countSpan = document.getElementById('select-count');
+        function updateSelection() {
+            const selected = document.querySelectorAll('.select-checkbox:checked');
+            const batchActions = document.getElementById('batch-actions');
+            const countSpan = document.getElementById('select-count');
 
-        if (selected.length > 0) {
-            batchActions.style.display = 'block';
-            countSpan.textContent = selected.length;
-        } else {
-            batchActions.style.display = 'none';
-        }
-    }
-
-    async function deleteImage(filename) {
-        if (!confirm(`Discard this proof? ${filename}`)) return;
-
-        try {
-            const response = await fetch(`/delete/${filename}`, { method: 'POST' });
-            if (response.ok) {
-                location.reload();
+            if (selected.length > 0) {
+                batchActions.style.display = 'block';
+                countSpan.textContent = selected.length;
             } else {
-                alert('Deletion failed.');
+                batchActions.style.display = 'none';
             }
-        } catch (err) {
-            console.error(err);
         }
-    }
 
-    async function deleteSelected() {
-        const selected = Array.from(document.querySelectorAll('.select-checkbox:checked'))
-            .map(cb => cb.dataset.filename);
+        async function deleteImage(filename) {
+            if (!confirm(`Discard this proof? ${filename}`)) return;
 
-        if (selected.length === 0) return;
-        if (!confirm(`Discard all ${selected.length} selected proofs?`)) return;
-
-        try {
-            const response = await fetch('/delete-batch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filenames: selected })
-            });
-
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Batch deletion failed.');
+            try {
+                const response = await fetch(`/delete/${filename}`, { method: 'POST' });
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Deletion failed.');
+                }
+            } catch (err) {
+                console.error(err);
             }
-        } catch (err) {
-            console.error(err);
         }
-    }
-</script>
-<footer>
-    <div class="storage-container">
-        <div class="storage-info">
-            <div class="storage-text">Free: {{ storage.free }} / {{ storage.total }}</div>
-            <div class="storage-bar">
-                <div class="storage-progress" style="width: {{ storage.percent }}%"></div>
-            </div>
-        </div>
-    </div>
-    <p>&copy; 2026 EuclidCam | Captured with Curiosity</p>
-</footer>
+
+        async function deleteSelected() {
+            const selected = Array.from(document.querySelectorAll('.select-checkbox:checked'))
+                .map(cb => cb.dataset.filename);
+
+            if (selected.length === 0) return;
+            if (!confirm(`Discard all ${selected.length} selected proofs?`)) return;
+
+            try {
+                const response = await fetch('/delete-batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filenames: selected })
+                });
+
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Batch deletion failed.');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* Fonts */
+/* Fonts & Theme Tokens */
 @font-face {
   font-family: 'JetBrains Mono';
   src: url('/assets/fonts/JetBrainsMono-Regular.ttf') format('truetype');
@@ -38,49 +38,111 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 40px;
+  padding: 40px 20px;
   -webkit-font-smoothing: antialiased;
 }
 
-header {
+/* Header & Main Heading */
+.connect-header {
   width: 100%;
-  margin-bottom: 60px;
+  max-width: 1200px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  margin-bottom: 40px;
 }
 
-.hero-gif {
-  max-width: 320px;
-  width: 90%;
-  margin: 0 auto;
+.hero-logo {
+  max-width: 220px;
+  width: 80%;
+  margin-bottom: 1.2rem;
   display: block;
 }
 
-.subtitle {
-  margin-top: 2rem;
-  color: var(--accent-beige);
-  font-family: var(--font-mono);
-  font-size: 1.2rem;
+.main-heading {
+  color: var(--text-primary);
+  font-size: 1.8rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  margin-bottom: 2rem;
 }
 
+/* Navigation Tabs */
+.nav-tabs {
+  display: flex;
+  background: var(--bg-card);
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid var(--accent-light);
+  gap: 8px;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.nav-tab:hover {
+  color: var(--text-primary);
+}
+
+.nav-tab.active {
+  background: var(--accent-beige);
+  color: var(--bg-base);
+  box-shadow: 0 4px 15px rgba(230, 213, 189, 0.2);
+}
+
+.tab-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Tab Views */
+.tab-view {
+  display: none;
+  width: 100%;
+  max-width: 1200px;
+  animation: fadeIn 0.4s ease;
+}
+
+.tab-view.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Roll Gallery */
 .batch-actions {
   position: sticky;
   top: 20px;
   z-index: 100;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   display: none;
+  text-align: center;
 }
 
 .btn-batch-delete {
   background-color: var(--bg-card);
   color: #ff4444;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.8rem;
@@ -100,7 +162,6 @@ header {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   width: 100%;
-  max-width: 1200px;
 }
 
 .card {
@@ -116,7 +177,7 @@ header {
 
 .card:hover {
   background: var(--bg-card-hover);
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -188,7 +249,6 @@ header {
   transition: color 0.3s;
 }
 
-/* Wavy underline matching the webapp */
 .btn::after {
   content: '';
   position: absolute;
@@ -199,24 +259,13 @@ header {
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 4" preserveAspectRatio="none"><path d="M0,2 C5,0 5,4 10,2 C15,0 15,4 20,2" stroke="%23D5BFA7" stroke-width="1.6" fill="none"/></svg>') repeat-x;
   background-size: 14px 4px;
   opacity: 0.65;
-  transition: opacity 0.3s, transform 0.3s, background-image 0.5s;
+  transition: opacity 0.3s, transform 0.3s;
 }
 
-.btn:hover {
-  color: var(--text-primary);
-}
+.btn:hover { color: var(--text-primary); }
+.btn:hover::after { opacity: 1; transform: scaleY(1.15); }
 
-.btn:hover::after {
-  opacity: 1;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 4" preserveAspectRatio="none"><path d="M0,2 C5,0 5,4 10,2 C15,0 15,4 20,2" stroke="%23F4EFEA" stroke-width="1.6" fill="none"/></svg>');
-  transform: scaleY(1.15);
-}
-
-.btn.delete {
-  color: #ff4444;
-  text-align: right;
-}
-
+.btn.delete { color: #ff4444; text-align: right; }
 .btn.delete::after {
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 4" preserveAspectRatio="none"><path d="M0,2 C5,0 5,4 10,2 C15,0 15,4 20,2" stroke="%23ff4444" stroke-width="1.6" fill="none"/></svg>') repeat-x;
   background-size: 14px 4px;
@@ -225,164 +274,41 @@ header {
 .empty {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 100px;
+  padding: 80px 20px;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   letter-spacing: 0.1em;
 }
 
-footer {
-  width: 100%;
-  max-width: 1200px;
-  margin-top: 80px;
-  padding-top: 40px;
-  border-top: 1px dashed var(--accent-light);
+/* Settings View */
+.settings-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 30px;
+  gap: 24px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.storage-container {
-  width: 100%;
-  max-width: 400px;
-  background: var(--bg-card);
-  padding: 24px;
-  border-radius: 16px;
-  border: 1px solid var(--accent-light);
-}
-
-.storage-text {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
-  letter-spacing: 0.1em;
-  text-align: center;
-}
-
-.storage-bar {
-  width: 100%;
-  height: 6px;
-  background: var(--bg-base);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.storage-progress {
-  height: 100%;
-  background: var(--accent-beige);
-  border-radius: 3px;
-}
-
-footer p {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  opacity: 0.6;
-  letter-spacing: 0.1em;
-}
-
-/* Gear Button & WiFi Modal */
-.header-top {
-  width: 100%;
-  max-width: 1200px;
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: -40px;
-  padding: 0 10px;
-}
-
-.gear-btn {
+.settings-card {
   background: var(--bg-card);
   border: 1px solid var(--accent-light);
-  color: var(--accent-beige);
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  z-index: 10;
-}
-
-.gear-btn:hover {
-  background: var(--bg-card-hover);
-  color: var(--text-primary);
-  border-color: var(--accent-beige);
-  transform: rotate(45deg);
-}
-
-.gear-icon {
-  width: 22px;
-  height: 22px;
-}
-
-.wifi-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 1000;
-}
-
-.wifi-modal.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.wifi-modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--accent-beige);
   border-radius: 20px;
-  width: 90%;
-  max-width: 420px;
   padding: 2rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-  transform: translateY(20px);
-  transition: transform 0.3s ease;
+  transition: border-color 0.3s;
 }
 
-.wifi-modal.active .wifi-modal-content {
-  transform: translateY(0);
-}
-
-.wifi-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px dashed var(--accent-light);
-}
-
-.wifi-modal-header h3 {
-  font-size: 0.9rem;
+.settings-card-header h2 {
+  font-size: 0.95rem;
   color: var(--accent-beige);
   letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
 }
 
-.close-btn {
-  background: none;
-  border: none;
+.settings-desc {
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  font-size: 1.5rem;
-  cursor: pointer;
-  line-height: 1;
-  transition: color 0.2s;
-}
-
-.close-btn:hover {
-  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
 }
 
 .form-group {
@@ -402,8 +328,8 @@ footer p {
 .form-group input {
   background: var(--bg-base);
   border: 1px solid var(--accent-light);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 10px;
+  padding: 12px 16px;
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 0.85rem;
@@ -420,11 +346,11 @@ footer p {
   background: var(--accent-beige);
   color: var(--bg-base);
   border: none;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 14px;
+  border-radius: 12px;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   letter-spacing: 0.1em;
   cursor: pointer;
   transition: all 0.3s;
@@ -452,3 +378,44 @@ footer p {
 .wifi-status.info { color: var(--accent-beige); }
 .wifi-status.success { color: #44ff88; }
 .wifi-status.error { color: #ff4444; }
+
+.storage-container {
+  width: 100%;
+}
+
+.storage-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+
+.storage-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-base);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.storage-progress {
+  height: 100%;
+  background: var(--accent-beige);
+  border-radius: 4px;
+}
+
+footer {
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 60px;
+  padding-top: 30px;
+  border-top: 1px dashed var(--accent-light);
+  text-align: center;
+}
+
+footer p {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  letter-spacing: 0.1em;
+}
