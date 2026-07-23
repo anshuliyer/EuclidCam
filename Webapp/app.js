@@ -8,16 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // The initial sequence locks scrolling until the animation finishes.
   console.log('--- EuclidCam Hero Loading... ---');
   
-  // Fade in the EuclidCam text exactly after the radius graphics finish drawing (24 frames * 150ms = 3600ms)
+  // Fade in the EuclidCam text with a smooth entrance
   setTimeout(() => {
     const heroText = document.getElementById('hero-brand-text');
     if (heroText) heroText.classList.add('visible');
-  }, 3600);
+  }, 800);
 
   setTimeout(() => {
     document.body.classList.remove('scroll-lock');
     console.log('--- Boot Complete. Scroll Unlocked. ---');
-  }, 4800);
+  }, 1800);
 
   // Scroll Animation for Hero Brand Text
   const heroText = document.getElementById('hero-brand-text');
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const bootGifImg = document.getElementById('boot-gif-img');
       if (bootGifImg) {
-        bootGifImg.src = isDark ? 'assets/transparent_logo_dark.png' : 'assets/euclid_construction_light.gif';
+        bootGifImg.src = isDark ? 'assets/transparent_logo_dark.png' : 'assets/transparent_logo_light.png';
       }
     });
   }
