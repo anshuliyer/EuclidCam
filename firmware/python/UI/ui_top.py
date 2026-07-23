@@ -116,7 +116,8 @@ class TopPanel:
         current_submenu = self.config.get("current_submenu", "Modes")
         
         if not show_submenu:
-            items = ["Gallery", "Modes", "Connect", "Flash", "Grid", "Exit"]
+            flash_pwr = "Flash: ON" if self.config.get("flash", True) else "Flash: OFF"
+            items = ["Gallery", "Modes", "Connect", flash_pwr, "Grid", "Exit"]
             selected_idx = self.config.get("menu_index", 0)
             title = "SYSTEM MENU"
         elif current_submenu == "Modes":
@@ -213,6 +214,10 @@ class TopPanel:
             display_name = item
             if item == "Connect":
                 status = "ON" if self.config.get("is_connected") else "OFF"
+                if is_selected:
+                    overlay_draw.text((bx + width - 35, by + 8), status, fill=accent_color, font=font_small)
+            elif item.startswith("Flash"):
+                status = "ON" if self.config.get("flash", True) else "OFF"
                 if is_selected:
                     overlay_draw.text((bx + width - 35, by + 8), status, fill=accent_color, font=font_small)
             

@@ -666,8 +666,9 @@ class InputHandler:
             config["current_submenu"] = "Connect"
             config["submenu_index"]   = 0
 
-        elif selected == "Flash":
-            config["flash"] = not config.get("flash", False)
+        elif selected == "Flash" or selected.startswith("Flash"):
+            config["flash"] = not config.get("flash", True)
+            print(f"[SYSTEM] Flash → {'ON' if config['flash'] else 'OFF'}")
 
     # ── Sub-menu confirmation ─────────────────────────────────────────────────
 
@@ -905,7 +906,7 @@ class CameraEngine:
             else:
                 # Hold detection
                 hold_time = time.time() - self._shutter_press_time
-                if hold_time > 0.6 and not getattr(self, "_shutter_long_fired", False):
+                if hold_time > 0.25 and not getattr(self, "_shutter_long_fired", False):
                     self._shutter_long_fired = True
                     # Long press action
                     if self.config.get("show_connection_view"):
