@@ -662,9 +662,16 @@ class InputHandler:
                 config["submenu_index"] = 0
 
         elif selected == "Connect":
-            config["show_submenu"]    = True
-            config["current_submenu"] = "Connect"
-            config["submenu_index"]   = 0
+            if not config.get("is_connected"):
+                import subprocess, time
+                print("[SYSTEM] Auto-enabling Hotspot & server…")
+                subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
+                time.sleep(3)
+                self._server.start()
+                config["is_connected"] = True
+            config["show_connection_view"] = True
+            config["show_submenu"] = False
+            config["show_menu"] = False
 
         elif selected == "Flash" or selected.startswith("Flash"):
             config["flash"] = not config.get("flash", True)
@@ -694,38 +701,6 @@ class InputHandler:
             config["show_submenu"] = False
             config["show_menu"] = False
 
-        elif submenu == "Connect":
-            if idx == 2: # Back
-                config["show_submenu"] = False
-                return
-            if idx == 0:          # Show QR
-                if not config.get("is_connected"):
-                    import subprocess, time
-                    print("[SYSTEM] Starting Hotspot & server…")
-                    subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
-                    time.sleep(3)
-                    self._server.start()
-                    config["is_connected"] = True
-                config["show_connection_view"] = True
-                config["show_submenu"] = False
-                config["show_menu"] = False
-                return
-            elif idx == 1:        # Toggle WiFi Hotspot
-                if config.get("is_connected"):
-                    self._server.stop()
-                    config["is_connected"] = False
-                    import subprocess
-                    print("[SYSTEM] Stopping Hotspot...")
-                    subprocess.run(["sudo", "nmcli", "connection", "down", "Hotspot"], check=False)
-                else:
-                    import subprocess, time
-                    print("[SYSTEM] Starting Hotspot (EuclidCam)...")
-                    subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
-                    time.sleep(3)
-                    self._server.start()
-                    config["is_connected"] = True
-                return # Keep menu open to show state toggle
-
         config["show_submenu"] = False
         config["show_menu"]    = False
 
@@ -734,8 +709,6 @@ class InputHandler:
     def _submenu_length(self, config: dict) -> int:
         if config.get("current_submenu") == "Modes":
             return len(self._modes) + 1 # +1 for Back
-        if config.get("current_submenu") == "Connect":
-            return 3
         return len(self._GRID_OPTIONS)
 
 
