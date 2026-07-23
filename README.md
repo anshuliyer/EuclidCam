@@ -4,16 +4,19 @@ Custom embedded camera firmware for a Raspberry Pi point-and-shoot. Runs headles
 
 ```
 euclidcam/
-├── firmware/python/       # On-device runtime
-│   ├── main.py            # System entry point, event loop, all subsystems
-│   ├── filters/           # PIL colour-grading modules
-│   ├── UI/                # Framebuffer renderer, touch controller, themes
-│   ├── settings/          # Composition grid
-│   ├── connectivity/      # Flask server + WiFi helpers
-│   └── IO/                # GPIO / evdev stubs
-├── assets/                # Unified visual assets, fonts, and boot animations
-├── Webapp/                # Remote gallery UI and mockups
+├── firmware/python/       # On-device firmware runtime engine
+│   ├── main.py            # Main entry point and orchestration loop
+│   ├── filters/           # Custom PIL photo filters (Glam, 35mm, Summer, etc.)
+│   ├── UI/                # Display renderer, touch digitizer driver, and themes
+│   ├── settings/          # Viewfinder composition grids (3x3, Golden Ratio)
+│   ├── connectivity/      # Flask remote control server & Wi-Fi configuration
+│   └── IO/                # Hardware GPIO flash & battery management
+├── docs/                  # Technical documentation & hardware reference manual
+├── scripts/               # Bootstrapping & asset utility scripts
+├── assets/                # Core visual media, logos, and typography fonts
+├── tests/                 # Firmware test suite
 ├── Captured/              # Photo output (on-device)
+├── Makefile               # Installation, deployment, and service targets
 ├── requirements.txt       # Python dependencies
 └── LICENSE                # MIT License
 ```

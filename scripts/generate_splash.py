@@ -153,5 +153,5 @@ def generate_explosion_gif(filename, width=320, height=240):
     print(f"Generated {filename}")
 
 if __name__ == "__main__":
-    out_path = os.path.join(os.path.dirname(__file__), "explosion_splash.gif")
+    out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../assets/explosion_splash.gif"))
     generate_explosion_gif(out_path)

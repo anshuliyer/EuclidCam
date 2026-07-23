@@ -19,7 +19,7 @@ def get_tail_lines(filepath, n=15):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    default_img = os.path.abspath(os.path.join(script_dir, "..", "..", "assets", "IMG_4712-Photoroom.png"))
+    default_img = os.path.abspath(os.path.join(script_dir, "../assets/camera_blueprint.png"))
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--img", default=default_img)
