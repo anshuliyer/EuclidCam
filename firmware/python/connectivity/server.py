@@ -105,6 +105,26 @@ def delete_batch():
             os.remove(img_path)
     return {"status": "success"}, 200
 
+@app.route('/api/wifi/config', methods=['POST'])
+def wifi_config():
+    try:
+        data = request.get_json(silent=True) or request.form
+        ssid = data.get('ssid', '').strip()
+        password = data.get('password', '').strip()
+        
+        if not ssid:
+            return {"success": False, "message": "SSID is required"}, 400
+            
+        try:
+            from wifi_utils import connect_to_wifi
+        except ImportError:
+            from connectivity.wifi_utils import connect_to_wifi
+            
+        success, message = connect_to_wifi(ssid, password)
+        return {"success": success, "message": message}, (200 if success else 400)
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
 if __name__ == '__main__':
     # Run server on all interfaces so it's accessible over network
     app.run(host='0.0.0.0', port=5000, debug=False)

@@ -8,9 +8,41 @@
 </head>
 <body>
     <header>
+        <div class="header-top">
+            <button id="wifi-gear-btn" class="gear-btn" title="Configure Board WiFi" onclick="toggleWifiModal()">
+                <svg class="gear-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </div>
         <img src="/assets/transparent_logo_light.png" alt="EuclidCam Logo" class="hero-gif">
         <h2 class="subtitle">Roll</h2>
     </header>
+
+    <!-- WiFi Configuration Modal -->
+    <div id="wifi-modal" class="wifi-modal">
+        <div class="wifi-modal-content">
+            <div class="wifi-modal-header">
+                <h3>CONFIGURE BOARD WIFI</h3>
+                <button class="close-btn" onclick="toggleWifiModal()">&times;</button>
+            </div>
+            <form id="wifi-form" onsubmit="saveWifiConfig(event)">
+                <div class="form-group">
+                    <label for="wifi-ssid">WiFi Network Name (SSID)</label>
+                    <input type="text" id="wifi-ssid" placeholder="Enter WiFi SSID" required />
+                </div>
+                <div class="form-group">
+                    <label for="wifi-password">Password</label>
+                    <input type="password" id="wifi-password" placeholder="Enter WiFi Password" />
+                </div>
+                <div id="wifi-status" class="wifi-status"></div>
+                <div class="form-actions">
+                    <button type="submit" id="wifi-submit-btn" class="btn-save-wifi">CONNECT BOARD</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="batch-actions" id="batch-actions">
         <button class="btn-batch-delete" onclick="deleteSelected()">Delete Selected (<span
@@ -37,6 +69,50 @@
         {% endfor %}
     </main>
 <script>
+    function toggleWifiModal() {
+        const modal = document.getElementById('wifi-modal');
+        modal.classList.toggle('active');
+    }
+
+    async function saveWifiConfig(event) {
+        event.preventDefault();
+        const ssid = document.getElementById('wifi-ssid').value.trim();
+        const password = document.getElementById('wifi-password').value;
+        const statusDiv = document.getElementById('wifi-status');
+        const submitBtn = document.getElementById('wifi-submit-btn');
+
+        if (!ssid) return;
+
+        statusDiv.className = 'wifi-status info';
+        statusDiv.textContent = 'Attempting connection on board...';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/wifi/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ssid: ssid, password: password })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.success) {
+                statusDiv.className = 'wifi-status success';
+                statusDiv.textContent = data.message || 'Connected successfully!';
+                setTimeout(() => {
+                    toggleWifiModal();
+                }, 2500);
+            } else {
+                statusDiv.className = 'wifi-status error';
+                statusDiv.textContent = data.message || 'Connection failed.';
+            }
+        } catch (err) {
+            statusDiv.className = 'wifi-status error';
+            statusDiv.textContent = 'Network error: ' + err.message;
+        } finally {
+            submitBtn.disabled = false;
+        }
+    }
+
     function updateSelection() {
         const selected = document.querySelectorAll('.select-checkbox:checked');
         const batchActions = document.getElementById('batch-actions');
