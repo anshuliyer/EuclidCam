@@ -294,6 +294,13 @@
             if (btn) btn.disabled = true;
 
             try {
+                // Send remote capture command immediately so camera starts timer & physical flash blips!
+                const capturePromise = fetch('/api/remote/capture?timer=' + selectedTimer + '&t=' + Date.now(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ timer: selectedTimer })
+                });
+
                 if (selectedTimer > 0) {
                     for (let rem = selectedTimer; rem > 0; rem--) {
                         if (label) label.textContent = `COUNTDOWN: ${rem}s...`;
@@ -302,16 +309,11 @@
                 }
                 if (label) label.textContent = 'CAPTURING...';
 
-                // Trigger loud shutter click sound and white screen flash immediately upon click
+                // Play loud shutter click sound & white screen flash on phone when photo is taken
                 playShutterClickSound();
                 flashScreen();
 
-                const response = await fetch('/api/remote/capture?timer=' + selectedTimer + '&t=' + Date.now(), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ timer: selectedTimer })
-                });
-
+                const response = await capturePromise;
                 if (response.ok) {
                     if (label) label.textContent = 'PHOTO CAPTURED!';
                 } else {
