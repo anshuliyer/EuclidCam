@@ -1,7 +1,7 @@
 import os
 import socket
 import shutil
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, Response
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, Response, send_file
 
 app = Flask(__name__)
 
@@ -115,6 +115,16 @@ def delete_batch():
 
 DEFAULT_MODES = ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia", "Disco"]
 
+@app.route('/snapshot.jpg')
+def snapshot():
+    stream_path = "/tmp/euclidcam_stream.jpg"
+    if os.path.exists(stream_path):
+        try:
+            return send_file(stream_path, mimetype='image/jpeg', max_age=0)
+        except Exception:
+            pass
+    return "", 204
+
 @app.route('/video_feed')
 def video_feed():
     def gen_frames():
@@ -136,21 +146,21 @@ def video_feed():
 def remote_status():
     return {"modes": DEFAULT_MODES}, 200
 
-@app.route('/api/remote/capture', methods=['POST'])
+@app.route('/api/remote/capture', methods=['GET', 'POST'])
 def remote_capture():
     try:
-        import json
+        import json, time
         with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
             json.dump({"cmd": "capture", "time": time.time()}, f)
         return {"success": True, "message": "Capture triggered"}, 200
     except Exception as e:
         return {"success": False, "message": str(e)}, 500
 
-@app.route('/api/remote/mode', methods=['POST'])
+@app.route('/api/remote/mode', methods=['GET', 'POST'])
 def remote_mode():
     try:
-        import json
-        data = request.get_json(silent=True) or request.form
+        import json, time
+        data = request.get_json(silent=True) or request.form or request.args
         mode_idx = int(data.get("mode_idx", 0))
         with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
             json.dump({"cmd": "set_mode", "mode_idx": mode_idx, "time": time.time()}, f)

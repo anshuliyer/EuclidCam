@@ -157,7 +157,24 @@
                 container.appendChild(btn);
             });
         }
-        document.addEventListener('DOMContentLoaded', initModeButtons);
+
+        function startLiveView() {
+            const img = document.getElementById('video-stream');
+            if (!img) return;
+            setInterval(() => {
+                const activeView = document.getElementById('view-remote');
+                if (activeView && activeView.classList.contains('active')) {
+                    const newImg = new Image();
+                    newImg.onload = () => { img.src = newImg.src; };
+                    newImg.src = '/snapshot.jpg?t=' + Date.now();
+                }
+            }, 150);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initModeButtons();
+            startLiveView();
+        });
 
         function switchTab(tabName) {
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
@@ -175,20 +192,20 @@
         async function triggerRemoteCapture(btn) {
             const label = document.getElementById('shutter-status');
             if (label) label.textContent = 'CAPTURING...';
-            btn.disabled = true;
+            if (btn) btn.disabled = true;
 
             try {
-                const response = await fetch('/api/remote/capture', { method: 'POST' });
+                const response = await fetch('/api/remote/capture?t=' + Date.now(), { method: 'POST' });
                 if (response.ok) {
                     if (label) label.textContent = 'PHOTO CAPTURED!';
-                    setTimeout(() => { if (label) label.textContent = 'TAP TO CAPTURE'; }, 2000);
                 } else {
-                    if (label) label.textContent = 'CAPTURE ERROR';
+                    if (label) label.textContent = 'CAPTURE ERROR (' + response.status + ')';
                 }
             } catch (err) {
                 if (label) label.textContent = 'ERROR: ' + err.message;
             } finally {
-                btn.disabled = false;
+                setTimeout(() => { if (label) label.textContent = 'TAP TO CAPTURE'; }, 2000);
+                if (btn) btn.disabled = false;
             }
         }
 
@@ -197,7 +214,7 @@
             if (btn) btn.classList.add('active');
 
             try {
-                await fetch('/api/remote/mode', {
+                await fetch('/api/remote/mode?mode_idx=' + modeIdx + '&t=' + Date.now(), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mode_idx: modeIdx })
