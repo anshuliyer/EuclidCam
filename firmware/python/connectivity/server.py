@@ -70,8 +70,9 @@ def index():
     if not os.path.exists(PHOTO_DIR):
         os.makedirs(PHOTO_DIR, exist_ok=True)
     
-    # Verify files
-    files = sorted([f for f in os.listdir(PHOTO_DIR) if f.lower().endswith(('.jpg', '.jpeg', '.png'))], reverse=True)
+    # Verify files sorted by modification time (most recent first)
+    raw_files = [f for f in os.listdir(PHOTO_DIR) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+    files = sorted(raw_files, key=lambda f: os.path.getmtime(os.path.join(PHOTO_DIR, f)), reverse=True)
     
     server_ip = get_ip_address()
     server_url = f"http://{server_ip}:5000"
@@ -165,6 +166,32 @@ def remote_mode():
         with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
             json.dump({"cmd": "set_mode", "mode_idx": mode_idx, "time": time.time()}, f)
         return {"success": True, "message": f"Mode set to {mode_idx}"}, 200
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
+@app.route('/api/remote/flash', methods=['GET', 'POST'])
+def remote_flash():
+    try:
+        import json, time
+        data = request.get_json(silent=True) or request.form or request.args
+        flash_val = data.get("flash", True)
+        if isinstance(flash_val, str):
+            flash_val = flash_val.lower() in ("true", "1", "on")
+        with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
+            json.dump({"cmd": "set_flash", "flash": bool(flash_val), "time": time.time()}, f)
+        return {"success": True, "flash": bool(flash_val)}, 200
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
+@app.route('/api/remote/grid', methods=['GET', 'POST'])
+def remote_grid():
+    try:
+        import json, time
+        data = request.get_json(silent=True) or request.form or request.args
+        grid_val = str(data.get("grid", "OFF")).upper()
+        with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
+            json.dump({"cmd": "set_grid", "grid": grid_val, "time": time.time()}, f)
+        return {"success": True, "grid": grid_val}, 200
     except Exception as e:
         return {"success": False, "message": str(e)}, 500
 

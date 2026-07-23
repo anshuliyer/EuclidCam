@@ -382,12 +382,14 @@ class GalleryManager:
         return self._idx
 
     def files(self) -> list[str]:
-        """Return a sorted list of image filenames in *photo_dir*."""
+        """Return a list of image filenames sorted by modification time (most recent first)."""
         if not os.path.isdir(self.photo_dir):
             return []
+        raw_files = [f for f in os.listdir(self.photo_dir) if f.lower().endswith(self._IMAGE_EXTS)]
         return sorted(
-            f for f in os.listdir(self.photo_dir)
-            if f.lower().endswith(self._IMAGE_EXTS)
+            raw_files,
+            key=lambda f: os.path.getmtime(os.path.join(self.photo_dir, f)),
+            reverse=True
         )
 
     def current_path(self) -> str | None:
@@ -868,6 +870,19 @@ class CameraEngine:
                     if 0 <= m_idx < len(self.modes):
                         self.config["mode_idx"] = m_idx
                         print(f"[SYSTEM] Remote mode switched to index {m_idx} ({self.modes[m_idx].name})")
+                elif cmd == "set_flash":
+                    f_val = bool(cmd_data.get("flash", True))
+                    self.config["flash"] = f_val
+                    print(f"[SYSTEM] Remote flash set to {'ON' if f_val else 'OFF'}")
+                elif cmd == "set_grid":
+                    g_val = str(cmd_data.get("grid", "OFF")).upper()
+                    if g_val in ("RULE_OF_THIRDS", "THIRDS"):
+                        self.config["grid_mode"] = grid_settings.CompositionGrid.RULE_OF_THIRDS
+                    elif g_val in ("GOLDEN_RATIO", "GOLDEN"):
+                        self.config["grid_mode"] = grid_settings.CompositionGrid.GOLDEN_RATIO
+                    else:
+                        self.config["grid_mode"] = grid_settings.CompositionGrid.OFF
+                    print(f"[SYSTEM] Remote grid set to {self.config['grid_mode']}")
             except Exception as e:
                 print(f"[SYSTEM] Remote command processing error: {e}")
 

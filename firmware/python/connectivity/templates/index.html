@@ -91,11 +91,32 @@
 
             <div class="remote-card modes-card">
                 <div class="remote-card-header">
-                    <h2>MODE SELECTION</h2>
+                    <h2>FILTER SELECTION</h2>
                     <p class="settings-desc">Select active processing filter for EuclidCam</p>
                 </div>
                 <div class="mode-buttons-grid" id="mode-buttons-grid">
                     <!-- Dynamically populated camera filter modes -->
+                </div>
+            </div>
+
+            <div class="remote-card controls-card">
+                <div class="remote-card-header">
+                    <h2>CAMERA CONTROLS</h2>
+                    <p class="settings-desc">Toggle hardware flash and viewfinder grid overlays</p>
+                </div>
+                <div class="quick-controls-grid">
+                    <div class="control-box">
+                        <span class="control-label">FLASH LED</span>
+                        <button class="btn-toggle active" id="btn-flash-toggle" onclick="toggleRemoteFlash(this)">FLASH: ON</button>
+                    </div>
+                    <div class="control-box">
+                        <span class="control-label">GRID OVERLAY</span>
+                        <div class="grid-buttons-row">
+                            <button class="grid-btn active" id="grid-btn-OFF" onclick="setRemoteGrid('OFF', this)">OFF</button>
+                            <button class="grid-btn" id="grid-btn-THIRDS" onclick="setRemoteGrid('RULE_OF_THIRDS', this)">3x3</button>
+                            <button class="grid-btn" id="grid-btn-GOLDEN" onclick="setRemoteGrid('GOLDEN_RATIO', this)">PHI</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -218,6 +239,39 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mode_idx: modeIdx })
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        let flashState = true;
+        async function toggleRemoteFlash(btn) {
+            flashState = !flashState;
+            if (btn) {
+                btn.textContent = `FLASH: ${flashState ? 'ON' : 'OFF'}`;
+                if (flashState) btn.classList.add('active'); else btn.classList.remove('active');
+            }
+            try {
+                await fetch('/api/remote/flash?flash=' + flashState + '&t=' + Date.now(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ flash: flashState })
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function setRemoteGrid(gridVal, btn) {
+            document.querySelectorAll('.grid-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            try {
+                await fetch('/api/remote/grid?grid=' + gridVal + '&t=' + Date.now(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ grid: gridVal })
                 });
             } catch (err) {
                 console.error(err);
