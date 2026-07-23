@@ -82,6 +82,16 @@
                     <img src="/video_feed" id="video-stream" class="stream-feed" alt="Live Stream" />
                 </div>
                 <div class="remote-shutter-container">
+                    <div class="timer-scroller-wrapper">
+                        <span class="scroller-label">SHUTTER TIMER</span>
+                        <div class="timer-pills">
+                            <button class="timer-pill active" onclick="setShutterTimer(0, this)">0s</button>
+                            <button class="timer-pill" onclick="setShutterTimer(5, this)">5s</button>
+                            <button class="timer-pill" onclick="setShutterTimer(10, this)">10s</button>
+                            <button class="timer-pill" onclick="setShutterTimer(15, this)">15s</button>
+                            <button class="timer-pill" onclick="setShutterTimer(20, this)">20s</button>
+                        </div>
+                    </div>
                     <button class="btn-remote-shutter" onclick="triggerRemoteCapture(this)" id="btn-shutter">
                         <span class="shutter-inner"></span>
                     </button>
@@ -210,13 +220,32 @@
             }
         }
 
+        let selectedTimer = 0;
+        function setShutterTimer(sec, btn) {
+            selectedTimer = sec;
+            document.querySelectorAll('.timer-pill').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+        }
+
         async function triggerRemoteCapture(btn) {
             const label = document.getElementById('shutter-status');
-            if (label) label.textContent = 'CAPTURING...';
             if (btn) btn.disabled = true;
 
             try {
-                const response = await fetch('/api/remote/capture?t=' + Date.now(), { method: 'POST' });
+                if (selectedTimer > 0) {
+                    for (let rem = selectedTimer; rem > 0; rem--) {
+                        if (label) label.textContent = `COUNTDOWN: ${rem}s...`;
+                        await new Promise(res => setTimeout(res, 1000));
+                    }
+                }
+                if (label) label.textContent = 'CAPTURING...';
+
+                const response = await fetch('/api/remote/capture?timer=' + selectedTimer + '&t=' + Date.now(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ timer: selectedTimer })
+                });
+
                 if (response.ok) {
                     if (label) label.textContent = 'PHOTO CAPTURED!';
                 } else {
