@@ -862,7 +862,28 @@ class CameraEngine:
                 os.remove(remote_cmd_file)
                 cmd = cmd_data.get("cmd")
                 if cmd == "capture":
-                    print("[SYSTEM] Remote capture command received!")
+                    timer_sec = int(cmd_data.get("timer", 0))
+                    print(f"[SYSTEM] Remote capture command received! (timer: {timer_sec}s)")
+
+                    if timer_sec > 0:
+                        for rem in range(timer_sec, 0, -1):
+                            # Draw countdown on camera display
+                            try:
+                                self.modes[0]._draw_capture_overlay(None, self.config, f"TIMER: {rem}s", progress=rem/timer_sec)
+                            except Exception:
+                                pass
+                            
+                            # In the last 5 seconds, blip the physical flash LED on the board
+                            if rem <= 5 and self.flash_drive:
+                                try:
+                                    self.flash_drive.blip(duration=0.1)
+                                    time.sleep(0.9)
+                                except Exception as e:
+                                    print(f"[FLASH BLIP] Note: {e}")
+                                    time.sleep(0.9)
+                            else:
+                                time.sleep(1.0)
+
                     # Flash camera LCD screen white
                     display_to_map(np.full((240, 320, 3), 255, dtype=np.uint8), fb_map, config=self.config)
                     time.sleep(0.12)

@@ -25,3 +25,15 @@ class FlashDrive:
             print("[STUB] Physical Flash -> ON")
             time.sleep(duration)
             print("[STUB] Physical Flash -> OFF")
+
+    def blip(self, duration=0.1):
+        """Quickly blips the physical flash LED."""
+        if self.pin:
+            try:
+                self.pin.value = True
+                time.sleep(duration)
+                self.pin.value = False
+            except Exception as e:
+                print(f"[FLASH] Blip error: {e}")
+        else:
+            print("[STUB] Physical Flash -> BLIP!")
