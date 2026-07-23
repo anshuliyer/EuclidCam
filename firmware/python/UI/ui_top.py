@@ -297,15 +297,8 @@ class TopPanel:
         # Transparent-ish background box
         draw.rectangle([x, y, x + overlay_w, y + overlay_h], fill=(0, 0, 0), outline=self.BEIGE, width=3)
         
-        # Close Button (Top Right of overlay) - Massive and easily tappable
-        bx, by = x + overlay_w - 70, y + 10
-        draw.rectangle([bx, by, bx + 60, by + 60], outline=self.BEIGE, width=2)
-        # Draw a bold X
-        draw.line([bx + 15, by + 15, bx + 45, by + 45], fill=self.BEIGE, width=3)
-        draw.line([bx + 45, by + 15, bx + 15, by + 45], fill=self.BEIGE, width=3)
-
         # Title
-        draw.text((x + 20, y + 25), "CONNECTIVITY ACTIVE", fill=self.BEIGE)
+        draw.text((x + 20, y + 20), "CONNECTIVITY ACTIVE", fill=self.BEIGE)
         
         # Generate the QR code dynamically to ensure correct IP
         try:
@@ -316,7 +309,7 @@ class TopPanel:
             except Exception:
                 ip = "10.42.0.1" # fallback hotspot IP
                 
-            qr = qrcode.QRCode(version=1, box_size=4, border=1)
+            qr = qrcode.QRCode(version=1, border=2, box_size=10)
             qr.add_data(f"http://{ip}:5000")
             qr.make(fit=True)
             qr_img = qr.make_image(fill_color="black", back_color="white")
@@ -328,14 +321,14 @@ class TopPanel:
             from PIL import Image
             qr_pil = Image.open(tmp_path).convert("RGB")
             qr_pil = qr_pil.resize((140, 140), Image.NEAREST)
-            draw._image.paste(qr_pil, (x + (overlay_w - 140)//2, y + 50))
+            draw._image.paste(qr_pil, (x + (overlay_w - 140)//2, y + 45))
         except Exception as e:
             print(f"[ERROR] Live QR generation failed: {e}")
             draw.text((x + 10, y + 100), f"ERR: {str(e)[:30]}", fill=(255, 0, 0))
 
         # Instructions
         draw.text((x + 20, y + overlay_h - 40), "Scan to browse images", fill=self.BEIGE)
-        draw.text((x + 20, y + overlay_h - 20), "Tap [X] or edges to close", fill=self.BEIGE)
+        draw.text((x + 20, y + overlay_h - 20), "Press shutter to exit", fill=self.BEIGE)
 
     def render(self, frame):
         """
