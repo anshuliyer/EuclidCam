@@ -348,7 +348,6 @@ class TopPanel:
         show_gallery = self.config.get("show_gallery", False)
         
         if show_gallery:
-            self._draw_bin_icon(draw)
             if self.config.get("bluetooth_on"):
                 self._draw_bt_icon(draw)
             self._draw_gallery_view(draw)
