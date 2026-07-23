@@ -32,6 +32,23 @@
   box-sizing: border-box;
 }
 
+#flash-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.05s ease-out;
+}
+
+#flash-overlay.flash-active {
+  opacity: 1;
+}
+
 html {
   background-color: #111111;
   color: #FFFFFF;

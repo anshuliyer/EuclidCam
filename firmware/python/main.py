@@ -863,6 +863,9 @@ class CameraEngine:
                 cmd = cmd_data.get("cmd")
                 if cmd == "capture":
                     print("[SYSTEM] Remote capture command received!")
+                    # Flash camera LCD screen white
+                    display_to_map(np.full((240, 320, 3), 255, dtype=np.uint8), fb_map, config=self.config)
+                    time.sleep(0.12)
                     self.input.handle("ENTER", self.config, fb_map)
                 elif cmd == "set_mode":
                     m_idx = cmd_data.get("mode_idx", 0)
