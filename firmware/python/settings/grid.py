@@ -9,7 +9,7 @@ class CompositionGrid:
     GRID_3x3 = "3x3"
     EUCLID = "Euclid"
 
-    def __init__(self, color=(60, 60, 60), width=1):
+    def __init__(self, color=(220, 220, 200), width=2):
         self.color = color
         self.width = width
 
