@@ -5,4 +5,6 @@ Captured/*
 !Captured/.gitkeep
 *.sparseimage
 .DS_Store
+**/.DS_Store
 SDK/
+
