@@ -114,7 +114,7 @@ def delete_batch():
             os.remove(img_path)
     return {"status": "success"}, 200
 
-DEFAULT_MODES = ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia", "Disco"]
+DEFAULT_MODES = ["Standard", "Glam", "Low Light", "Summer", "Indoor", "35mm", "UnI", "Nostalgia"]
 
 @app.route('/snapshot.jpg')
 def snapshot():
