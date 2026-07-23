@@ -663,17 +663,22 @@ class InputHandler:
 
         elif selected == "Connect":
             if not config.get("is_connected"):
-                import subprocess, time
-                print("[SYSTEM] Auto-enabling Hotspot & server…")
-                # Show animated progress overlay/scroller
-                self._modes[0]._draw_capture_overlay(None, config, "ENABLING CONNECT…", progress=0.3)
-                subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
-                self._modes[0]._draw_capture_overlay(None, config, "STARTING SERVER…", progress=0.7)
-                time.sleep(2)
-                self._server.start()
                 config["is_connected"] = True
-                self._modes[0]._draw_capture_overlay(None, config, "CONNECT READY!", progress=1.0)
-                time.sleep(0.3)
+                def _bg_start_connect():
+                    import subprocess, time
+                    print("[SYSTEM] Auto-enabling Hotspot & server in background…")
+                    try:
+                        subprocess.run(["sudo", "nmcli", "connection", "delete", "id", "Hotspot"], capture_output=True, text=True)
+                        subprocess.run(["sudo", "nmcli", "connection", "delete", "id", "EuclidCam"], capture_output=True, text=True)
+                        subprocess.Popen(["sudo", "nmcli", "device", "wifi", "hotspot", "ifname", "wlan0", "ssid", "EuclidCam", "password", "euclidcam"], stdout=subprocess.DEVNULL)
+                        time.sleep(1.5)
+                        self._server.start()
+                    except Exception as e:
+                        print(f"[SYSTEM] Connect startup error: {e}")
+
+                import threading
+                threading.Thread(target=_bg_start_connect, daemon=True).start()
+
             config["show_connection_view"] = True
             config["show_submenu"] = False
             config["show_menu"] = False
