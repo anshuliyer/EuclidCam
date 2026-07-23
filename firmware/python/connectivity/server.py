@@ -183,6 +183,16 @@ def remote_flash():
     except Exception as e:
         return {"success": False, "message": str(e)}, 500
 
+@app.route('/api/remote/flash_blip', methods=['GET', 'POST'])
+def remote_flash_blip():
+    try:
+        import json, time
+        with open("/tmp/euclidcam_remote_cmd.json", "w") as f:
+            json.dump({"cmd": "flash_blip", "time": time.time()}, f)
+        return {"success": True}, 200
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
 @app.route('/api/remote/grid', methods=['GET', 'POST'])
 def remote_grid():
     try:

@@ -294,26 +294,31 @@
             if (btn) btn.disabled = true;
 
             try {
-                // Send remote capture command immediately so camera starts timer & physical flash blips!
-                const capturePromise = fetch('/api/remote/capture?timer=' + selectedTimer + '&t=' + Date.now(), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ timer: selectedTimer })
-                });
-
                 if (selectedTimer > 0) {
                     for (let rem = selectedTimer; rem > 0; rem--) {
                         if (label) label.textContent = `COUNTDOWN: ${rem}s...`;
+
+                        // In the last 5 seconds, trigger a physical flash LED blip on the camera board
+                        if (rem <= 5) {
+                            fetch('/api/remote/flash_blip?t=' + Date.now(), { method: 'POST' }).catch(() => {});
+                        }
+
                         await new Promise(res => setTimeout(res, 1000));
                     }
                 }
+
                 if (label) label.textContent = 'CAPTURING...';
 
-                // Play loud shutter click sound & white screen flash on phone when photo is taken
+                // Play loud shutter click sound & white screen flash on phone when photo is taken (0s mark)
                 playShutterClickSound();
                 flashScreen();
 
-                const response = await capturePromise;
+                const response = await fetch('/api/remote/capture?t=' + Date.now(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
                 if (response.ok) {
                     if (label) label.textContent = 'PHOTO CAPTURED!';
                 } else {
