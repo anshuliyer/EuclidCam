@@ -1,6 +1,5 @@
 import os
 import socket
-import qrcode
 import shutil
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
@@ -38,13 +37,19 @@ def get_ip_address():
             return "10.42.0.1"
 
 def generate_qr_code(url):
-    qr = qrcode.QRCode(version=1, border=2, box_size=10)
-    qr.add_data(url)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    qr_path = os.path.join(STATIC_DIR, "qr_code.png")
-    img.save(qr_path)
-    return qr_path
+    try:
+        import qrcode
+        qr = qrcode.QRCode(version=1, border=2, box_size=10)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        os.makedirs(STATIC_DIR, exist_ok=True)
+        qr_path = os.path.join(STATIC_DIR, "qr_code.png")
+        img.save(qr_path)
+        return qr_path
+    except Exception as e:
+        print(f"[SERVER] QR generation note: {e}")
+        return None
 
 def get_storage_info():
     try:
@@ -76,9 +81,12 @@ def index():
     
     return render_template('index.html', images=files, server_url=server_url, storage=storage)
 
-# Generate QR on startup
-server_ip = get_ip_address()
-generate_qr_code(f"http://{server_ip}:5000")
+# Generate QR on startup defensively
+try:
+    server_ip = get_ip_address()
+    generate_qr_code(f"http://{server_ip}:5000")
+except Exception as e:
+    print(f"[SERVER] Startup QR generation note: {e}")
 
 @app.route('/images/<filename>')
 def serve_image(filename):

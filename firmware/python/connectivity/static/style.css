@@ -4,6 +4,7 @@
   src: url('/assets/fonts/JetBrainsMono-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -11,6 +12,7 @@
   src: url('/assets/fonts/JetBrainsMono-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 :root {
@@ -21,7 +23,7 @@
   --text-secondary: #A0A0A0;
   --accent-beige: #E6D5BD;
   --accent-light: #2A2A2A;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'JetBrains Mono', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, monospace;
 }
 
 * {
@@ -30,9 +32,14 @@
   box-sizing: border-box;
 }
 
+html {
+  background-color: #111111;
+  color: #FFFFFF;
+}
+
 body {
-  background-color: var(--bg-base);
-  color: var(--text-primary);
+  background-color: #111111;
+  color: #FFFFFF;
   font-family: var(--font-mono);
   min-height: 100vh;
   display: flex;
@@ -61,7 +68,7 @@ body {
 }
 
 .main-heading {
-  color: var(--text-primary);
+  color: #FFFFFF;
   font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -93,7 +100,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.2s ease;
 }
 
 .nav-tab:hover {
@@ -116,16 +123,11 @@ body {
   display: none;
   width: 100%;
   max-width: 1200px;
-  animation: fadeIn 0.4s ease;
+  opacity: 1;
 }
 
 .tab-view.active {
   display: block;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Roll Gallery */
@@ -171,14 +173,14 @@ body {
   padding: 1.5rem;
   border-radius: 20px;
   border: 1px solid var(--accent-light);
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s, background-color 0.4s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
 }
 
 .card:hover {
   background: var(--bg-card-hover);
-  transform: translateY(-6px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
 }
 
 .select-checkbox {
@@ -205,6 +207,7 @@ body {
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 1.5rem;
+  background-color: #1a1a1a;
 }
 
 .actions {
