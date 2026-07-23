@@ -371,6 +371,7 @@ class GalleryManager:
 
     def __init__(self, photo_dir: str) -> None:
         self.photo_dir = photo_dir
+        os.makedirs(self.photo_dir, exist_ok=True)
         self._idx: int = 0
         self._cached_frame = None
         self._cached_idx = -1

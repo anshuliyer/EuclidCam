@@ -1,10 +1,10 @@
 __pycache__/
 *.pyc
 .venv/
-Captured/*
-!Captured/.gitkeep
+Captured/
 *.sparseimage
 .DS_Store
 **/.DS_Store
+
 
 
