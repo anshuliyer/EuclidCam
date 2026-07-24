@@ -15,11 +15,12 @@ euclidcam/
 ├── scripts/               # Bootstrapping & asset utility scripts
 ├── assets/                # Core visual media, logos, and typography fonts
 ├── tests/                 # Firmware test suite
-├── Captured/              # Photo output (on-device)
 ├── Makefile               # Installation, deployment, and service targets
 ├── requirements.txt       # Python dependencies
-└── LICENSE                # MIT License
+└── LICENSE                # GNU Affero General Public License v3.0 (AGPLv3)
 ```
+
+*(Note: The `Captured/` photo directory is automatically created dynamically on first start by the firmware engine).*
 
 ## Setup
 
