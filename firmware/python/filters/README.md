@@ -6,6 +6,7 @@ Each file exposes one function: `apply_<name>_filter(pil_img) -> Image`.
 | Module              | Name      | Look                                          |
 |---------------------|-----------|-----------------------------------------------|
 | `glam.py`           | Glam      | High-contrast B&W, soft gaussian glow         |
+| `nineties.py`       | '90s      | Lifted matte blacks, punchy contrast, 90s print|
 | `film35mm.py`       | 35mm      | Point-and-shoot flash, lifted blue shadows    |
 | `indoor.py`         | Indoor    | Warm shadows, low contrast, indoor flash feel |
 | `italian_summer.py` | Summer    | Vivid Mediterranean warmth                    |

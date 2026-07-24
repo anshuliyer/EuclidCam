@@ -39,7 +39,7 @@ import adafruit_rgb_display.ili9341 as ili9341
 from UI import ui_top, touch_interface
 
 # ─── Project: Filters ──────────────────────────────────────────────────────────
-from filters import italian_summer, indoor, film35mm, uni, nostalgia, low_light, glam
+from filters import italian_summer, indoor, film35mm, uni, nostalgia, low_light, glam, nineties
 
 # ─── Project: Settings ─────────────────────────────────────────────────────────
 from settings import grid as grid_settings
@@ -741,6 +741,7 @@ class CameraEngine:
         # Build mode registry
         self.modes: list[CameraMode] = [
             StandardMode(),
+            FilterMode("'90s",     nineties),
             FilterMode("Glam",     glam),
             LowLightMode(),
             FilterMode("Summer",   italian_summer),
