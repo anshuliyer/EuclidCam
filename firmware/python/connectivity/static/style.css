@@ -674,12 +674,15 @@ body {
   border-color: var(--accent-beige);
 }
 
-.grid-buttons-row {
+.grid-buttons-row,
+.exposure-buttons-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
-.grid-btn {
+.grid-btn,
+.exp-btn {
   background: var(--bg-card);
   border: 1px solid var(--accent-light);
   color: var(--text-secondary);
@@ -692,12 +695,14 @@ body {
   transition: all 0.2s;
 }
 
-.grid-btn:hover {
+.grid-btn:hover,
+.exp-btn:hover {
   color: var(--text-primary);
   border-color: var(--accent-beige);
 }
 
-.grid-btn.active {
+.grid-btn.active,
+.exp-btn.active {
   background: var(--accent-beige);
   color: var(--bg-base);
   border-color: var(--accent-beige);
