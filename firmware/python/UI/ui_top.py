@@ -135,13 +135,18 @@ class TopPanel:
         
         if not show_submenu:
             flash_pwr = "Flash: ON" if self.config.get("flash", True) else "Flash: OFF"
-            items = ["Gallery", "Modes", "Connect", flash_pwr, "Grid", "Exit"]
+            exp_val = f"Exp: {self.config.get('exposure_label', 'Auto')}"
+            items = ["Gallery", "Modes", exp_val, "Connect", flash_pwr, "Grid", "Exit"]
             selected_idx = self.config.get("menu_index", 0)
             title = "SYSTEM MENU"
         elif current_submenu == "Modes":
             items = self.config.get("mode_names", []) + ["Back"]
             selected_idx = self.config.get("submenu_index", 0)
             title = "SELECT VISION"
+        elif current_submenu == "Exposure":
+            items = ["Auto", "1/100s", "1/50s", "1/30s", "1/15s", "1/10s", "Back"]
+            selected_idx = self.config.get("submenu_index", 0)
+            title = "EXPOSURE TIME"
         elif current_submenu == "Grid":
             items = ["OFF", "3x3", "Euclid", "Back"]
             selected_idx = self.config.get("submenu_index", 0)
